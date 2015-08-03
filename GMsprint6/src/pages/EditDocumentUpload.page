@@ -1,0 +1,70 @@
+<apex:page id="page" standardController="DocumentUpload_GM__c" extensions="UploadDocumentext" sidebar="false">
+ <!-- <apex:pageMessages />
+    <a href="{!getBackUrl }">Back</a>-->
+    <Script>
+
+    function addTypeStyle()
+    {
+        alert(document.getElementById('{!$Component.page.frm.pb.pbsec2.db}').checked);
+        alert(document.getElementById('{!$Component.page.frm.pb.pbsec2.hpc}').checked);
+        if(document.getElementById('{!$Component.page.frm.pb.pbsec2.db}').checked || document.getElementById('{!$Component.page.frm.pb.pbsec.hpc}').checked)
+        {
+           document.getElementById('{!$Component.page.frm.pb.pbsec1.type}').disabled =true;
+        }
+    }
+    function showHidePleaseSpecify(typ,lbl,fld)
+    {
+        if(document.getElementById(typ).value == 'Other') 
+        {
+            document.getElementById(lbl).style.display = '';
+            document.getElementById(fld).style.display = '';
+        }
+        else 
+        {
+            document.getElementById(lbl).value = '';              
+            document.getElementById(lbl).style.display = 'none';
+            document.getElementById(fld).style.display = 'none';
+        }                                
+        return false;
+    }
+    window.onload = showHidePleaseSpecify('{!$Component.page.frm.pb.pbsec1.type}','{!$Component.page.frm.pb.pbsec1.pbsec.ospecify}','{!$Component.page.frm.pb.pbsec1.pbsec.ispecify}');
+    </Script>
+  <apex:form id="frm">
+  
+  <apex:pageBlock id="pb">
+       <apex:pageBlockButtons >
+          <apex:commandButton value="Save" action="{!Save}"/>
+         <!-- <apex:commandButton value="Save & New" action="{!SaveandNew}"/>-->
+          <apex:commandButton value="Cancel" action="{!Cancel}"/>
+      </apex:pageBlockButtons>
+      
+      <apex:pageBlockSection id="pbsec1" title="Information" columns="2">
+          <apex:inputField value="{!DocumentUpload_GM__c.Name}" id="Name"/>
+         
+     
+          <apex:inputField value="{!DocumentUpload_GM__c.GMType__c}" id="type" onchange="showHidePleaseSpecify('{!$Component.page.frm.pb.pbsec1.type}','{!$Component.page.frm.pb.pbsec1.pbsec.ospecify}','{!$Component.page.frm.pb.pbsec1.pbsec.ispecify}');"/>
+              <apex:inputField value="{!DocumentUpload_GM__c.Description__c}" id="descrption"/>
+          <apex:pageBlockSectionItem id="pbsec">
+              <apex:outputLabel id="ospecify" for="ispecify" escape="false" style="display:none;">Please Specify:</apex:outputLabel>
+              <apex:inputField id="ispecify" value="{!DocumentUpload_GM__c.Please_Specify__c}" style="display:none;"/>          
+          </apex:pageBlockSectionItem>
+          <apex:inputField value="{!DocumentUpload_GM__c.Language__c}" id="language"/>
+          <apex:selectList value="{!DocumentUpload_GM__c.Security__c}" id="security" size="1" >
+              <apex:selectOptions value="{!securityoptions }"></apex:selectOptions>
+          </apex:selectList> 
+          <apex:inputField value="{!DocumentUpload_GM__c.Section__c}" id="section"/>
+      </apex:pageBlockSection>
+       <apex:pageBlockSection id="pbsec2" title="Security" columns="2">
+           <apex:inputCheckbox id="db" value="{!DocumentUpload_GM__c.Final_detailed_budget__c}" disabled="{!if($Profile.Name == 'Super User' || $Profile.Name == 'System Administrator', false,true)}"/>
+           <apex:inputcheckbox id="hpc" value="{!DocumentUpload_GM__c.Final_list_of_health_products_and_costs__c}" disabled="{!if($Profile.Name == 'Super User' || $Profile.Name == 'System Administrator', false,true)}"/>
+           <Script>
+           if(document.getElementById('{!$Component.page.frm.pb.pbsec2.db}').checked || document.getElementById('{!$Component.page.frm.pb.pbsec2.hpc}').checked)
+            {
+               document.getElementById('{!$Component.page.frm.pb.pbsec1.type}').disabled =true;
+            }
+            window.onload = showHidePleaseSpecify('{!$Component.page.frm.pb.pbsec1.type}','{!$Component.page.frm.pb.pbsec1.pbsec.ospecify}','{!$Component.page.frm.pb.pbsec1.pbsec.ispecify}');
+        </Script>
+        </apex:pageBlockSection>
+  </apex:pageBlock>
+  </apex:form>
+</apex:page>

@@ -1,0 +1,4 @@
+<apex:page standardController="Grant_Intervention__c" extensions="SaveAndNewGrantIntController" action="{!createNewGrantIntUrl}">
+     <apex:pageMessages escape="false" />   
+    
+</apex:page>

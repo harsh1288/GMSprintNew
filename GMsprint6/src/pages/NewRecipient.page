@@ -1,0 +1,87 @@
+<apex:page standardController="Implementer__c" extensions="NewRecipientctrl" recordSetVar="Implementer" sidebar="false" >
+      <style>
+   .link{
+    color: #00FF00;
+    text-decoration:underline;
+     text-align:right;
+     float: right;
+     font-weight:bold;
+    }
+    .text{
+      color: red;
+      font-weight:bold;
+      text-align: center;
+      
+    }
+    </style>
+  <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js" />
+    <script>    
+      function checkvalidate(){
+         var checkbox = $('.inputCheckbox:checked').size();   
+         var name = $('.otherInput').val();
+         var namelen = $(".otherInput").val().length;  
+             if( checkbox > 0 ){
+               if($(':input:checkbox:last').prop('checked')==true && jQuery.trim(name).length == 0)
+               {
+                    alert("Please enter Recipient Name");   
+                    return false;
+               }
+               else if($(':input:checkbox:last').prop('checked')==true && namelen > 255)
+               { 
+                    alert("Name cannot exceed 255 characters");
+                    return false;
+               }
+               else
+               {return true;}
+             }
+             else
+             {
+                alert("Please Select a Recipient");   
+                return false;
+             }  
+      }
+  </script>
+    <apex:form >  
+      <apex:pageMessages />     
+      <apex:CommandButton value="Back To Recipients" action="{!cancel}"/> <br/><br/>
+       <apex:pageblock title="Selected Recipients" rendered="{!!displaypb}" id="theBlock">
+            <apex:pageBlockButtons >
+                 <apex:CommandButton value="Continue" action="{!CreateImplementer}"   onclick="return checkvalidate()" />
+                 <apex:CommandButton value="Cancel" action="{!cancel}"/>                  
+            </apex:pageBlockButtons>
+            <apex:pageblockSection >           
+                   <apex:pageBlockTable value="{!lstwrapimp}" var="pr"> 
+                         <apex:column headerValue="">
+                               <apex:inputCheckbox value="{!pr.selected}"  styleClass="inputCheckbox">                                    
+                           </apex:inputCheckbox>                                  
+                         </apex:column>
+                        <apex:column headerValue="Implementer Name">
+                            <apex:outputField value="{!pr.wrapimplementer.Name}" />  
+                            <apex:outputLabel value="Other" rendered="{!pr.other == 'other'}"/>&nbsp;&nbsp;
+                           <apex:inputText value="{!checkvalue1}" rendered="{!pr.other == 'other'}"  onclick="checkOther();" styleClass="otherInput"  style="white-space: pre"/> 
+                        </apex:column>  
+                   </apex:pageBlockTable>                   
+              </apex:pageblockSection>
+             <apex:pageblockSection >              
+             </apex:pageblockSection>
+       </apex:pageblock>
+       
+       <apex:pageBlock title="Add New Implementer" id="impblock" rendered="{!displaypb}">
+         <apex:pageBlockButtons >
+            <apex:commandButton action="{!Saveimplementer}" value="Save"/>
+            <apex:commandButton action="{!Cancel}" value="Cancel"/>
+        </apex:pageBlockButtons>
+        <apex:pageBlockSection id="impblocksec3" title="Information" collapsible="false" columns="2">
+            <apex:outputField value="{!Implementer__c.Implementer_Name__c}"/> 
+            <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>   
+                 
+            <apex:inputField value="{!Implementer__c.PR_Type__c}"/>
+            <apex:inputField value="{!Implementer__c.Implementer_Sub_Type__c}"/>
+            <apex:inputField value="{!Implementer__c.Implementer_Short_Name__c}"/>
+                                   
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+ </apex:form> 
+ 
+ 
+</apex:page>

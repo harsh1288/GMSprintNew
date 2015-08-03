@@ -1,0 +1,270 @@
+<apex:page standardcontroller="IP_Detail_Information__c" extensions="ctrlDBreport" sidebar="false">
+   <style>
+         .reportTable {
+              border-style: solid;
+              border-color: #e0e3e5;
+              border-width: 1px 0;
+              margin: 0;
+          }
+          
+          .tabularReportTable .headerRow {
+             background: #f2f3f3;
+             font-size: .9em;
+          }
+          
+          .tabularReportTable .breakRowClass0 {
+             background-color: #d5ddf3;
+             vertical-align: baseline;
+          }
+          
+          table {
+             display: table;
+             border-collapse: separate;
+             border-spacing: 2px;
+             border-color: gray;
+          }
+          
+          tbody {
+            display: table-row-group;
+            vertical-align: middle;
+            border-color: inherit;
+          }
+          
+          tr {
+           display: table-row;
+           vertical-align: inherit;
+           border-color: inherit;
+          }
+          .headerRow th .headerRow td {
+           border-style: solid;
+           border-color: #e0e3e5;
+           border-width: 0 0 1px 1px;
+          }
+          th {
+          border-width: 0;
+          border-top: none;
+          text-align: left;
+          font-weight: bold;
+          }
+          th {
+          padding-right: 6px;
+          }
+          th {
+          vertical-align: top;
+          padding: 3px 2px 3px 5px;
+          color: #333;
+          white-space: normal;
+          }
+          
+          .tabularReportTable .breakRowClass0Top td {
+           border-top: 1px solid #bfc4d4;
+           }
+           
+           .drilldown {
+             width: 24px;
+           }
+           
+           .tabularReportTable .breakRowClassBottom td {
+              border-bottom: 1px solid #d4dadc;
+          }
+          
+          .tabularReportTable .breakRowClass1 {
+             background-color: #eff4fc;
+             vertical-align: baseline;
+           }
+   </style>
+   <script>
+          function jsarrangeorder(val,order,id1,id2){
+             var label = val;
+             var ord;
+             
+             if(order == 'true'){
+                document.getElementById(id1).style.display='none';
+                document.getElementById(id2).style.display='';
+                ord = 'asc'
+                alert(label);
+                alert(ord);
+                actarrangeorder(label,ord);
+             }
+             if(order == 'false'){
+                document.getElementById(id1).style.display='';
+                document.getElementById(id2).style.display='none';
+                ord = 'desc'
+                alert(label);
+                alert(ord);
+                actarrangeorder(label,ord);
+             }
+          }
+          function jsfocus(component){
+             document.getElementById(component).style.textDecoration = 'underline';
+          }
+          function jsnotfocus(component){
+             document.getElementById(component).style.textDecoration = 'none';
+          }
+   </script>
+  <apex:form id="frm">
+  <apex:actionFunction action="{!lstorderby}" name="actarrangeorder" rerender="data">
+        <apex:param name="label" value=""/>
+        <apex:param name="orderby" value=""/>
+  </apex:actionFunction>
+  <apex:actionFunction action="{!lstorderby}" name="actarrangeorder" rerender="data">
+        <apex:param name="label" value=""/>
+        <apex:param name="orderby" value=""/>
+  </apex:actionFunction>
+      <apex:commandLink value="Export" action="{!vfexcel}" target="_blank"/>
+      <table class="reportTable tabularReportTable" border="0" cellspacing="0" cellpadding="0">    
+             <tbody>
+                   <tr id="headerRow_0" bgcolor="#aaaaff" class="headerRow">
+                       <td rowspan="1">&nbsp;</td>
+                   <th align="left" scope="col">
+                       <apex:commandlink id="refno1" value="Reference Number" onclick="jsarrangeorder('Reference_Number__c','true','{!$Component.refno1}','{!$Component.refno2}');" rerender="data" style="text-decoration:none;" onmouseover="jsfocus('{!$Component.refno1}');" onmouseout="jsnotfocus('{!$Component.refno1}');"/>
+                       <apex:commandlink id="refno2" value="Reference Number1" onclick="jsarrangeorder('Reference_Number__c','false','{!$Component.refno1}','{!$Component.refno2}');" rerender="data" style="display:none;text-decoration:none;" onmouseover="jsfocus('{!$Component.refno2}');" onmouseout="jsnotfocus('{!$Component.refno2}');"/>
+                   </th>
+                   <th align="left" scope="col">
+                       Activity
+                   </th>
+                   <th align="left" scope="col">
+                       Cost Grouping
+                   </th>
+                   <th align="left" scope="col">
+                       Cost Input
+                   </th>
+                   <th align="left" scope="col">
+                       Recipient
+                   </th>
+                   <th align="left" scope="col">
+                       Unit of Measure
+                   </th>
+                   <th align="left" scope="col">
+                       Currency Code
+                   </th>
+                   <th align="left" scope="col">
+                       Unit CostY1
+                   </th>
+                   <th align="left" scope="col">
+                       Q1 Quantity
+                   </th>
+                   <th align="left" scope="col">
+                       Q1 GrantAmount
+                   </th>
+                   <th align="left" scope="col">
+                       Q2 Quantity
+                   </th>
+                   <th align="left" scope="col">
+                       Q2 GrantAmount
+                   </th>
+                   <th align="left" scope="col">
+                       Q3 Quantity
+                   </th>
+                   <th align="left" scope="col">
+                       Q3 GrantAmount
+                   </th>
+                   <th align="left" scope="col">
+                       Q4 Quantity
+                   </th>
+                   <th align="left" scope="col">
+                       Q4 GrantAmount
+                   </th>
+                   <th align="left" scope="col">
+                       Annual Quantity Y1
+                   </th>
+                   <th align="left" scope="col">
+                       Y1 GrantAmount
+                   </th>
+                  </tr>
+                </tbody>
+        </table>
+        <apex:outputpanel id="data">
+        <table>
+               <tbody>
+                  <apex:repeat value="{!lstBLModuleByModule}" var="BL" id="lstbl">
+                  <tr bgcolor="#ccccee" class="breakRowClass0 breakRowClass0Top">
+                      <td class="drilldown">
+                         
+                      </td>
+                      <td colspan="55">
+                          <strong>Module Name: </strong>
+                          <apex:outputText value="{!BL.ModuleName}"/>
+                      </td>
+                  </tr>
+                  <tr bgcolor="#ccccee" class="breakRowClass0 breakRowClassBottom" valign="top">
+                      
+                  </tr>
+                  <apex:repeat value="{!BL.mapBLModule}" var="intrvntnname">
+                  <tr bgcolor="#ddddee" class="breakRowClass1 breakRowClass1Top">
+                      <td class="drilldown">&nbsp;</td>
+                      <td colspan="55">
+                       &nbsp;&nbsp;&nbsp;&nbsp;<strong>Grant Intervention Name: </strong>
+                       <apex:outputText value="{!intrvntnname}"/>
+                       </td>
+                  </tr>
+                  <tr bgcolor="#ddddee" class="breakRowClass1 breakRowClassBottom" valign="top">
+                  </tr>
+                  <apex:repeat value="{!BL.mapBLModule[intrvntnname]}" var="objbl">
+                  <tr class="even" valign="top">
+                      <td>
+                          &nbsp;
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Reference_Number__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Activity__c}" />
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Cost_Grouping__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Cost_Input_Name__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Recipient__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Unit_of_Measure__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Currency_Code__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Unit_Cost_Y1__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Q1_Quantity__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Q1_Grant_Amount__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Q2_Quantity__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Q2_Grant_Amount__c}"/>
+                      </td>
+                       <td>
+                          <apex:outputtext value="{!objbl.Q3_Quantity__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Q3_Grant_Amount__c}"/>
+                      </td>
+                       <td>
+                          <apex:outputtext value="{!objbl.Q4_Quantity__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Q4_Grant_Amount__c}"/>
+                      </td>
+                       <td>
+                          <apex:outputtext value="{!objbl.Annual_Quantity__c}"/>
+                      </td>
+                      <td>
+                          <apex:outputtext value="{!objbl.Y1_Grant_Amount__c}"/>
+                      </td>
+                  </tr>
+                  </apex:repeat>
+                  </apex:repeat>
+                 </apex:repeat>
+             </tbody>      
+      </table>
+      </apex:outputpanel>
+   </apex:form>
+</apex:page>

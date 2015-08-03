@@ -1,0 +1,3 @@
+<apex:page standardController="Performance_Framework__c" extensions="saveAndNewPFController" action="{!createNewPFUrl}" >
+    <apex:pageMessages escape="false" />   
+</apex:page>

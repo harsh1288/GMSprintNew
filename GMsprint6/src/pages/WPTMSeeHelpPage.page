@@ -1,0 +1,9 @@
+<apex:page showHeader="TRUE" sidebar="FALSE" standardController="Key_Activity__c" >
+   
+  <table align="center" width="100%" height="100%">
+      <tr>
+      <td> <b>This is a sample Help.</b> </td>
+      </tr>
+  </table>
+  
+</apex:page>

@@ -1,0 +1,172 @@
+<apex:page id="page" standardController="Grant_Indicator__c" sidebar="false" standardstylesheets="true" tabstyle="Grant_Indicator__c" showHeader="false" extensions="CovOutputInlineEditController" recordSetVar="indicators" action="{!init}">
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+<!--<apex:includeScript value="{!$Resource.jQuery18MinJs}" />-->
+<!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>-->
+<apex:includeScript value="{!$Resource.newJquery}" />
+<apex:includeScript value="{!$Resource.Datatable}" />
+
+<apex:includeScript value="{!$Resource.DatatableFixedColumn}" />
+  <style>
+     #spinner{
+            z-index:9999;
+       } 
+       
+    
+   </style>
+<script>
+    var jQuery
+   $(document).ready( function () {
+        var iStart = new Date().getTime();
+        var oTable = $('#person').dataTable({
+            "sScrollY": "300px",
+            "sScrollX": "100%",
+            "sScrollXInner": "150%",
+            "bScrollCollapse": true,
+            "bPaginate": false,
+            "bFilter": false
+        } );
+        new $.fn.dataTable.fixedColumns( oTable );
+        var iStart = new Date().getTime();
+        var pTable = $('#innerTable').dataTable({
+            "sScrollY": "300px",
+            "sScrollX": "100%",
+            "sScrollXInner": "150%",
+            "bScrollCollapse": true,
+            "bPaginate": false,
+            "bFilter": false
+        } );
+          new $.fn.dataTable.fixedColumns( pTable );
+} );
+
+</script>
+
+<apex:form >
+<table id="person" class="tbl1">
+  
+    <thead>
+  
+                <tr >
+                    <th class="headerRow">
+                        {!$Label.EditCov_GID}
+                    </th>
+                    <th  class="headerRow">
+                        {!$Label.EditCov_Fname}
+                    </th>    
+                    <th class="headerRow">
+                        {!$Label.EditCov_SC}
+                    </th>
+                    <th class="headerRow">
+                        {!$Label.EditCov_DT}
+                    </th>        
+                    <th class="headerRow">
+                       {!$Label.EditCov_BND}
+                    </th>
+                    <th class="headerRow">
+                        {!$Label.EditCov_Bval}
+                    </th>
+                    <th class="headerRow">
+                        {!$Label.EditCov_BYear}
+                    </th>
+                    <th class="headerRow">
+                        {!$Label.EditCov_BSrc}
+                    </th>
+                    
+                    <apex:repeat value="{!lstPeriodPF}" var="data">
+                        <th colspan = "2" class="headerRow" style="padding-right: 75px !important;">
+                            {!data.Start_Date_Short__c}
+                        </th>
+                    </apex:repeat>
+                    <th class="headerRow">
+                       Disaggregation
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            <apex:repeat value="{!lstGrantIndicatorResult}" var="ind" rendered="{!if(lstGrantBasedonFreq.size > 0,true,false)}" > 
+                <tr style="border-color: white;">
+                    <td style="width:120px;">
+                        <apex:outputText value="{!ind.objGrantIndicator.Name}"></apex:outputText>
+                    </td>
+                    <td style="width: 402px;">
+                        <apex:outputText style="word-break: normal;" value="{!ind.objGrantIndicator.Indicator_Full_Name__c}"></apex:outputText>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!ind.objGrantIndicator.Standard_or_Custom__c}"></apex:outputText>
+                    </td>
+                     <td>
+                        <apex:outputText value="{!ind.objGrantIndicator.Data_Type__c}"></apex:outputText>
+                    </td>
+                     <td >
+                        <apex:inputField id="num" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.objGrantIndicator.Baseline_numerator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}">              
+
+                        </apex:inputField><br/>  
+                        <apex:inputField id="den" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.objGrantIndicator.Baseline_Denominator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}" >
+
+                        </apex:inputField>
+                    </td>
+                    <td>
+                        <apex:inputField id="basev" onKeyPress="return charLimit(this)" onchange="setdecimal('{!$Component.basev}', '{!ind.objGrantIndicator.Decimal_Places__c}');clears('{!$Component.num}','{!$Component.den}');"  value="{!ind.objGrantIndicator.Baseline_Value1__c}" >
+
+                        </apex:inputField>
+                        <!-- <apex:outputField style="padding-right:0px;margin-left: -66px !important;" id="val" value="{!ind.objGrantIndicator.Baseline_Value1__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}">
+                            <script> setdecimalForOp('{!$Component.val}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                        </apex:outputField> -->
+                        <apex:outputText value="%" rendered="{!if((ind.objGrantIndicator.Data_Type__c=='Number and Percent' || ind.objGrantIndicator.Data_Type__c=='Percent'),true,false)}" />
+                        <apex:outputText value=" per 100K" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Ratio',true,false)}"/>
+                       <!--apex:inputHidden id="hdnval" value="{!ind.objGrantIndicator.Baseline_Value1__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}"/> -->
+                    </td>
+                    <td>
+                        <apex:inputField value="{!ind.objGrantIndicator.Baseline_Year__c}"/>
+                    </td>
+                    <td>
+                        <apex:inputField value="{!ind.objGrantIndicator.Baseline_Sources__c}" />
+                    </td>
+                  
+                    <apex:repeat value="{!ind.lstResults}" var="data">
+                        
+                        <td  colspan="2" >
+                         <table id="innerTable">
+                           <tr>
+                             <td>
+                                <apex:inputField id="num" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:right;width:50%;" value="{!data.Target_Numerator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}">              
+                            
+                                </apex:inputField><br/>  <br/> 
+                                
+                                <apex:inputField id="den" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:right;width:50%;" value="{!data.Target_Denominator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}" >
+                            
+                                </apex:inputField>    
+                            </td>
+                       
+                            <td>
+                                <apex:inputField style="float:right;width:50%;" styleclass="valueClass" id="basev" onKeyPress="return charLimit(this)" onchange="setdecimal('{!$Component.basev}', '{!ind.objGrantIndicator.Decimal_Places__c}');clears('{!$Component.num}','{!$Component.den}');"  value="{!data.Target__c}" >
+                            
+                                </apex:inputField>
+                       
+                            </td>
+                            <td>
+                                <apex:outputText value="%" rendered="{!if((ind.objGrantIndicator.Data_Type__c=='Number and Percent' || ind.objGrantIndicator.Data_Type__c=='Percent'),true,false)}" />
+                                <apex:outputText value=" per 100K" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Ratio',true,false)}"/>
+                                 <!--apex:inputHidden id="hdnval" value="{!data.Target__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}"/> -->
+                            </td>
+                          </tr>
+                    </table>
+                    </td>
+                    </apex:repeat>
+                    <td>
+                    <Center>
+                       <apex:commandLink rendered="{!if(ind.objGrantIndicator.Is_Disaggregated1__c == true,true,false)}" onclick="switchView('{!ind.objGrantIndicator.id}','{!ind.objGrantIndicator.Performance_Framework__r.Grant_Status__c}','{!ind.objGrantIndicator.Data_Type__c}','{!ind.objGrantIndicator.Decimal_Places__c}')"  value="Disaggregation" reRender="disaggregation" status="running"/> 
+                    </Center>
+                    </td>
+                    <td style="display:none;">                        
+                        <apex:inputField value="{!ind.objGrantIndicator.Component__c}"/>
+                    </td>  
+                </tr>
+            
+            </apex:repeat> 
+              </tbody>
+</table>
+
+
+</apex:form>
+</apex:page>

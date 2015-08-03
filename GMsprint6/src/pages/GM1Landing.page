@@ -1,0 +1,2 @@
+<apex:page id="GM1LandingPage" controller="GM1LandingController" action="{!forwardToStartPage}" title="{!$Label.site.site_login}">
+</apex:page>

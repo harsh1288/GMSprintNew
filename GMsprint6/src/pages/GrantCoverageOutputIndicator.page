@@ -1,0 +1,1539 @@
+<!--*******************************************************************************
+* VisualForce {Page}: GrantCoverageOutputIndicator
+* Date Created: 08/26/2013
+----------------------------------------------------------------------------------
+* Purpose/Methods:
+* - page is opened from a button on the GM ModulesInterventions page
+* - creates Result/Target record for each Grant_Indicator__c records where 
+    Type = 'Coverage/Output' and Module =: master module__c.Module
+----------------------------------------------------------------------------------
+* History:
+* - VERSION  DATE            DETAIL FEATURES/CSR/TTP
+    1.0      08/26/2013      INITIAL DEVELOPMENT   
+********************************************************************************-->
+<apex:page id="page" standardController="Module__c" extensions="GrantCoverageOutputIndicator" sidebar="false">
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+<apex:includeScript value="{URLFOR(!$Resource.GoalsJs, 'assets/js/bootstrap.js')}" />
+<apex:includeScript value="{!$Resource.jquery142}" />
+<script src="{!URLFOR($Resource.charCounter)}" type="text/javascript"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+ 
+$('.countable1').jqEasyCounter({
+'maxChars': 255,
+'maxCharsWarning': 240
+});
+ 
+$('.countable2').jqEasyCounter({
+'maxChars': 255,
+'maxCharsWarning': 240,
+'msgFontSize': '12px',
+'msgFontColor': '#000',
+'msgFontFamily': 'Verdana',
+'msgTextAlign': 'left',
+'msgWarningColor': '#F00',
+'msgAppendMethod': 'insertBefore'
+});
+ 
+});
+</script>
+<style>
+    /* To push content below navbar */
+    @media (min-width: 980px) {
+        body {
+          margin-top: 41px;
+        }
+    }
+    .calValueCell{
+        vertical-align: middle !important;
+    }
+    .pr_info{
+        padding-top: 15px;
+    }
+    a.brand > a > img {
+        height:40px;
+    }
+    .sidebarMenu{
+        width : 270px;
+    }
+    div.active{
+        background-color: #D1D1D1;
+    }
+    .coverage{
+        border: 1px solid #CCC;
+        margin: 40px;
+        padding:20px;
+    }
+    
+    .indicators{
+        border: 1px solid #CCC;
+        padding: 10px;
+        margin-bottom:10px;
+    }
+    .pr_name, .tied {
+        display: inline-block;
+        margin-right: 15px;      
+    }
+    .actions{
+        display: inline-block;
+    }
+    .targets{
+        display: inline-block;
+    }
+    .container, .navbar-static-top .container, .navbar-fixed-top .container, .navbar-fixed-bottom .container {
+        display: inline-block;
+        width: 100%;
+    }
+    .containerTGF
+    {
+        display: inline-block;
+        width: 100%;
+    }
+    div.active{
+        background-color: #D1D1D1;
+    }
+    .add_indicator {
+        margin: 30px;
+        padding:40px;
+        border: 1px solid #CCC;
+    }
+    .indicator{
+        border:1px solid #CCC;
+        padding:10px;
+        margin-bottom:10px;
+    }
+    .Image{
+        cursor:pointer;
+        height:13px;
+        width:13px;
+        vertical-align:middle;
+    }
+    .baseline {
+        width:44%;
+        display: inline-block;
+        margin-right:20px;
+    }
+    .target {
+        width:50%;
+        display: inline-block;
+    }
+    .popupButtonYes{
+        background-color: #49C739 !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .popupButtonCancel{
+        background-color: #d82516 !important;
+        background-image: none !important;
+        color: white !important;
+        font-size: 12.9pt !important;
+        font-weight: bold !important;
+        height: 30px !important;;
+        width: 90px !important;;
+    }
+    .custPopup{
+        background-color: #ededed;
+        border-width: 0px;
+        border-radius:10px;
+        border-style: solid;
+        z-index: 9999;
+        left: 50%;
+        margin-top:-60px;
+        padding:10px;
+        position: absolute;
+        width:300px;
+        height:130px;
+    }
+    .popupBackground{
+        background-color:black;
+        opacity: 0.50;
+        filter: alpha(opacity = 20);
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        z-index: 9998;
+        top: 0;
+        left: 0;
+    }
+    .white {
+        background-color:white
+    }
+    .deletePopup{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        text-align:center !important;
+    }
+    .deletePopupCancel{
+        background-color: #EDEDED !important;
+        border-top: 0px !important;
+        text-align:left !important;
+    }
+    .h3{
+        display: inline-table;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        text-align: left;
+    }
+     .h4{
+        display: inline-table;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+    .link{
+        color:#2E7BBB !important;
+    }
+    input[type="text"]{
+        width: 60px !important;
+        margin : 1px !important;
+        padding : 0px !important;
+    }
+    .tableEdit td{
+        padding : 2px;
+    }
+    .row{
+        display: inline-flex;
+    }
+    .TGFbtn{
+        margin-bottom : 3px;
+    }
+    .indicatorSide{
+        padding-left: 10px;
+    }
+    .h5Class{
+        color: inherit !important;
+        font-family: inherit !important;
+        font-weight: bold !important;
+        line-height: 20px !important;
+        margin: 10px 0 !important;
+        text-rendering: optimizelegibility !important;
+        font-size: 14px !important;
+    }
+        .resourcetTable{
+         vertical-align:top;
+        }
+        .chatterFeedPanel{
+            height: 360px;
+        }
+         .custPopupChatter{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+             left: 24%;
+            margin-top: 5%;
+            padding:10px;
+            position: absolute;
+            width:800px;
+            height:480px;
+        }
+        .popupBackgroundChatter{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        } 
+        .webkitright {
+            text-align: right;
+            white-space: nowrap;
+        };
+        .headerSearchContainer {
+            margin-top: -20px !important;
+        }    
+        .phHeaderCustomLogo .headerSearchLeftRoundedCorner {
+            margin-top: -20px !important;
+        }
+        body .bodyDiv #bodyTable {
+        font-size: 14px;  
+        }
+        .pull-right {
+        margin-right: 30px !important;
+        }
+         .margin20{
+            margin-left:1%;
+            margin-bottom:16px;
+            margin-top:16px;
+            
+        } 
+        .tbclass
+        {
+        align:20px;
+        }   
+</style>
+<script>
+  $(document).ready(function () {
+      $('label.tree-toggler').click(function () {
+          $(this).parent().children('ul.tree').toggle(300);
+      });
+      
+       if ( $.browser.webkit ) {
+        $("#phHeaderLogoImage").parents("table").find("td").eq(2).removeClass("right").addClass("webkitright");  
+        
+       };
+  });
+</script>
+ <div>
+  <span class="pull-right">
+   <a href="{!if(CONTAINS($Profile.Name,'PR') || CONTAINS($Profile.Name,$label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$label.LFA_GM_Admin_Portal_User),'/GM','')}/apex/GrantMakingGuidance?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link">{!$Label.See_Help}</a>
+     </span>
+       <span class="h3">
+      {!strCoverage} {!strAnd} {!strOutputIndicators} - {!Module__c.Name} {!lstModules[0].implementation_Period__r.Name}
+    </span>
+<br></br>                          
+                           
+ </div>
+       <div class="margin20">
+        <div id="Infopanel" class="alert alert-info">
+    <b>
+    {!strClosepanelLabel}
+    </b>
+    <button type="button" class="close" data-dismiss="alert" onclick="closePanel();">
+        ×
+    </button>
+</div>
+    <ul class="breadcrumb">
+                <li>
+                    <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}{!if($Profile.Name=='PR Read Only','/GM','')}{!if((CONTAINS($Profile.Name,$Label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$Label.LFA_GM_Admin_Portal_User)),'/GM','')}/apex/grantmakinghome" class="link">Grant-Making </a>
+                    <span class="divider">/</span>
+                </li>
+                <li>
+                    <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}{!if($Profile.Name=='PR Read Only','/GM','')}{!if((CONTAINS($Profile.Name,$Label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$Label.LFA_GM_Admin_Portal_User)),'/GM','')}/apex/grantmakingHome?id={!Module__c.Implementation_Period__r.Grant__r.Country__c}" class="link">{!Module__c.Implementation_Period__r.Grant__r.Country__r.Name}</a>
+                    <span class="divider">/</span>
+                </li>
+                <!-- <li>
+                    {!Module__c.Implementation_Period__r.Grant__r.Name}
+                    <span class="divider">/</span>
+                </li> -->
+                <li>
+                    <a href="{!if($Profile.Name=='PR Standard Portal User','/GM','')}{!if($Profile.Name=='PR Manager Portal User','/GM','')}{!if($Profile.Name=='PR Read-Only Portal User','/GM','')}{!if($Profile.Name=='LFA GM Admin Portal User','/GM','')}{!if($Profile.Name=='LFA GM Editor Portal User','/GM','')}{!if($Profile.Name=='PR Only Portal User','/GM','')}{!if($Profile.Name=='PR Read Only','/GM','')}{!if((CONTAINS($Profile.Name,$Label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$Label.LFA_GM_Admin_Portal_User)),'/GM','')}/apex/grantmakingoverview?id={!Module__c.Implementation_Period__r.Id}" class="link">{!Module__c.Implementation_Period__r.Name}</a>
+                </li>
+            </ul>
+<chatter:feedWithFollowers entityId="{!Module__c.id}"/>
+</div> 
+<apex:form id="frm">
+    
+    <div class="containerTGF">
+     
+        <table width="100%" class="tbclass">
+            <tr>
+                <td width="20%" valign="top" align="left">
+   <!--START SIDEBAR-->   
+             
+                <c:GMSidebar RecordId="{!lstPages[0].Id}"/>
+           
+                    <!--<div class="span3 side_menu">
+                    <div >
+                        <div>
+                            <ul class="nav nav-list">
+                                <li>
+                                    <div class="tree-toggler nav-header">
+                                        <a href="{!if(CONTAINS($Profile.Name,'PR'),'/GM',if(CONTAINS($Profile.Name,'LFA'),'/GM',''))}/apex/GrantmakingOverview?ID={!strImplementationPeriodId}" class="link">Summary</a>
+                                    </div>
+                                </li>
+                                <li class="divider">
+                                </li>
+                                <apex:variable value="{!0}" var="Count"/>
+
+                                <apex:repeat id="rptMain" value="{!lstPages}" var="P">
+                                    <li>
+                                        <div class="tree-toggler nav-header {!if(P.name=='Coverage & Output Indicators','active','')}">
+                                            <apex:inputHidden id="CollapseStatus" value="{!blnExpandSection}" />
+                                            <apex:outputpanel id="collapseimage" style="display:{!if(blnExpandSection != true && P.Modular__c == true,'','none')};margin-right:5px" rendered="{!if(lstModules.size > 0,if(P.Modular__c == true,true,false),false)}">
+                                                <apex:image styleClass="Image" url="{!$Resource.Collepse}" onclick="switchMenu('Module{!Count}','{!$Component.Expandimage}','{!$Component.collapseimage}','{!$Component.CollapseStatus}','true')" title="Expand"/>
+                                            </apex:outputpanel>
+                                            <apex:outputpanel id="Expandimage" style="display:{!if(blnExpandSection == true && P.Modular__c == true,'','none')};margin-right:5px" rendered="{!if(lstModules.size > 0,if(P.Modular__c == true,true,false),false)}">
+                                                  <apex:image styleClass="Image" url="{!$Resource.Expand}" onclick="switchMenu('Module{!Count}','{!$Component.collapseimage}','{!$Component.Expandimage}','{!$Component.CollapseStatus}','false')" title="Collapse"/>
+                                            </apex:outputpanel>-->
+                                            
+                                            <!--<img src="{!$Resource.Expand}" style="display:{!if(P.Modular__c=true,'','none')};margin-right:5px"/>-->
+                                            <!--<apex:outputtext value="{!P.Name}" rendered="{!P.Modular__c}"/>
+                                            <a href="{!if(CONTAINS($Profile.Name,'PR'),'/GM',if(CONTAINS($Profile.Name,'LFA'),'/GM',''))}/apex/{!P.URL_prefix__c}?id={!P.Id}" class="link" style="display:{!if(P.Modular__c=true,'none','')}">{!P.Name} </a>
+                                        </div>                                    
+                                    </li>
+                                    <apex:variable var="ModuleCount" value="{!0}"/>
+                                    <apex:repeat id="rptModules" value="{!lstModules}" var="M">
+                                        
+                                        <li id="Module{!Count}" style="display:none;">
+                                            <div class="tree-toggler nav-header}">
+                                                <a href="{!if(CONTAINS($Profile.Name,'PR'),'/GM',if(CONTAINS($Profile.Name,'LFA'),'/GM',''))}/apex/{!P.URL_prefix__c}?id={!M.Id}" style="display:{!if(P.Modular__c=true,'','none')};margin-left:15px;font-size:10px" class="link" title="{!P.Name} - {!M.Name}">{!M.Name}</a>
+                                            </div>
+                                        </li>
+                                        <apex:variable var="ModuleCount" value="{!ModuleCount+1}"/>
+                                    </apex:repeat> 
+                                    <li class="divider">
+                                    </li>
+                                    <apex:variable value="{!Count+1}" var="Count"/>
+                                </apex:repeat>
+                            </ul>
+                        </div>
+                    </div>
+                </div>-->
+                
+     <!--END SIDEBAR, START MAIN SECTION-->           
+                </td>
+                <td valign="top" align="left" class="indicatorSide">              
+                        <div>
+                            <!--<a href="#" class="pull-right link" >See Help</a>
+                             <span class="pull-right">
+                             <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/apex/GrantMakingGuidance?Id={!strGuidanceId}&lang={!strLanguage}" target="_blank" class="link">{!$Label.See_Help}</a>
+                             </span>
+                            <span class="h3">
+                                {!strCoverage} / {!strOutputIndicators}
+                            </span>
+                            <br></br> -->
+                            <span class="h4">
+                                {!Module__c.Name}
+                            </span>
+                        </div>
+                        <apex:outputPanel id="indicatorPanel">
+                            <apex:variable var="CountIndicator" value="{!0}"/>                
+                            <apex:repeat value="{!lstGrantIndicatorResult}" var="GI">
+                                <apex:variable var="CountIndicator" value="{!CountIndicator+1}"/>
+                                <div class="indicators">
+                                    <table width="100%">
+                                        <tr>
+                                            <td width="55%">
+                                                <apex:outputText style="font-size:13.8pt;font-weight:bold;" value="{!GI.objGrantIndicator.Indicator_Full_Name__c}" styleClass="bold" rendered="{!if(GI.blnIndicatorDisplay == true || (GI.blnIndicatorDisplay == false && GI.objGrantIndicator.Indicator__c != null),true,false)}"></apex:outputText>
+                                                <apex:inputTextArea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 22px;resize: none; width: 280px;" value="{!GI.objGrantIndicator.Indicator_Full_Name__c}" rendered="{!if(GI.blnIndicatorDisplay == false && GI.objGrantIndicator.Indicator__c == null,true,false)}"></apex:inputTextArea>
+                                            </td>
+                                             <td width="25%" padding-left="15px" align="right">
+                                                <h5 class="h5Class">
+                                                   <apex:outputText value="{!strDataType}: "/></h5>
+                                                      &nbsp;&nbsp;
+                                                  <apex:inputfield value="{!GI.objGrantIndicator.Indicator_Type__c}" style="display:none"/>
+                                                  <apex:outputText value="{!GI.objGrantIndicator.Data_Type__c}" style="font-weight:normal"/>
+                                                  <!--<apex:inputField style="width:150px;" value="{!GI.objGrantIndicator.Data_Type__c}" rendered="{!!GI.blnIndicatorDisplay}">
+                                                    <apex:actionSupport event="onchange" reRender="frm"/>
+                                                  </apex:inputField>
+                                                  -->
+                                            </td>
+                                            <td width="20%" align="right">
+                                              <!--  <apex:outputPanel style="float:right;">
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!EditGrantIndicatorResult}" reRender="indicatorPanel" style="display:{!if(GI.blndisplaySave == false,'','none')};" status="Processing" rendered="{!if((CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin)),true,false)}">
+                                                        <apex:param value="{!CountIndicator-1}" name="EditIndiIndex"/>
+                                                        <i class="icon-edit icon-white">
+                                                        </i> <strong>{!strEdit}</strong>
+                                                    </apex:commandLink>&nbsp; -->
+                                                    
+                                                 <apex:outputPanel style="float:right;">
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" action="{!EditGrantIndicatorResult}" reRender="indicatorPanel" style="display:{!if(GI.blndisplaySave == false,'','none')};" status="Processing" rendered="{!if((CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin)),false,false)}">
+                                                        <apex:param value="{!CountIndicator-1}" name="EditIndiIndex"/>
+                                                        <i class="icon-edit icon-white">
+                                                        </i> <strong>{!strEdit}</strong>
+                                                    </apex:commandLink>&nbsp;
+                                                    
+                                                   <!--  <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="display:{!if(GI.blndisplaySave == false,'','none')};" onclick="return OpenPopup('{!$Component.tstpopup1}');" rendered="{!if((CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin)),true,false)}">
+                                                        <i class="icon-trash icon-white">
+                                                        </i> <strong>{!strDelete}</strong>
+                                                    </apex:commandLink> -->
+                                                    
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="display:{!if(GI.blndisplaySave == false,'','none')};" onclick="return OpenPopup('{!$Component.tstpopup1}');" rendered="{!if((CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin)),false,false)}">
+                                                        <i class="icon-trash icon-white">
+                                                        </i> <strong>{!strDelete}</strong>
+                                                    </apex:commandLink>
+                                                    
+                                                    <apex:commandLink action="{!SaveGrantIndicatorResult}" reRender="indicatorPanel" status="Processing" styleClass="TGFbtn TGFbtn-mini TGFbtn-success"  style="display:{!if(GI.blndisplaySave == true,'','none')};width:if(strLanguage == 'FRENCH','70','40')px;" >
+                                                        <apex:param name="SaveIndiIndex" value="{!CountIndicator-1}"/>
+                                                        <strong>{!strSave}</strong>
+                                                    </apex:commandLink>
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" action="{!CancelGrantIndicatorResult}" reRender="indicatorPanel" style="display:{!if(GI.blndisplaySave == true,'','none')};" status="Processing">
+                                                        <apex:param value="{!CountIndicator-1}" name="CancelIndiIndex"/>
+                                                        <strong>{!strCancel}</strong>
+                                                    </apex:commandLink>
+                                                </apex:outputPanel>
+                                            </td>
+                                        </tr>
+                                    </table>
+       <!--DELETE INDICATOR POP-UP-->                             
+                                    <apex:outputPanel id="tstpopup1" style="display:none;">
+                                        <apex:outputPanel id="popupBackground1" styleClass="popupBackground"/>
+                                        <apex:outputPanel id="custPopup1" styleClass="custPopup">
+                                            <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                <tr><td style="height:10px;"></td></tr>
+                                                <tr>
+                                                    <td colspan="3" align="center">
+                                                        <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!strAreYouSure}"/>
+                                                    </td>
+                                                </tr>
+                                                <tr><td style="height:6px;"></td></tr>
+                                                <tr>
+                                                    <td colspan="3" align="center">
+                                                        <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!strIndicatorDeleted}"/>
+                                                    </td>
+                                                </tr>
+                                                <tr><td style="height:10px;"></td></tr>
+                                                <tr>
+                                                    <td width="47%" align="right">
+                                                        <apex:commandButton styleClass="popupButtonYes" value="Yes" action="{!DeleteGrantIndicatorResult}" reRender="frm" status="Processing">
+                                                            <apex:param value="{!CountIndicator-1}" name="DeleteIndiIndex"/>
+                                                        </apex:commandButton>
+                                                    </td>
+                                                    <td width="6%"></td>
+                                                    <td width="47%" align="left">
+                                                        <apex:commandButton styleClass="popupButtonCancel" value="Cancel" onclick="return ClosePopup('{!$Component.tstpopup1}');"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </apex:outputPanel>
+                                    </apex:outputPanel>
+                                    <div class="pr_info">
+                                        <div class="tied">
+                                            <h5 class="h5Class"><apex:outputtext value="{!strTargetArea}: "/></h5>
+                                              &nbsp;<apex:outputText value="{!GI.objGrantIndicator.Target_Area__c}" rendered="{!GI.blnIndicatorDisplay}"/>                                        
+                                              <apex:inputField style="width:150px;" value="{!GI.objGrantIndicator.Target_Area__c}" rendered="{!!GI.blnIndicatorDisplay}"/>
+                                        </div>
+                                        <div class="tied">
+                                            <h5 class="h5Class"><apex:outputtext value="{!strTiedTo}: "/></h5>
+                                              &nbsp;<apex:outputText value="{!GI.objGrantIndicator.Tied_To__c}" rendered="{!GI.blnIndicatorDisplay}"/>                                        
+                                              <apex:inputField style="width:150px;" value="{!GI.objGrantIndicator.Tied_To__c}" rendered="{!!GI.blnIndicatorDisplay}"/>
+                                        </div>
+                                        <div class="tied">
+                                            <h5 class="h5Class"><apex:outputtext value="Target Accumulation: "/></h5>
+                                              &nbsp;<apex:outputText value="{!GI.objGrantIndicator.Target_Accumulation__c}"/>                                        
+                                              <!--<apex:inputField style="width:150px;" value="{!GI.objGrantIndicator.Target_Accumulation__c}" rendered="{!!GI.blnIndicatorDisplay}"/>-->
+                                        </div>
+                                    </div>
+                                    <br></br>
+         <!--START BASELINE SECTION-->                           
+                                    <div class="baseline">
+                                        <apex:outputPanel rendered="{!if(GI.objGrantIndicator.Data_Type__c != 'Number and Percent',true,false)}">
+                                            <table class="table table-condensed table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th >
+                                                            <h5 class="h5Class">{!strBaseline}</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">{!strYear}</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">{!strSource}</h5>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                           <!--apex:outputText value="{!GI.objGrantIndicator.Baseline_Value__c }" rendered="{!GI.blnIndicatorDisplay}"/-->                                        
+                                                         <apex:outputText value="{!if(GI.objGrantIndicator.Decimal_Places__c == '0','{0,number,####}',if(GI.objGrantIndicator.Decimal_Places__c == '1','{0,number,###0.0}',if(GI.objGrantIndicator.Decimal_Places__c == '2','{0,number,###0.00}',if(GI.objGrantIndicator.Decimal_Places__c == '3','{0,number,###0.000}',if(GI.objGrantIndicator.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.00}')))))}" rendered="{!GI.blnIndicatorDisplay}">
+                                                           <apex:param value="{!GI.objGrantIndicator.Baseline_Value__c}"/>
+                                                                       </apex:outputText>   
+                                                           <apex:inputField value="{!GI.objGrantIndicator.Baseline_Value__c }" rendered="{!!GI.blnIndicatorDisplay}"/> 
+                                        
+                                                             <apex:outputlabel style=" display: inline !important; " value="{!if(GI.objGrantIndicator.Data_Type__c == 'Number','',if(GI.objGrantIndicator.Data_Type__c == 'Percent'||GI.objGrantIndicator.Data_Type__c == 'Number and Percent','%',if(GI.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                        </td>
+                                                        <td >
+                                                            <apex:outputText value="{!GI.objGrantIndicator.Baseline_Year__c}" rendered="{!GI.blnIndicatorDisplay}"/>                                        
+                                                            <apex:inputField style="width:90px;" value="{!GI.objGrantIndicator.Baseline_Year__c}" rendered="{!!GI.blnIndicatorDisplay}"/>
+                                                        </td>
+                                                        <td >
+                                                            <apex:inputfield value="{!GI.objGrantIndicator.Component__c}" style="display:none;"/>
+                                                            <apex:outputText value="{!GI.objGrantIndicator.Baseline_Sources__c}" rendered="{!GI.blnIndicatorDisplay}"/>                                        
+                                                            <apex:inputField style="width:200px;" value="{!GI.objGrantIndicator.Baseline_Sources__c}" rendered="{!!GI.blnIndicatorDisplay}"/>
+                                                        </td>
+                                                    </tr>
+                                                    
+                                                </tbody>
+                                            </table>
+                                        </apex:outputpanel>
+                                        <apex:outputPanel rendered="{!if(GI.objGrantIndicator.Data_Type__c == 'Number and Percent',true,false)}">
+                                            <table class="table table-condensed table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="3">
+                                                            <h5 class="h5Class">{!strBaseline}</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">{!strYear}</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">{!strSource}</h5>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <h5 class="h5Class">{!strNum}</h5>
+                                                        </td>
+                                                        <td>
+                                                            <!-- <apex:outputText value="{!GI.objGrantIndicator.Baseline_numerator__c}" rendered="{!GI.blnIndicatorDisplay}"/>-->
+                                                            <apex:outputText id="ottxtBNume" value="{!if(GI.objGrantIndicator.Decimal_Places__c == '0','{0,number,####}',if(GI.objGrantIndicator.Decimal_Places__c == '1','{0,number,###0.0}',if(GI.objGrantIndicator.Decimal_Places__c == '2','{0,number,###0.00}',if(GI.objGrantIndicator.Decimal_Places__c == '3','{0,number,###0.000}',if(GI.objGrantIndicator.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" rendered="{!GI.blnIndicatorDisplay}">
+                                                                <apex:param value="{!GI.objGrantIndicator.Baseline_numerator__c}"/>
+                                                            </apex:outputText>                                        
+                                                            <apex:inputField id="txtBNume" value="{!GI.objGrantIndicator.Baseline_numerator__c}" rendered="{!!GI.blnIndicatorDisplay}"
+                                                            onchange="calcValue( '{!$Component.txtBvalue}','{!GI.objGrantIndicator.Data_Type__c}','{!$Component.txtBNume}','{!$Component.txtBDnomi}');"/>
+                                                        </td>
+                                                        <td rowspan="2" class="calValueCell" cellspacing="0" cellpadding="0">
+                                                           <table>
+                                                               <tr>
+                                                                   <td style="border:0px;">
+                                                                      <!-- <apex:outputlabel id="opBvalue" value="{!GI.objGrantIndicator.Baseline_Value__c }"/>  --> 
+                                                                       <apex:outputText id="opBvalue" value="{!if(GI.objGrantIndicator.Decimal_Places__c == '0','{0,number,####}',if(GI.objGrantIndicator.Decimal_Places__c == '1','{0,number,###0.0}',if(GI.objGrantIndicator.Decimal_Places__c == '2','{0,number,###0.00}',if(GI.objGrantIndicator.Decimal_Places__c == '3','{0,number,###0.000}',if(GI.objGrantIndicator.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.00}')))))}" rendered="{!GI.blnIndicatorDisplay}">
+                                                                            <apex:param value="{!GI.objGrantIndicator.Baseline_Value__c}"/>
+                                                                       </apex:outputText>                                        
+                                                                       <apex:inputhidden id="txtBvalue" value="{!GI.objGrantIndicator.Baseline_Value__c }"/> 
+                                                                   </td>
+                                                                   <td style="border:0px;padding:0px;vertical-align:middle;">
+                                                                         <apex:outputlabel id="labelTy1" style=" display: inline !important; " value="{!if(GI.objGrantIndicator.Data_Type__c == 'Number','',if(GI.objGrantIndicator.Data_Type__c == 'Percent'||GI.objGrantIndicator.Data_Type__c=='Number and Percent','%',if(GI.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                                   </td>
+                                                               </tr>
+                                                           </table>
+                                                        </td>
+                                                        <td rowspan="2">
+                                                            <apex:outputText value="{!GI.objGrantIndicator.Baseline_Year__c}" rendered="{!GI.blnIndicatorDisplay}"/>                                        
+                                                            <apex:inputField style="width:90px;" value="{!GI.objGrantIndicator.Baseline_Year__c}" rendered="{!!GI.blnIndicatorDisplay}"/> 
+                                                        </td>
+                                                        <td rowspan="2">
+                                                            <apex:inputfield value="{!GI.objGrantIndicator.Component__c}" style="display:none"/>
+                                                            <apex:outputText value="{!GI.objGrantIndicator.Baseline_Sources__c}" rendered="{!GI.blnIndicatorDisplay}"/>                                        
+                                                            <apex:inputField style="width:200px;" value="{!GI.objGrantIndicator.Baseline_Sources__c}" rendered="{!!GI.blnIndicatorDisplay}"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <h5 class="h5Class">{!strDen}</h5>
+                                                        </td>
+                                                        <td>
+                                                           <!-- <apex:outputText value="{!GI.objGrantIndicator.Baseline_Denominator__c}" rendered="{!GI.blnIndicatorDisplay}"/>-->                                        
+                                                            <apex:outputText id="ottxtBDnomi" value="{!if(GI.objGrantIndicator.Decimal_Places__c == '0','{0,number,####}',if(GI.objGrantIndicator.Decimal_Places__c == '1','{0,number,###0.0}',if(GI.objGrantIndicator.Decimal_Places__c == '2','{0,number,###0.00}',if(GI.objGrantIndicator.Decimal_Places__c == '3','{0,number,###0.000}',if(GI.objGrantIndicator.Decimal_Places__c == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" rendered="{!GI.blnIndicatorDisplay}">
+                                                                <apex:param value="{!GI.objGrantIndicator.Baseline_Denominator__c}"/>
+                                                            </apex:outputText>
+                                                            <apex:inputField id="txtBDnomi" value="{!GI.objGrantIndicator.Baseline_Denominator__c}" rendered="{!!GI.blnIndicatorDisplay}" 
+                                                            onchange="calcValue( '{!$Component.txtBvalue}','{!GI.objGrantIndicator.Data_Type__c}','{!$Component.txtBNume}','{!$Component.txtBDnomi}');"/>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </apex:outputpanel>
+                                    </div>
+                                    <br/>
+                                    <div class="targets">
+                                        <h5 class="h5Class">
+                                            {!strTargets}
+                                          <!-- <a class="TGFbtn TGFbtn-mini TGFbtn-info">{!strSeeCNtargets}<br/></a>-->
+                                        </h5>
+                                        <apex:outputPanel rendered="{!if(GI.objGrantIndicator.Data_Type__c != 'Number and Percent',true,false)}">
+                                            <table width="100%" class="table table-bordered {!if(!GI.blnIndicatorDisplay,' tableEdit ','')}">
+                                                <thead>
+                                                    <tr>
+                                                        <apex:repeat value="{!lstPeriods}" var="P"> 
+                                                            <th>
+                                                                <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                                                                
+                                                            </th>
+                                                        </apex:repeat>
+                                                    </tr>
+                                                </thead>
+                                                
+                                                <tbody>
+                                                    <tr>
+                                                        
+                                                        <apex:repeat value="{!GI.lstResults}" var="GIR"> 
+                                                            <td class="calValueCell">
+                                                                
+                                                               <apex:outputText id="outputVal" value="{!GIR.Target__c}" rendered="{!GI.blnIndicatorDisplay}"/>                                        
+                                                               <apex:inputField id="inputVal" value="{!GIR.Target__c}" rendered="{!!GI.blnIndicatorDisplay}"/>    
+                                                                                           
+                                                               <apex:outputlabel style=" display: inline !important; " value="{!if(GI.objGrantIndicator.Data_Type__c == 'Number','',if(GI.objGrantIndicator.Data_Type__c == 'Percent'||GI.objGrantIndicator.Data_Type__c == 'Number and Percent','%',if(GI.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                            </td>                                              
+                                                        </apex:repeat>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </apex:outputpanel>
+                                        <apex:outputPanel rendered="{!if(GI.objGrantIndicator.Data_Type__c == 'Number and Percent',true,false)}">
+                                            <table width="100%" class="table table-bordered {!if(!GI.blnIndicatorDisplay,' tableEdit ','')}">
+                                                <thead>
+                                                    <tr>
+                                                        <apex:repeat value="{!lstPeriods}" var="P"> 
+                                                            <th colspan="2">
+                                                                <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                                                            </th>
+                                                        </apex:repeat>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <apex:variable value="{!0}" var="FirstResult"/>
+                                                        <apex:repeat id="rptrGIRNume" value="{!GI.lstResults}" var="GIR"> 
+                                                            <td style="{!if(FirstResult==0,'','border-left:1px solid #AEAEA9;')}">
+                                                                <apex:variable value="{!1}" var="FirstResult"/>
+                                                                <apex:outputText value="{!GIR.Target_Numerator__c}" rendered="{!GI.blnIndicatorDisplay}"/>                                        
+                                                                <apex:inputField id="txtTNume" value="{!GIR.Target_Numerator__c}" rendered="{!!GI.blnIndicatorDisplay}"
+                                                                onchange="calcNumeValue('{!GI.objGrantIndicator.Data_Type__c}','{!$Component.txtTNume}');"/> 
+                                                            </td>  
+                                                            <td rowspan="2" class="calValueCell">
+                                                                <table>
+                                                                   <tr>
+                                                                       <td style="border:0px;">
+                                                                           <apex:outputLabel id="opTvalue" value="{!GIR.Target__c}"/>                                        
+                                                                           <apex:inputHidden id="txtTvalue" value="{!GIR.Target__c}" /> 
+                                                                       </td>
+                                                                       <td style="border:0px;padding:0px;vertical-align:middle;">
+                                                                           <apex:outputlabel id="labelTy2" style=" display: inline !important; " value="{!if(GI.objGrantIndicator.Data_Type__c == 'Number','',if(GI.objGrantIndicator.Data_Type__c == 'Percent'||GI.objGrantIndicator.Data_Type__c == 'Number and Percent','%',if(GI.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                                       </td>
+                                                                   </tr>
+                                                               </table>
+                                                            </td>                                              
+                                                        </apex:repeat>
+                                                    </tr>
+                                                    <tr>
+                                                        <apex:variable value="{!0}" var="FirstResult"/>
+                                                        <apex:repeat id="rptrGIRDnomi" value="{!GI.lstResults}" var="GIR"> 
+                                                            <td style="{!if(FirstResult==0,'','border-left:1px solid #AEAEA9;')}">
+                                                                <apex:variable value="{!1}" var="FirstResult"/>
+                                                                <apex:outputText value="{!GIR.Target_Denominator__c}" rendered="{!GI.blnIndicatorDisplay}"/>                                        
+                                                                <apex:inputField id="txtTDnomi" value="{!GIR.Target_Denominator__c}" rendered="{!!GI.blnIndicatorDisplay}"
+                                                                onchange="calcDnomiValue( '{!GI.objGrantIndicator.Data_Type__c}','{!$Component.txtTDnomi}');"/> 
+                                                            </td>                                            
+                                                        </apex:repeat>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </apex:outputpanel>
+                                    </div>
+                                     
+                                     <div class="assumptions">
+                                        <h5 class="h5Class">
+                                            {!strTargetAssumptions}
+                                        </h5>
+                                        <p>
+                                            <!--TCS 12/8/2014: Changed value of outtext from "{!GI.strAssumptions}" -->
+                                            <apex:outputText value="{!GI.objGrantIndicator.Comments__c}" rendered="{!GI.blnIndicatorDisplay}"/>                                        
+                                            <apex:inputTextarea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 50px;resize: none; width: 70%;" value="{!GI.strAssumptions}" rendered="{!!GI.blnIndicatorDisplay}"/>
+                                        </p>
+                                     </div>   
+                                     
+                                     <div class="assumptions">
+                                         <h5 class="h5Class">
+                                            Country Team Comments
+                                        </h5>
+                                         <p>
+                                            <apex:outputText value="{!GI.strCountryTeamComments}" rendered="{!if(CONTAINS($Profile.Name,'PR'),true,GI.blnIndicatorDisplay)}"/>                                        
+                                            <apex:inputTextarea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 50px;resize: none; width: 70%;display:{!if(CONTAINS($Profile.Name,'PR'),'none','')}" value="{!GI.strCountryTeamComments}" rendered="{!!GI.blnIndicatorDisplay}"/>
+                                        </p>
+                                     </div>
+                                    
+                                    <div class="assumptions" style="display:{!if(CONTAINS($Profile.Name,'PR'),'none','')}">
+                                         <h5 class="h5Class">
+                                            LFA Comments
+                                        </h5>
+                                        <p>
+                                            <apex:outputText value="{!GI.strLFAComments}" rendered="{!GI.blnIndicatorDisplay}"/>                                        
+                                            <apex:inputTextarea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 50px;resize: none; width: 70%;display:{!if((CONTAINS($Profile.Name,'LFA')|| CONTAINS($Profile.Name,$Label.System_Admin)),'','none')}" value="{!GI.strLFAComments}" rendered="{!!GI.blnIndicatorDisplay}"/>
+                                        </p>
+                                    </div>
+                                    <table width="100%">
+                                        <tr>
+                                            <td align="right">
+                                                <img style="{!if(GI.blnHasPost,'width:25px;height:28px;','display:none;')}" src="{!$Resource.PostCount}"/>
+                                                <sup style="margin-left: -3px;margin-right:5px;color:dark-grey;padding-right:2px;display:{!if(GI.blnHasPost,'','none')}">{!GI.intPostCount}</sup>
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" onclick="return OpenChatterPopup('{!$Component.ChatterPopup}','{!$Component.top}');" rendered="{!if((CONTAINS($Profile.Name,$Label.Finance_Officer)),false,true)}"> <!-- rerender="GoalsPanel" action="{!AddNewGoal}" status="Processing"> -->
+                                                <img style="{!if(GI.blnHasPost,'width:15px;height:16px;','')}" src="{!$Resource.comment}"/>
+                                                    <strong>{!$Label.Dialogue}</strong>
+                                                </apex:commandLink>
+           <!--CHATTER POP-UP-->                                     
+                                                <apex:outputPanel id="ChatterPopup" style="display:none;">
+                                                    <apex:outputPanel id="popupBackground" styleClass="popupBackgroundChatter"/>
+                                                    <apex:outputPanel id="custPopup" styleClass="custPopupChatter">
+                                                        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                            <tr>
+                                                            
+                                                             <td colspan="2" align="right">
+                                                                    <apex:commandLink onclick="return CloseChatterPopup('{!$Component.ChatterPopup}');">
+                                                                        <apex:image url="{!$Resource.CrossImage}" />
+                                                                        <!-- <img src="{!URLFOR($Resource.CrossImg)}')" />
+                                                                        <strong>Close</strong>-->
+                                                                    </apex:commandLink>
+                                                               </td>
+                                                            
+                                                            </tr>
+                                                            <tr>
+                                                                <td>
+                                                                    <div>
+                                                                     <br></br>
+                                                                        <span class="h3">
+                                                                            {!GI.objGrantIndicator.Indicator_Full_Name__c}
+                                                                        </span>
+                                                                        <br></br>
+                                                                        <br></br>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                               <td class="resourcetTable" height="340px">
+                                                               <apex:outputPanel id="top"> </apex:outputPanel>
+                                                                    <div id="boxscroll" class="chatterFeedPanel">
+                                                                        <apex:iframe id="ifResourceChatter" height="340px" src="{!if((CONTAINS($Profile.Name,'PR') || CONTAINS($Profile.Name,$Label.Applicant_CM_Admin) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Write) || CONTAINS($Profile.Name,$Label.Applicant_CM_Read_Only) || CONTAINS($Profile.Name,$Label.LFA_GM_Admin_Portal_User)),'/GM','')}/apex/IndicatorChatter?IndicatorId={!GI.objGrantIndicator.Id}" />
+                                                                    </div>
+                                                                </td>
+                                                             
+                                                            </tr>
+                                                            <tr>
+                                                            <!--   <td align="center">
+                                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return CloseChatterPopup('{!$Component.ChatterPopup}');">
+                                                                        <strong>Close</strong>
+                                                                    </apex:commandLink>
+                                                               </td>--> 
+                                                            </tr>
+                                                        </table>                                                        
+                                                    </apex:outputPanel>
+                                                </apex:outputPanel>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </apex:repeat>
+                        </apex:outputPanel>
+       <!--CREATE NEW STANDARD INDICATOR SECTION-->                
+                        <table id="tableCusStdBtn" width="100%" cellspacing="0" cellpadding="0" border="0">
+                            <tr>
+                                <td align="right">
+                                    <table>
+                                        <tr>
+                                            <td>
+                                                <div class="add">
+                                                   <!--  <apex:commandLink styleClass="TGFbtn TGFbtn-success pull-right" onclick="return DisplaySelectIndicatorPanel();" rendered="{!if((CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin)),true,false)}">
+                                                        <i class="icon-plus icon-white"></i> 
+                                                        <strong>{!strAddStandardIndicator}</strong>
+                                                    </apex:commandLink> -->
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-success pull-right" onclick="return DisplaySelectIndicatorPanel();" rendered="{!if((CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin)),false,false)}">
+                                                        <i class="icon-plus icon-white"></i> 
+                                                        <strong>{!strAddStandardIndicator}</strong>
+                                                    </apex:commandLink>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="add">
+                                                 <!-- <apex:commandLink styleClass="TGFbtn TGFbtn-success pull-right" onclick="return openCustomIndicator();" rendered="{!if((CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin)),true,false)}">
+                                                        <i class="icon-plus icon-white"></i> 
+                                                        <strong>{!strAddCustomIndicator}</strong>
+                                                    </apex:commandLink>-->
+                                                    <apex:commandLink styleClass="TGFbtn TGFbtn-success pull-right" onclick="return openCustomIndicator();" rendered="{!if((CONTAINS($Profile.Name,$Label.PR_Admin)||CONTAINS($Profile.Name,$Label.PR_Read_Write_Edit)||CONTAINS($Profile.Name,$Label.FPM)||CONTAINS($Profile.Name,$Label.PSM_Officer)||CONTAINS($Profile.Name,$Label.System_Admin)),false,false)}">
+                                                        <i class="icon-plus icon-white"></i> 
+                                                        <strong>{!strAddCustomIndicator}</strong>
+                                                    </apex:commandLink>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <br/>
+                        <apex:actionFunction name="actCreateIndicatorOnSelectCatalog" action="{!CreateIndicatorOnSelectCatalog}" reRender="frm" status="Processing" oncomplete="showstdIndiOncomplete();"/>
+                        <apex:outputPanel id="stdPanel">
+                            <div id="SelectCatalogIndicator" class="indicators" style="display:none;">
+                                <h4>
+                                    <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                        <tr>
+                                            <td width="15%" style="padding-bottom: 11px;">
+                                               <h5 class="h5Class"> <apex:outputText value="{!strSelectCatalogIndicator}"/> </h5>
+                                            </td>
+                                            <td width="35%">
+                                                <apex:selectList style="width:250px;" id="SelectCatIndicator" value="{!strSelectedIndicator}" size="1">
+                                                    <apex:selectOptions value="{!CatalogIndicatorOptions}"></apex:selectOptions>
+                                                </apex:selectList>
+                                            </td>
+                                            <td>
+                                                <apex:commandLink id="SelectIndicatorPicklist" styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return showStandardIndicator('{!$Component.SelectCatIndicator}');"  >
+                                                  <strong>{!strSelect}</strong>
+                                                </apex:commandLink>
+                                                   &nbsp;<apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return hideSelectCalalogIndi();">
+                                                    <strong>{!strCancel}</strong>
+                                                </apex:commandLink>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </h4>
+                            </div>
+                            <div id="AddStdIndiLabel" style="display:none;">
+                                <span class="h3">
+                                    {!strAddStandardIndicator}
+                                </span>
+                            </div>
+                            <br/>
+                            <apex:actionFunction action="{!SaveStandardIndicator}" name="actSaveStdIndicator" reRender="indicatorPanel,stdPanel" status="Processing"/>
+                            <div id="AddStdIndiSec" class="indicators" style="display:none;">
+                                <table width="100%">
+                                    <tr>
+                                        <td width="55%">
+                                            <apex:outputText style="font-size:13.8pt;font-weight:bold;" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Indicator_Full_Name__c}" styleClass="bold" ></apex:outputText>
+                                        </td>
+                                         <td width="25%">
+                                            <h5 class="h5Class"><apex:outputText value="{!strDataType}: "/></h5>
+                                              &nbsp;&nbsp;<apex:outputText value="{!objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c}" style="font-weight:normal" />
+                                        </td>
+                                        <td width="20%" align="right">
+                                            <apex:outputPanel style="float:right;">
+                                                <apex:commandLink action="{!SaveStandardIndicator}" reRender="frm" status="Processing" styleClass="TGFbtn TGFbtn-mini TGFbtn-success"  style="width:{!if(strLanguage == 'FRENCH','70','40')}px;" >
+                                                    <strong>{!strSave}</strong>
+                                                    <apex:param value="{!if(lstGrantIndicatorResult != null && lstGrantIndicatorResult.size > 0,lstGrantIndicatorResult.size + 1,1)}" name="SaveStdIndicator"/>
+                                                </apex:commandLink>
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger"  onclick="return cancelStdIndi();">
+                                                    <strong>{!strCancel}</strong>
+                                                </apex:commandLink>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                </table>                        
+                                <div class="pr_info">
+                                    <div class="tied">
+                                        <h5 class="h5Class"><apex:outputtext value="{!strTargetArea}: "/></h5>
+                                        <apex:inputField style="width:150px;" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Target_Area__c}"/>
+                                    </div>
+                                    <div class="tied">
+                                        <h5 class="h5Class"><apex:outputtext value="{!strTiedTo}: "/></h5>
+                                        <apex:inputField style="width:150px;" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Tied_To__c}"/>
+                                    </div>
+                                    <div class="tied">
+                                        <h5 class="h5Class"><apex:outputtext value="Target Accumulation : "/></h5>
+                                        <apex:outputField style="width:150px;" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Target_Accumulation__c}"/>
+                                    </div>
+                                </div>
+                                <br></br>
+                                <div class="baseline">
+         <!--RENDER THIS PANEL IF THE INDICATOR IS A 'NUMBER AND PERCENT'-->                              
+                                    <apex:outputPanel rendered="{!if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent',true,false)}">
+                                        <table class="table table-condensed table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th colspan="3">
+                                                        <h5 class="h5Class">{!strBaseline}</h5>
+                                                    </th>
+                                                    <th>
+                                                        <h5 class="h5Class">{!strYear}</h5>
+                                                    </th>
+                                                    <th>
+                                                        <h5 class="h5Class">{!strSource}</h5>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <h5 class="h5Class">{!strNum}</h5>
+                                                    </td>
+                                                    <td>
+                                                          &nbsp;<apex:inputField id="txtBNume" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Baseline_numerator__c}"
+                                                        onchange="calcValue( '{!$Component.txtBvalue}','{!objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c}','{!$Component.txtBNume}','{!$Component.txtBDnomi}');"/>
+                                                    </td>
+                                                    <td rowspan="2" class="calValueCell" cellspacing="0" cellpadding="0">
+                                                       <table>
+                                                           <tr>
+                                                               <td style="border:0px;">
+                                                                   <apex:outputLabel id="opBvalue" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Baseline_Value__c }"/> 
+                                                                   <apex:inputHidden id="txtBvalue" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Baseline_Value__c }"/> 
+                                                               </td>
+                                                               <td style="border:0px;padding:0px;vertical-align:middle;">
+                                                                   <apex:outputlabel id="labelTy1" style=" display: inline !important; " value="{!if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number','',if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Percent'||objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent','%',if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                               </td>
+                                                           </tr>
+                                                       </table>
+                                                    </td>
+                                                    <td rowspan="2">
+                                                        <apex:inputField style="width:90px;" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Baseline_Year__c}"/>
+                                                    </td>
+                                                    <td rowspan="2">
+                                                        <apex:inputfield style="display:none" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Component__c}"/>
+                                                        <apex:inputField style="width:200px;" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Baseline_Sources__c}"/>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <h5 class="h5Class">{!strDen}</h5>
+                                                    </td>
+                                                    <td>
+                                                        <apex:inputField id="txtBDnomi" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Baseline_Denominator__c}"
+                                                        onchange="calcValue( '{!$Component.txtBvalue}','{!objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c}','{!$Component.txtBNume}','{!$Component.txtBDnomi}');"/>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </apex:outputpanel>
+             <!--RENDER THIS PANEL IF THE INDICATOR IS NOT A 'NUMBER AND PERCENT'-->                       
+                                    <apex:outputPanel rendered="{!if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c != 'Number and Percent',true,false)}">
+                                        <table class="table table-condensed table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>
+                                                        <h5 class="h5Class">{!strBaseline}</h5>
+                                                    </th>
+                                                    <th>
+                                                        <h5 class="h5Class">{!strYear}</h5>
+                                                    </th>
+                                                    <th>
+                                                        <h5 class="h5Class">{!strSource}</h5>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td >
+                                                        <apex:inputField value="{!objStandardGrantIndicatorResult.objGrantIndicator.Baseline_Value__c }"/> 
+                                                        <apex:outputlabel style=" display: inline !important; " value="{!if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number','',if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Percent'||objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent','%',if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                    </td>
+                                                    <td>
+                                                        <apex:inputField style="width:90px;" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Baseline_Year__c}"/>
+                                                    </td>
+                                                    <td>
+                                                        <apex:inputField style="display:none" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Component__c}"/>
+                                                        <apex:inputField style="width:200px;" value="{!objStandardGrantIndicatorResult.objGrantIndicator.Baseline_Sources__c}"/>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </apex:outputpanel>
+                                </div>
+                             
+                                <div class="targets">
+                                    <h5 class="h5Class">
+                                        {!strTargets}
+                                    </h5>
+                                    <apex:outputPanel rendered="{!if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent',true,false)}">
+                                        <table width="100%" class="table table-bordered tableEdit">
+                                            <thead>
+                                                <tr>
+                                                    <apex:repeat value="{!lstPeriods}" var="P"> 
+                                                        <th colspan="2">
+                                                            <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                                                        </th>
+                                                    </apex:repeat>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <apex:variable value="{!0}" var="FirstResult"/>
+                                                    <apex:repeat id="rptrGIRNume" value="{!objStandardGrantIndicatorResult.lstResults}" var="GIR"> 
+                                                        <td style="{!if(FirstResult==0,'','border-left:1px solid #AEAEA9;')}">
+                                                            <apex:variable value="{!1}" var="FirstResult"/>
+                                                            <apex:inputField id="txtTNume" value="{!GIR.Target_Numerator__c}"
+                                                            onchange="calcNumeValue('{!objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c}','{!$Component.txtTNume}');"/> 
+                                                        </td>  
+                                                        <td rowspan="2" class="calValueCell">
+                                                            <table>
+                                                               <tr>
+                                                                   <td style="border:0px;">
+                                                                       <apex:outputlabel id="opTvalue" value="{!GIR.Target__c}"/> 
+                                                                       <apex:inputHidden id="txtTvalue" value="{!GIR.Target__c}"/> 
+                                                                   </td>
+                                                                   <td style="border:0px;padding:0px;vertical-align:middle;">
+                                                                       <apex:outputlabel id="labelTy2" style=" display: inline !important; " value="{!if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number','',if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Percent'||objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent','%',if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                                   </td>
+                                                               </tr>
+                                                           </table>
+                                                        </td>                                              
+                                                    </apex:repeat>
+                                                </tr>
+                                                <tr>
+                                                    <apex:variable value="{!0}" var="FirstResult"/>
+                                                    <apex:repeat id="rptrGIRDnomi" value="{!objStandardGrantIndicatorResult.lstResults}" var="GIR"> 
+                                                        <td style="{!if(FirstResult==0,'','border-left:1px solid #AEAEA9;')}">
+                                                            <apex:variable value="{!1}" var="FirstResult"/>
+                                                            <apex:inputField id="txtTDnomi" value="{!GIR.Target_Denominator__c}"
+                                                            onchange="calcDnomiValue( '{!objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c}','{!$Component.txtTDnomi}');"/> 
+                                                        </td>                                            
+                                                    </apex:repeat>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </apex:outputpanel>
+                                    <apex:outputPanel rendered="{!if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c != 'Number and Percent',true,false)}">
+                                        <table width="100%" class="table table-bordered tableEdit">
+                                            <thead>
+                                                <tr>
+                                                    <apex:repeat value="{!lstPeriods}" var="P"> 
+                                                        <th>
+                                                            <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                                                        </th>
+                                                    </apex:repeat>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <apex:repeat value="{!objStandardGrantIndicatorResult.lstResults}" var="GIR"> 
+                                                        <td>
+                                                            <apex:inputField value="{!GIR.Target__c}"/> 
+                                                            <apex:outputlabel style=" display: inline !important; " value="{!if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number','',if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Percent'||objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent','%',if(objStandardGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                        </td>  
+                                                    </apex:repeat>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </apex:outputpanel>
+                                </div>
+                                <div class="assumptions">
+                                    <h5 class="h5Class">
+                                        {!strTargetAssumptions}
+                                    </h5>
+                                      <p>
+                                        <apex:inputTextarea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 50px;resize: none; width: 70%;" value="{!objStandardGrantIndicatorResult.strAssumptions}"/>
+                                    </p>
+                                </div>                               
+                            </div>
+                        </apex:outputPanel>
+                        <apex:outputPanel id="CustomIndiPanel">
+                            <div id="custIndiLabel" style="display:none;">
+                                <span class="h3">
+                                    {!strAddCustomIndicator}
+                                </span>
+                            </div>
+                            <br/>
+                            <apex:actionFunction action="{!SaveCustomIndicator}" name="actSaveNewIndicator" reRender="frm" status="Processing" oncomplete="CancelCustIndioncomplete();">
+                                <apex:param value="{!if(lstGrantIndicatorResult != null && lstGrantIndicatorResult.size > 0,lstGrantIndicatorResult.size + 1,1)}" name="SaveCusIndicator"/>
+                            </apex:actionFunction>
+                            <div id="custIndiSec" class="indicators" style="display:none;">
+                                <apex:outputPanel ></apex:outputPanel>
+                                <table width="100%">
+                                    <tr>
+                                        <td width="55%">
+                                            <apex:inputtextarea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" id="IndiName" style="height: 22px;resize: none; width: 300px;" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Indicator_Full_Name__c}"/>
+                                        </td>
+                                         <td width="25%">
+                                            <h5 class="h5Class"><apex:outputText value="{!strDataType}: "/></h5>
+                                            <apex:inputfield style="display:none" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Indicator_Type__c}"/>
+                                            <apex:inputField id="DataType" style="width:150px;" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c}">
+                                                <apex:actionSupport event="onchange" reRender="CustomTarget, CustomBaseline"/>
+                                            </apex:inputField>
+                                        </td>
+                                        <td width="20%" align="right">
+                                            <apex:outputPanel style="float:right;">
+                                                <apex:commandLink onclick="return validate();" reRender="frm" status="Processing" styleClass="TGFbtn TGFbtn-mini TGFbtn-success"  style="width:{!if(strLanguage == 'FRENCH','70','40')}px;" >
+                                                    <strong>{!strSave}</strong>
+                                                </apex:commandLink>&nbsp;
+                                                <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" onclick="return CancelCustIndi();">
+                                                    <strong>{!strCancel}</strong>
+                                                </apex:commandLink>
+                                            </apex:outputPanel>
+                                        </td>
+                                    </tr>
+                                </table>                        
+                                <div class="pr_info">
+                                    <div class="tied">
+                                        <h5 class="h5Class"><apex:outputtext value="{!strTargetArea} : "/></h5>
+                                        <apex:inputField style="width:150px;" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Target_Area__c}"/>
+                                    </div>
+                                    <div class="tied">
+                                        <h5 class="h5Class"><apex:outputtext value="{!strTiedTo} : "/></h5>
+                                        <apex:inputField style="width:150px;" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Tied_To__c}"/>
+                                    </div>
+                                    <div class="tied">
+                                        <h5 class="h5Class"><apex:outputtext value="Target Accumulation :"/></h5>
+                                        <apex:inputField style="width:150px;" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Target_Accumulation__c}"/>
+                                    </div>
+                                </div>
+                                <br></br>
+                                <div class="baseline">
+                                    <apex:outputpanel id="CustomBaseline">
+                                        <apex:outputPanel rendered="{!if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c != 'Number and Percent',true,false)}">
+                                            <table class="table table-condensed table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th >
+                                                            <h5 class="h5Class">{!strBaseline}</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">{!strYear}</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">{!strSource}</h5>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                           <apex:inputField value="{!objCustomGrantIndicatorResult.objGrantIndicator.Baseline_Value__c }"/> 
+                                                           <apex:outputlabel style=" display: inline !important; " value="{!if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number','',if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Percent'||objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent','%',if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                        </td>
+                                                        <td >
+                                                            <apex:inputField style="width:90px;" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Baseline_Year__c}"/>
+                                                        </td>
+                                                        <td >
+                                                            <apex:inputField style="display:none" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Component__c}"/>
+                                                            <apex:inputField style="width:200px;" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Baseline_Sources__c}"/>
+                                                        </td>
+                                                    </tr>
+                                                    
+                                                </tbody>
+                                            </table>
+                                        </apex:outputpanel>
+                                        <apex:outputPanel rendered="{!if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent',true,false)}">
+                                            <table class="table table-condensed table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th colspan="3">
+                                                            <h5 class="h5Class">{!strBaseline}</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">{!strYear}</h5>
+                                                        </th>
+                                                        <th>
+                                                            <h5 class="h5Class">{!strSource}</h5>
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <h5 class="h5Class">{!strNum}</h5>
+                                                        </td>
+                                                        <td>
+                                                            <apex:inputField id="txtCBNume" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Baseline_numerator__c}"
+                                                            onchange="calcValue( '{!$Component.txtCBvalue}','{!objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c}','{!$Component.txtCBNume}','{!$Component.txtCBDnomi}');"/>
+                                                        </td>
+                                                        <td rowspan="2" class="calValueCell" cellspacing="0" cellpadding="0">
+                                                           <table>
+                                                               <tr>
+                                                                   <td style="border:0px;">
+                                                                       <apex:outputLabel id="opCBvalue" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Baseline_Value__c }"/> 
+                                                                       <apex:inputHidden id="txtCBvalue" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Baseline_Value__c }"/> 
+                                                                   </td>
+                                                                   <td style="border:0px;padding:0px;vertical-align:middle;">
+                                                                       <apex:outputlabel id="labelTy" style=" display: inline !important; " value="{!if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number','',if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Percent'||objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent','%',if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                                   </td>
+                                                               </tr>
+                                                           </table>
+                                                        </td>
+                                                        <td rowspan="2">
+                                                            <apex:inputField style="width:90px;" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Baseline_Year__c}"/>
+                                                        </td>
+                                                        <td rowspan="2">
+                                                            <apex:inputField style="display:none;" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Component__c}"/>
+                                                            <apex:inputField style="width:200px;" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Baseline_Sources__c}"/>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <h5 class="h5Class">{!strDen}</h5>
+                                                        </td>
+                                                        <td>
+                                                            <apex:inputField id="txtCBDnomi" value="{!objCustomGrantIndicatorResult.objGrantIndicator.Baseline_Denominator__c}"
+                                                            onchange="calcValue( '{!$Component.txtCBvalue}','{!objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c}','{!$Component.txtCBNume}','{!$Component.txtCBDnomi}');"/>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </apex:outputpanel>
+                                    </apex:outputpanel>
+                                </div>
+                               
+                                <div class="targets">
+                                    <h5 class="h5Class">
+                                        {!strTargets}
+                                    </h5>
+                                    <apex:outputpanel id="CustomTarget">
+                                        
+                                        <apex:outputPanel rendered="{!if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent',true,false)}">
+                                            <table width="100%" class="table table-bordered tableEdit">
+                                                <thead>
+                                                    <tr>
+                                                        <apex:repeat value="{!lstPeriods}" var="P"> 
+                                                            <th colspan="2">
+                                                                <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                                                            </th>
+                                                        </apex:repeat>
+                                                    </tr>
+                                                </thead>                                            
+                                                <tbody>
+                                                    <tr>
+                                                        <apex:variable value="{!0}" var="FirstResult"/>
+                                                        <apex:repeat id="rptrCGIRNume" value="{!objCustomGrantIndicatorResult.lstResults}" var="GIR"> 
+                                                            <td style="{!if(FirstResult==0,'','border-left:1px solid #AEAEA9;')}">
+                                                                <apex:variable value="{!1}" var="FirstResult"/>
+                                                                <apex:inputField id="txtCTNume" value="{!GIR.Target_Numerator__c}"
+                                                                onchange="calcCustomNumeValue('{!objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c}','{!$Component.txtCTNume}');"/> 
+                                                            </td>  
+                                                            <td rowspan="2" class="calValueCell">
+                                                                <table>
+                                                                   <tr>
+                                                                       <td style="border:0px;">
+                                                                           <apex:outputLabel id="opCTvalue" value="{!GIR.Target__c}"/>
+                                                                           <apex:inputHidden id="txtCTvalue" value="{!GIR.Target__c}"/> 
+                                                                       </td>
+                                                                       <td style="border:0px;padding:0px;vertical-align:middle;">
+                                                                           <apex:outputlabel id="labelTy2" style=" display: inline !important; " value="{!if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number','',if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Percent'||objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent','%',if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                                       </td>
+                                                                   </tr>
+                                                               </table>
+                                                            </td>                                              
+                                                        </apex:repeat>
+                                                    </tr>
+                                                    <tr>
+                                                        <apex:variable value="{!0}" var="FirstResult"/>
+                                                        <apex:repeat id="rptrCGIRDnomi" value="{!objCustomGrantIndicatorResult.lstResults}" var="GIR"> 
+                                                            <td style="{!if(FirstResult==0,'','border-left:1px solid #AEAEA9;')}">
+                                                                <apex:variable value="{!1}" var="FirstResult"/>
+                                                                <apex:inputField id="txtCTDnomi" value="{!GIR.Target_Denominator__c}"
+                                                                onchange="calcCustomDnomiValue( '{!objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c}','{!$Component.txtCTDnomi}');"/> 
+                                                            </td>                                            
+                                                        </apex:repeat>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </apex:outputPanel>
+                                        <apex:outputpanel rendered="{!if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c != 'Number and Percent',true,false)}">
+                                            <table width="100%" class="table table-bordered tableEdit">
+                                                <thead>
+                                                    <tr>
+                                                        <apex:repeat value="{!lstPeriods}" var="P"> 
+                                                            <th>
+                                                                <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                                                            </th>
+                                                        </apex:repeat>
+                                                    </tr>
+                                                </thead>   
+                                                <tbody>
+                                                    <tr>
+                                                        
+                                                        <apex:repeat value="{!objCustomGrantIndicatorResult.lstResults}" var="GIR"> 
+                                                            <td style="border:0px;">
+                                                               <apex:inputField value="{!GIR.Target__c}"/> 
+                                                               <apex:outputlabel style=" display: inline !important; " value="{!if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number','',if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Percent'||objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Number and Percent','%',if(objCustomGrantIndicatorResult.objGrantIndicator.Data_Type__c == 'Ratio',' per 100k','')))}"/>
+                                                            </td>
+                                                        </apex:repeat>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </apex:outputPanel>
+                                    </apex:outputpanel>
+                                </div>
+                                <div class="assumptions">
+                                    <h5 class="h5Class">
+                                        {!strTargetAssumptions}
+                                    </h5>
+                                     <p>
+                                        <apex:inputTextarea styleclass="countable1" onKeyPress="return charLimit(this)" onKeyUp="return characterCount(this)" style="height: 50px;resize: none; width: 70%;" value="{!objCustomGrantIndicatorResult.strAssumptions}"/>
+                                    </p>
+                                </div>                                                              
+                            </div>
+                        </apex:outputPanel>                
+                </td>
+            </tr>
+        </table>
+    </div>
+     <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }        
+        </style>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+</apex:form>
+
+<script type="text/javascript">
+var maxLength=255;
+function charLimit(el) {
+    if (el.value.length > maxLength) return false;
+    return true;
+}
+function switchMenu(obj,obj1,obj2,hdn,val) 
+        {   
+            var AllLI = document.getElementsByTagName('li');
+            for(var i=0;i<AllLI.length;i++){
+                if(AllLI[i].id == obj){
+                    if(AllLI[i].style.display != 'none'){
+                        AllLI[i].style.display = 'none';
+                    }else{
+                        AllLI[i].style.display = '';
+                    }
+                }
+            }
+            document.getElementById(hdn).value=val; 
+            
+            var e2 = document.getElementById(obj1);                                       
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementById(obj2);                                       
+            if ( e2.style.display != 'none' ) {
+                e3.style.display = 'none';
+            }
+            else {
+                e3.style.display = '';
+            }
+        }
+function characterCount(el) {
+    var charCount = document.getElementById('charCount');
+    if (el.value.length > maxLength) el.value = el.value.substring(0,maxLength);
+    if (charCount) charCount.innerHTML = maxLength - el.value.length;
+    return true;
+}
+</script>
+
+<script>
+    function closePanel(){
+        document.getElementById('Infopanel').style.display = 'none';
+    }
+    function OpenPopup(PopupPanelId){
+        document.getElementById(PopupPanelId).style.display = '';
+        return false;
+    }
+    function ClosePopup(PopupPanelId){
+        document.getElementById(PopupPanelId).style.display = 'none';
+        return false;
+    }
+    function GeOnlyNumber(st){
+        if(st !=null){    
+            var ReComma = new RegExp("\\,","g");
+            var ReQuate = new RegExp("\\'","g");
+            st = st.replace(ReComma,"");
+            st = st.replace(ReQuate,"");
+            st = st.replace(",.",".");
+            st = st.replace("'.",".");
+            if(isNaN(st)==false){
+                return Number(st);
+            }else{
+                return '';
+            }
+        }else{
+            return '';
+        }
+    }
+    function calcValue(txtTvalue,DataType,txtANume,txtADnomi){
+        var Nume= GeOnlyNumber(document.getElementById(txtANume).value);
+        var Dnomi= GeOnlyNumber(document.getElementById(txtADnomi).value);
+        var objValue = document.getElementById(txtTvalue);
+        var objopValue = document.getElementById(txtTvalue.replace("txt","op"));
+        if(DataType=="Ratio"){
+            if(Dnomi==0){
+                 objValue.value="";
+                 objopValue.innerHTML = "";
+            }else{
+                var Value=Nume/(Dnomi/100000);
+                objValue.value=Value.toFixed(2);
+                objopValue.innerHTML=Value.toFixed(2);
+            }
+        }else if(DataType=="Percent"||DataType=="Number and Percent"){
+            if(Dnomi==0){
+                 objValue.value="";
+                 objopValue.innerHTML="";
+            }else{
+                var Value=((Nume/Dnomi)*100);
+                objValue.value=Value.toFixed(2);
+                objopValue.innerHTML=Value.toFixed(2);
+            }
+        }
+    }
+    function calcDnomiValue(DataType,txtTDnomi){
+        calcValue(txtTDnomi.replace("txtTDnomi","txtTvalue").replace("rptrGIRDnomi","rptrGIRNume"),DataType,txtTDnomi.replace("txtTDnomi","txtTNume").replace("rptrGIRDnomi","rptrGIRNume"),txtTDnomi);
+    }    
+    function calcNumeValue(DataType,txtTNume){
+        calcValue(txtTNume.replace("txtTNume","txtTvalue"),DataType,txtTNume,txtTNume.replace("txtTNume","txtTDnomi").replace("rptrGIRNume","rptrGIRDnomi"));
+    }
+    function calcCustomDnomiValue(DataType,txtTDnomi){
+        calcValue(txtTDnomi.replace("txtCTDnomi","txtCTvalue").replace("rptrCGIRDnomi","rptrCGIRNume"),DataType,txtTDnomi.replace("txtCTDnomi","txtCTNume").replace("rptrCGIRDnomi","rptrCGIRNume"),txtTDnomi);
+    }    
+    function calcCustomNumeValue(DataType,txtTNume){
+        calcValue(txtTNume.replace("txtCTNume","txtCTvalue"),DataType,txtTNume,txtTNume.replace("txtCTNume","txtCTDnomi").replace("rptrCGIRNume","rptrCGIRDnomi"));
+    }
+    function DisplaySelectIndicatorPanel(){
+        document.getElementById('SelectCatalogIndicator').style.display = '';
+        document.getElementById('tableCusStdBtn').style.display = 'none';
+        return false;
+    }
+    function openCustomIndicator(){
+        document.getElementById('custIndiLabel').style.display = '';
+        document.getElementById('custIndiSec').style.display = '';
+        document.getElementById('tableCusStdBtn').style.display = 'none';
+        return false;
+    }
+    function showStandardIndicator(SelectedIndicator){
+        if(document.getElementById(SelectedIndicator).value != ''){
+            document.getElementById('SelectCatalogIndicator').style.display = 'none';
+            actCreateIndicatorOnSelectCatalog();
+            return false;
+        }else{
+            return false;
+        }
+    }
+    function hideSelectCalalogIndi(){
+        document.getElementById('SelectCatalogIndicator').style.display = 'none';
+        document.getElementById('tableCusStdBtn').style.display = '';
+        document.getElementById('AddStdIndiLabel').style.display = 'none';
+        document.getElementById('AddStdIndiSec').style.display = 'none';
+        return false;
+    }
+    function showstdIndiOncomplete(){
+        document.getElementById('AddStdIndiLabel').style.display = '';
+        document.getElementById('AddStdIndiSec').style.display = '';
+        document.getElementById('tableCusStdBtn').style.display = 'none';
+    }
+    function cancelStdIndi(){
+        document.getElementById('AddStdIndiLabel').style.display = 'none';
+        document.getElementById('AddStdIndiSec').style.display = 'none';
+        document.getElementById('tableCusStdBtn').style.display = '';
+        document.getElementById('SelectCatalogIndicator').style.display = 'none';
+        return false;
+    }
+    function CancelCustIndi(){
+        document.getElementById('custIndiLabel').style.display = 'none';
+        document.getElementById('custIndiSec').style.display = 'none';
+        document.getElementById('tableCusStdBtn').style.display = '';
+        return false;
+    }
+    function OpenChatterPopup(ChatterPanel,top){        
+        document.getElementById(ChatterPanel).style.display = '';
+        top = '#'+top;               
+        window.location.hash = top;
+        return false;
+    }
+    function CloseChatterPopup(ChatterPanel){
+        document.getElementById(ChatterPanel).style.display = 'none';
+        return false;
+    }
+    function validate(){
+        if(document.getElementById('page:frm:IndiName').value==''){
+            alert("Please select indicator name.");
+        }else if(document.getElementById('page:frm:DataType').value==''){
+            alert("Please select indicator data type.");
+        }else{
+            actSaveNewIndicator();
+        }
+        return false;
+    }
+    
+</script>
+</apex:page>

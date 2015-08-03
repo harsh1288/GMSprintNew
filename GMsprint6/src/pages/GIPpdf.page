@@ -1,0 +1,1331 @@
+<apex:page standardController="Implementation_Period__c" extensions="gippdfext">
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/> 
+            
+        <apex:pageblock >
+            <apex:pageblocksection title="Schedule 1: {!Implementation_Period__c.Name} Integrated Grant Description" columns="1">
+            </apex:pageblocksection>               
+                <table width="700px">                               
+                <tr>
+                    <th style="width:150px;border: 1px solid black;"> Country </th>
+                    <td style="border: 1px solid black;">{!Implementation_Period__c.Principal_Recipient__r.Country__r.Name} </td>  
+                </tr>
+                    <th style="width:150px;border: 1px solid black;"> Program Title</th>
+                    <td style="border: 1px solid black;">{!Implementation_Period__c.Name} </td>
+                <tr>
+                    <th style="width:150px;border: 1px solid black;"> Grant Name</th>
+                    <td style="border: 1px solid black;">{!Implementation_Period__c.Grant__r.Name} </td>
+                </tr>
+                <tr>                    
+                    <th style="width:150px;border: 1px solid black;"> Grant Number</th>
+                    <td style="border: 1px solid black;">{!Implementation_Period__c.Grant__r.Grant_Number__c} </td>
+                </tr>
+                <tr>    
+                    <th style="width:150px;border: 1px solid black;"> Disease</th>
+                    <td style="border: 1px solid black;">{!Implementation_Period__c.Component__c} </td>
+                </tr>
+                <tr>    
+                    <th style="width:150px;border: 1px solid black;"> Principal Recipient</th>
+                    <td style="border: 1px solid black;">{!Implementation_Period__c.Principal_Recipient__r.Name} </td>
+                </tr>                                                                                                                                                                                                                                                               
+                </table>
+            
+            
+            <apex:pageblocksection title="A. Program Description" columns="1">
+                <h4> 1. Background and Rationale for the Program </h4>
+                <apex:outputLabel value="{!Implementation_Period__c.Rationale_for_Program__c}" />
+                <h4> 2. Goals, Strategies and Activities </h4>
+                <apex:outputLabel value="{!Implementation_Period__c.Goals_and_Strategies_for_program__c}" />
+                <h4> 3. Target Group/Beneficiaries </h4>
+                <apex:outputLabel value="{!Implementation_Period__c.Target_beneficiaries_of_program__c}" />
+            </apex:pageblocksection>
+                          
+            <apex:pageblocksection title="B. Performance Framework" columns="1">
+            </apex:pageblocksection>
+                
+                <table width="700px">
+                 <tr colspan = "2" style="width:150px; border: 1px solid black;" class="tablehead">
+                	<td style="border: 1px solid black;">PERFORMANCE FRAMEWORK</td>
+                	<td style="border: 1px solid black;">English</td>
+                </tr>
+                <tr colspan = "2" style="width:150px; border: 1px solid black;">
+                <td colspan="2" style="width:150px; border: 1px solid black;" >A. program details</td>
+                </tr>
+               
+                <tr colspan = "2" style="width:150px; border: 1px solid black;">
+                	<td style="border: 1px solid black;" class="tableheader">Country/Applicant:</td>
+                	<td style="border: 1px solid black;">{!Implementation_Period__c.Country__c} </td>
+                </tr>
+                <tr colspan = "2" style="width:150px; border: 1px solid black;">
+                	<td style="border: 1px solid black;" class="tableheader">Component:</td>
+                	<td style="border: 1px solid black;">{!Implementation_Period__c.Component__c} </td>
+                </tr>
+                <tr colspan = "2" style="width:150px; border: 1px solid black;">
+                	<td style="border: 1px solid black;" class="tableheader">Start Year:</td>
+                	<td style="border: 1px solid black;">{!Implementation_Period__c.Year_1__c} </td>
+                </tr>
+                <tr colspan = "2" style="width:150px; border: 1px solid black;">
+                	<td style="border: 1px solid black;" class="tableheader">Start Month:</td>
+                	<td style="border: 1px solid black;">{!Implementation_Period__c.Start_Month__c} </td>
+                </tr>
+                <tr colspan = "2" style="width:150px; border: 1px solid black;">
+                	<td style="border: 1px solid black;" class="tableheader">Annual Reporting Cycle:</td>
+                	<td style="border: 1px solid black;">{!Implementation_Period__c.PR_Fiscal_Cycle__c} </td>
+                </tr>
+                <tr colspan = "2" style="width:150px; border: 1px solid black;">
+                	<td style="border: 1px solid black;" class="tableheader">Reporting Frequency(Month)</td>
+                	<td style="border: 1px solid black;">{!Implementation_Period__c.Reporting__c} </td>
+                </tr>
+                </table>
+                <br/><br/>
+                
+                <table width="700px">
+                    <th colspan = "2" style="width:150px; border: 1px solid black;"> Periods </th>
+                    <apex:repeat value="{!lstperiods}" var="P">
+                        <th style=" border: 1px solid black;"> {!P.Start_Date_Short__c} &nbsp;&nbsp;</th>                                                                                                                                                   
+                    </apex:repeat>
+                    <tr>
+                        <th colspan = "2" style=" border: 1px solid black;"> Due Date </th>
+                        <apex:repeat value="{!lstperiods}" var="P">
+                            <td style="display:{!if(P.DR__c == true,'none','')} ; border: 1px solid black;"> No </td>
+                            <td style="display:{!if(P.DR__c == false,'none','')} ; border: 1px solid black;">Yes </td>
+                        </apex:repeat>
+                    </tr>
+                    <tr>
+                        <th colspan = "2" style=" border: 1px solid black;">AR Due Date </th>
+                        <apex:repeat value="{!lstperiods}" var="P">
+                            <td style="display:{!if(P.Audit_Report__c == true,'none','')} ; border: 1px solid black;"> No </td>
+                            <td style="display:{!if(P.Audit_Report__c == false,'none','')} ; border: 1px solid black;">Yes </td>
+                        </apex:repeat>
+                    </tr>
+                    <tr>
+                        <th colspan = "2" style=" border: 1px solid black;">PU Due Date </th>
+                        <apex:repeat value="{!lstperiods}" var="P">                         
+                            <td style="display:{!if(P.PU__c == true,'none','')} ; border: 1px solid black;"> No </td>
+                            <td style="display:{!if(P.PU__c == false,'none','')} ; border: 1px solid black;">Yes </td>
+                        </apex:repeat>
+                    </tr>
+                    <tr>
+                        <th colspan = "2" style=" border: 1px solid black;">EFR Due Date </th>
+                        <apex:repeat value="{!lstperiods}" var="P">
+                            <td style="display:{!if(P.EFR__c == true,'none','')} ; border: 1px solid black;"> No </td>
+                            <td style="display:{!if(P.EFR__c == false,'none','')} ; border: 1px solid black;">Yes </td>
+                        </apex:repeat>
+                    </tr>   
+                </table>
+                <br/> <br/>
+                
+                <table width="700px">
+                    <th colspan = "4" style="border: 1px solid black;"> Program Goals and Impact Indicators</th>
+                    <tr>
+                        <th colspan = "4" style="border: 1px solid black;"> Goals: </th>
+                    </tr>   
+                    <tr style="{!if(lstgoals.size > 0,'','none')}">
+                        <apex:repeat value="{!lstgoals}" var="G">
+                            <td style="width:50px; border: 1px solid black;"> {!G.Number__c} </td>
+                            <td style=" border: 1px solid black;"> {!G.Goal__c} </td>
+                        </apex:repeat>
+                    </tr>
+                </table>
+                <br/><br/>
+                
+                <table width="700px">
+                    <tr>
+                        <th rowspan="2" style="width:30px; border: 1px solid black; white-space: normal;"> Linked to goal</th>
+                        <th rowspan="2" style="width:50px; border: 1px solid black; white-space: normal;"> Impact Indicator</th>
+                        <th rowspan="2" style="width:50px; border: 1px solid black; white-space: normal;"> Country</th>
+                        <th colspan="3" style="width:33px;border: 1px solid black; white-space: normal;"> Baseline</th>                                                  
+                        <th rowspan="2" style="width:30px;border: 1px solid black; white-space: normal;"> Disaggregated</th>
+                        <th colspan="8" style="width:50px;border: 1px solid black; white-space: normal;"> Targets</th>
+                        <th rowspan="2" style="width:40px;border: 1px solid black; white-space: normal;"> Comments </th>
+                    </tr>
+                    <tr>
+                        
+                        <th style="width:33px; border: 1px solid black; white-space: normal;"> Value</th>
+                        <th style="width:33px; border: 1px solid black; white-space: normal;"> Year</th>
+                        <th style="width:33px; border: 1px solid black; white-space: normal;"> Source</th>                        
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> {!Year1}</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> Report Due date</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> {!Year2}</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> Report Due date</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> {!Year3}</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> Report Due date</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> {!Year4}</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> Report Due date</th>
+                    </tr>
+                    
+                    <tr style="display:{!if(lstimpact.size > 0,'','none')};">
+                        <apex:repeat value="{!lstimpact}" var="I">
+                            <td style="width:30px; border: 1px solid black; white-space: normal;"> {!MapIdnSImpact[I.Id]}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Indicator_Full_Name__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!Implementation_Period__c.Principal_Recipient__r.Country__r.Name}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Value1__c}</td>
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Year__c}</td>
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Sources__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal; display:{!if(I.Is_Disaggregated1__c == true,'','none')};"> Y</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal; display:{!if(I.Is_Disaggregated1__c == true,'none','')};"> N</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Target_Value_Y12__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Y1_Report_Due__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Target_Value_Y22__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Y2_Report_Due__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Target_Value_Y32__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Y3_Report_Due__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Target_Value_Y42__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Y4_Report_Due__c}</td>
+                            <td style="width:40px; border: 1px solid black; white-space: normal;"> {!I.Country_Team_Comments__c}</td>
+                        </apex:repeat>
+                    </tr>                                                       
+                </table>
+                <br/><br/>
+                
+                <table width="700px">
+                    <th colspan = "4" style="border: 1px solid black;"> Program Objectives and Outcome Indicators</th>
+                    <tr>
+                        <th colspan = "4" style="border: 1px solid black;"> Objectives: </th>
+                    </tr>   
+                    <tr style="{!if(lstobjectives.size > 0,'','none')}">
+                        <apex:repeat value="{!lstobjectives}" var="G">
+                            <td style="width:50px; border: 1px solid black;"> {!G.Number__c} </td>
+                            <td style="border: 1px solid black;"> {!G.Goal__c} </td>
+                        </apex:repeat>
+                    </tr>
+                </table>
+                <br/><br/>
+                
+                <table width="700px">
+                    <tr>
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> Linked to Objective</th>
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> Outcome Indicator</th>
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> Country</th>
+                        <th colspan="3" style="width:33px; border: 1px solid black; white-space: normal;"> Baseline</th>                                                  
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> Disaggregated</th>
+                        <th colspan="8" style="width:33px; border: 1px solid black; white-space: normal;"> Targets</th>
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> Comments </th>
+                    </tr>
+                    <tr>
+                        
+                        <th style="width:33px; border: 1px solid black; white-space: normal;"> Value</th>
+                        <th style="width:33px; border: 1px solid black; white-space: normal;"> Year</th>
+                        <th style="width:33px; border: 1px solid black; white-space: normal;"> Source</th>                        
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> {!Year1}</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> Report Due date</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> {!Year2}</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> Report Due date</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> {!Year3}</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> Report Due date</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> {!Year4}</th>
+                        <th style="width:50px; border: 1px solid black; white-space: normal;"> Report Due date</th>
+                    </tr>
+                    
+                    <tr style="display:{!if(lstoutcome.size > 0,'','none')};">
+                        <apex:repeat value="{!lstoutcome}" var="I">
+                            <td style="width:10px; border: 1px solid black; white-space: normal;"> {!MapIdnSOutcome[I.Id]}</td>
+                            <td style="width:30px; border: 1px solid black; white-space: normal;"> {!I.Indicator_Full_Name__c}</td>
+                            <td style="width:40px; border: 1px solid black; white-space: normal;"> {!Implementation_Period__c.Principal_Recipient__r.Country__r.Name}</td>
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Value1__c}</td>
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Year__c}</td>
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Sources__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal; display:{!if(I.Is_Disaggregated1__c == true,'','none')};"> Y</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal; display:{!if(I.Is_Disaggregated1__c == true,'none','')};"> N</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Target_Value_Y12__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Y1_Report_Due__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Target_Value_Y22__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Y2_Report_Due__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Target_Value_Y32__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Y3_Report_Due__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Target_Value_Y42__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Y4_Report_Due__c}</td>
+                            <td style="width:50px; border: 1px solid black; white-space: normal;"> {!I.Country_Team_Comments__c}</td>
+                        </apex:repeat>
+                    </tr>                                                       
+                </table>
+                <br/><br/>
+                
+                <apex:repeat value="{!MapSnGI}" var="M" rendered="{!if(lstcoverage.size > 0,true,false)}">
+                <table width="700px">                                
+                    <tr>
+                        <th style="width:100px; border: 1px solid black;"> Module</th>
+                        <th style="border: 1px solid black;" colspan="7"> {!M}</th>
+                        <th style="border: 1px solid black;" colspan="{!(periodsize*2)+3}"> </th>
+                    </tr>
+                    <tr>                        
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Coverage/Output Indicator</th>
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Principal Recipient</th>
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Subset of</th>
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Geographic Area</th>
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Cumulation</th>
+                        <th rowspan="2" colspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Baseline</th>                                                  
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Disaggregation</th>
+                        <th colspan="{!periodsize*2}" style="width:33px; border: 1px solid black; white-space: normal;"> Target</th>                      
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Comments </th>
+                    </tr>
+                    <tr>
+                        <apex:repeat value="{!lstperiods}" var="P">
+                        <th colspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!P.Start_Date_Short__c} </th>                 
+                        </apex:repeat>  
+                    </tr>                   
+                    <tr>
+                        <th> N#</th>
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> %</th>
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> Year</th>
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> Source</th>
+                        <apex:repeat value="{!lstperiods}" var="P">
+                        <th style="width:3px; border: 1px solid black; white-space: normal;"> N#</th>
+                        <th rowspan="2" style="width:3px; border: 1px solid black; white-space: normal;"> %</th>                                         
+                        </apex:repeat>
+                    </tr>
+                    <tr>
+                        <th style="width:3px; border: 1px solid black; white-space: normal;"> D#</th>
+                        <apex:repeat value="{!lstperiods}" var="P">
+                        <th style="width:3px; border: 1px solid black; white-space: normal;"> D#</th>
+                        </apex:repeat>
+                    </tr>                   
+                    <apex:repeat value="{!MapSnGI[M]}" var="I">                     
+                        <tr>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Indicator_Full_Name__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!Implementation_Period__c.Principal_Recipient__r.Name}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Subset_of__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Target_area__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> </td>
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_numerator__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Value1__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Year__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Sources__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> </td>
+                            <apex:repeat value="{!MapIdnR[I.Id]}" var="R" rendered="{!if(lstresults.size > 0,true,false)}">
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!R.Target_Numerator__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!R.Target__c}</td>
+                            </apex:repeat>                          
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Country_Team_Comments__c}</td>
+                        </tr>
+                        <tr>
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Denominator__c}</td>
+                            <apex:repeat value="{!MapIdnR[I.Id]}" var="R" rendered="{!if(lstcoverage.size > 0,true,false)}">
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!R.Target_Denominator__c}</td>
+                            </apex:repeat>
+                        </tr>
+                    </apex:repeat>
+                </table>
+                </apex:repeat>
+                
+                <apex:repeat value="{!MapSnGI12}" var="M" rendered="{!if(lstcoverage12month.size > 0,true,false)}">
+                <table class="table table-striped">                                
+                    <tr>
+                        <th> Module</th>
+                        <th colspan="7"> {!M}</th>
+                        <th colspan="{!(periodsize12*2)+3}"> </th>
+                    </tr>
+                    <tr>                        
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Coverage/Output Indicator</th>
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Principal Recipient</th>
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Subset of</th>
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Geographic Area</th>
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Cumulation</th>
+                        <th rowspan="2" colspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Baseline</th>                                                  
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Disaggregation</th>
+                        <th colspan="{!periodsize12*2}" style="width:33px; border: 1px solid black; white-space: normal;"> Target</th>                        
+                        <th rowspan="4" style="width:33px; border: 1px solid black; white-space: normal;"> Comments </th>
+                    </tr>
+                    <tr>
+                        <apex:repeat value="{!lstperiods12}" var="P">
+                        <th colspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!P.Start_Date_Short__c} </th>                 
+                        </apex:repeat>                          
+                    </tr>                   
+                    <tr>
+                        <th> N#</th>
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> %</th>
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> Year</th>
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> Source</th>
+                        <apex:repeat value="{!lstperiods12}" var="P">
+                        <th style="width:33px; border: 1px solid black; white-space: normal;"> N#</th>
+                        <th rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> %</th>                                         
+                        </apex:repeat>
+                    </tr>
+                    <tr>
+                        <th style="width:33px; border: 1px solid black; white-space: normal;"> D#</th>
+                        <apex:repeat value="{!lstperiods12}" var="P">
+                        <th style="width:33px; border: 1px solid black; white-space: normal;"> D#</th>
+                        </apex:repeat>
+                    </tr>                   
+                    <apex:repeat value="{!MapSnGI12[M]}" var="I" rendered="{!if(lstcoverage12month.size > 0,true,false)}">                        
+                        <tr>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Indicator_Full_Name__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!Implementation_Period__c.Principal_Recipient__r.Name}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Subset_of__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Target_area__c}</td>                            
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_numerator__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Value1__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Year__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Sources__c}</td>
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> </td>
+                            <apex:repeat value="{!MapIdnR12[I.Id]}" var="R">
+                            <td> {!R.Target_Numerator__c}</td>
+                            <td rowspan="2"> {!R.Target__c}</td>
+                            </apex:repeat>                          
+                            <td rowspan="2" style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Country_Team_Comments__c}</td>
+                        </tr>
+                        <tr>
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!I.Baseline_Denominator__c}</td>
+                            <apex:repeat value="{!MapIdnR12[I.Id]}" var="R">
+                            <td style="width:33px; border: 1px solid black; white-space: normal;"> {!R.Target_Denominator__c}</td>
+                            </apex:repeat>
+                        </tr>
+                    </apex:repeat>
+                </table>
+                </apex:repeat>
+            
+            <apex:pageblocksection title="C. Summary Budget" columns="1">  
+            </apex:pageblocksection>
+            
+            <table id="moduleTable">
+                  
+                  <tr><td> <table  width="700px">
+                    
+                    <tr style="border: 1px solid black;" >
+                        <th style="width:50px;border: 1px solid black;">
+                           {!$label.Module}
+                        </th>
+                        <th style="width:50px;border: 1px solid black;">
+                           {!$Label.Intervention}
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q1
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q2
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q3
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q4
+                        </th>
+                        
+                        <th style="width:33px;border: 1px solid black;">
+                            {!Budgetid.Implementation_Period__r.Year_1__c}
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q5
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q6
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q7
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q8
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                            {!Budgetid.Implementation_Period__r.Year_2__c}
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q9
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q10
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q11
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                           Q12
+                        </th>
+                        <th style="width:33px;border: 1px solid black;">
+                            {!Budgetid.Implementation_Period__r.Year_3__c}
+                        </th>
+                        <th style="width:33px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q13
+                        </th>
+                        <th style="width:33px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q14
+                        </th>
+                        <th style="width:33px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q15
+                        </th>
+                        <th style="width:33px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q16
+                        </th>
+                        <th style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')}">
+                            {!Budgetid.Implementation_Period__r.Year_4__c}
+                        </th>
+                        <th style="width:50px;border: 1px solid black;">
+                            {!$label.Total}
+                        </th>
+                    </tr>
+                   
+                    <apex:repeat value="{!lstBLModule}" var="BLM">
+                        <tr style="background-color:{!IF(BLM.blnbckgrnd,'#C0C0C0','')}; font-weight:{!IF(BLM.blnbckgrnd,'bold','')};border: 1px solid black;">
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{!BLM.ModuleName}"></apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{!BLM.InterventionName}"></apex:outputText>
+                            </td>
+                             <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ1}" />
+                                </apex:outputText>
+                            </td >
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ2}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ3}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ4}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostY1}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ5}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ6}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ7}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ8}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostY2}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ9}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ10}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ11}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.ModuleCostQ12}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                    
+                                     <apex:param value="{!BLM.ModuleCostY3}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.ModuleCostQ13}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.ModuleCostQ14}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.ModuleCostQ15}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.ModuleCostQ16}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.ModuleCostY4}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}" styleclass="bold" >
+                                     <apex:param value="{!BLM.TotalModuleCost}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    <tr>
+                    </tr>
+                    </apex:repeat>
+                    <tr style=" border: 1px solid black;">
+                        <th style=" border: 1px solid black;">
+                            {!$Label.Total}
+                        </th>
+                        <th>
+                        </th>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ4Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleY1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ5Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ6Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ7Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ8Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                 <apex:param value="{!TotalModuleY2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ9Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ10Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ11Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ12Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style=" border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                 <apex:param value="{!TotalModuleY3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ13Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ14Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ15Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleQ16Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}"> 
+                                  <apex:param value="{!TotalModuleY4Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!AllYearModuleTotalCost}" />
+                             </apex:outputText>
+                        </td>
+                    </tr>
+                </table></td></tr>  
+           </table>   
+            
+             <!--By Cost Grouping-->   
+             <table id="CostGrouptable">
+
+             <tr><td>
+                  <table class="table table-striped" style="width:1000px">
+                 
+                    <tr>
+                        <th style="width:150px;border: 1px solid black;">
+                            {!$Label.Cost_Grouping}
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q1
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q2
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q3
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q4
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                            {!Budgetid.Implementation_Period__r.Year_1__c}
+                        </th>
+                        
+                        <th style="width:100px;border: 1px solid black;">
+                           Q5
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q6
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q7
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q8
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                            {!Budgetid.Implementation_Period__r.Year_2__c}
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q9
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q10
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q11
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q12
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                            {!Budgetid.Implementation_Period__r.Year_3__c}
+                        </th>
+                        <th style="width:100px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q13
+                        </th>
+                        <th style="width:100px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q14
+                        </th>
+                        <th style="width:100px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q15
+                        </th>
+                        <th style="width:100px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q16
+                        </th>
+                        <th style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')}">
+                            {!Budgetid.Implementation_Period__r.Year_4__c}
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                            {!$label.Total}
+                        </th>
+                    </tr>
+                    <apex:repeat value="{!lstBLCost}" var="BLM">
+                        <tr>
+                            <td style="border: 1px solid black;" >
+                                <apex:outputText value="{!BLM.CostGrouping}"></apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.CostQ1}" />
+                                </apex:outputText>
+                            </td >
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.CostQ2}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.CostQ3}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.CostQ4}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.CostY1}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.CostQ5}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.CostQ6}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.CostQ7}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.CostQ8}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.CostY2}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.CostQ9}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.CostQ10}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.CostQ11}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     
+                                     <apex:param value="{!BLM.CostQ12}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                      <apex:param value="{!BLM.CostY3}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.CostQ13}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.CostQ14}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.CostQ15}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.CostQ16}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                     <apex:param value="{!BLM.CostY4}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}" styleclass="bold">
+                                     <apex:param value="{!BLM.TotalCost}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    <tr>
+                        <th style="border: 1px solid black;">
+                            {!$Label.Total}
+                        </th>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ4Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalY1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ5Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ6Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ7Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ8Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                 <apex:param value="{!TotalY2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ9Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ10Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ11Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ12Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                 <apex:param value="{!TotalY3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ13Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ14Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ15Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalQ16Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!round(TotalY4Cost/1000,0)}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                 <apex:param value="{!AllYearTotalCost}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </table></td></tr>
+                </table>
+                <!--By Payee-->
+            <table id="Implementertable">
+            
+                  <tr><td>
+                <table class="table table-striped" style="width:1000px">
+                 
+                    <tr>
+                        <th style="width:150px;border: 1px solid black;">
+                            {!$Label.Cost_Grouping}
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q1
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q2
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q3
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q4
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                            {!Budgetid.Implementation_Period__r.Year_1__c}
+                        </th>
+                        
+                        <th style="width:100px;border: 1px solid black;">
+                           Q5
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q6
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q7
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q8
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                            {!Budgetid.Implementation_Period__r.Year_2__c}
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q9
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q10
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q11
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                           Q12
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                            {!Budgetid.Implementation_Period__r.Year_3__c}
+                        </th>
+                        <th style="width:100px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q13
+                        </th>
+                        <th style="width:100px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q14
+                        </th>
+                        <th style="width:100px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q15
+                        </th>
+                        <th style="width:100px;border: 1px solid black;display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};">
+                           Q16
+                        </th>
+                        <th style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')}">
+                            {!Budgetid.Implementation_Period__r.Year_4__c}
+                        </th>
+                        <th style="width:100px;border: 1px solid black;">
+                            {!$label.Total}
+                        </th>
+                    </tr>
+                    <apex:repeat value="{!lstBLPayee}" var="BLM">
+                        <tr>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{!BLM.PayeeName}"></apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ1}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ2}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ3}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ4}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostY1}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ5}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ6}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ7}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ8}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+               
+                                    <apex:param value="{!BLM.PayeeCostY2}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ9}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ10}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ11}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                   
+                                    <apex:param value="{!BLM.PayeeCostQ12}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+               
+                                    <apex:param value="{!BLM.PayeeCostY3}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                      <apex:param value="{!BLM.PayeeCostQ13}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                      <apex:param value="{!BLM.PayeeCostQ14}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                      <apex:param value="{!BLM.PayeeCostQ15}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                      <apex:param value="{!BLM.PayeeCostQ16}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}">
+                                      <apex:param value="{!BLM.PayeeCostY4}" />
+                                </apex:outputText>
+                            </td>
+                            <td style="border: 1px solid black;">
+                                <apex:outputText value="{0, number,###,###,##0}" styleclass="bold">
+                                      <apex:param value="{!BLM.TotalPayeeCost}" />
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    <tr>
+                        <th style="border: 1px solid black;">
+                            {!$Label.Total}
+                        </th>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ4Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeY1Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ5Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ6Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ7Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ8Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeY2Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ9Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ10Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ11Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ12Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeY3Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ13Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeq14Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ15Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeQ16Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="display:{!if(YEAR(BudgetId.Implementation_Period__r.Start_Date__c)+3 <= YEAR(BudgetId.Implementation_Period__r.End_Date__c),'','none')};border: 1px solid black;">
+                            <apex:outputText value="{0, number,###,###,##0}">
+                                  <apex:param value="{!TotalPayeeY4Cost}" />
+                            </apex:outputText>
+                        </td>
+                        <td style="border: 1px solid black;">
+                            <apex:outputText styleclass="bold" value="{0, number,###,###,##0}">
+                                  <apex:param value="{!AllYearPayeeTotalCost}" />
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </table></td></tr>
+            </table>
+            
+        </apex:pageblock>   
+    
+</apex:page>

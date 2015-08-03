@@ -1,0 +1,100 @@
+<apex:page sidebar="false" showheader="false" standardController="Performance_Framework__c" standardstylesheets="false" extensions="PFTableExt">
+    
+    <html>
+        <Style>
+            .hdr{
+                text-align:center;
+                font-size:18px;
+                font-weight:bold;
+                background-color:darkturquoise;
+            }
+            td.actcol{
+                background-color:white;
+            }
+            td.actcol:hover{
+                background-color:darkturquoise;
+            }
+        </Style>
+        <body>
+            <h>Table for Performance Framework hierarchy view:</h>
+            <table width="100%" border="1" style="border-collapse:collapse;">
+                <tr>
+                    <th class="hdr">Modules</th>
+                    <th class="hdr">Interventions</th>
+                    <th class="hdr">Activities</th>
+                    <th class="hdr">Milestones</th>
+                    <th class="hdr">Reporting Periods</th>
+                </tr>                
+                <apex:repeat value="{!tbldata}" var="data" id="rpt">
+                    <tr>
+                        <td Style="text-align:center;">{!data.ModuleName}</td>
+                        <td style="padding:0px;">
+                            <table border="1" frame="void" width="100%" style="border-collapse:collapse;">       
+                                    <apex:repeat value="{!data.InterventionList}" var="int" id="rptint">
+                                        <tr>
+                                            <td Style="text-align:{!if(int.Name=='-','center','')};white-space: nowrap;">{!int.Name}</td>                                            
+                                        </tr> 
+                                        <tr height="1" style="background-color:mediumturquoise;display:{!if(int.id==null,'none','')};"><td></td></tr>                                       
+                                    </apex:repeat>
+                                    <br/>                               
+                            </table>
+                        </td>
+                        <td style="padding:0px;">
+                            <table border="1" frame="void"  width="100%" style="border-collapse:collapse;">
+                                <apex:variable value="{!0}" var="intlist"/>
+                                <apex:repeat value="{!data.ActivitiesList}" var="int" id="rptactlist">
+                                    <apex:repeat value="{!int}" var="act" id="rptact">
+                                        <tr>      
+                                            <td class="actcol" title="Linked with {!data.InterventionList[intlist].Name}" Style="text-align:{!if(act.Name=='-','center','')};white-space: nowrap;">{!act.Name}</td>
+                                        </tr>                                        
+                                    </apex:repeat>
+                                    <apex:variable value="{!intlist+1}" var="intlist"/>
+                                    <tr height="1" style="background-color:mediumturquoise;display:{!if(int[0].id==null,'none','')};"><td></td></tr>
+                                </apex:repeat>                                
+                           </table>
+                        </td>
+                        <td style="padding:0px;">
+                            <table border="1" frame="void"  width="100%" style="border-collapse:collapse;">
+                                    <apex:repeat value="{!data.MilestoneList}" var="mt" id="mtlist">
+                                        <apex:repeat value="{!mt}" var="mt1" id="mt1list">
+                                            <apex:repeat value="{!mt1}" var="mt2" id="mt2list">
+                                                <tr>
+                                                    <td Style="text-align:{!if(mt2.MilestoneTitle__c=='-','center','')};white-space: nowrap;">{!mt2.MilestoneTitle__c}</td>
+                                                </tr>
+                                             </apex:repeat>
+                                             <tr height="1" style="background-color:mediumturquoise;display:{!if(mt1[0].id==null,'none','')};"><td></td></tr>
+                                        </apex:repeat>
+                                    </apex:repeat>                                
+                            </table>
+                        </td>
+                        <td style="padding:0px;">
+                            <table  border="1" frame="void"  width="100%" style="border-collapse:collapse;">
+                                    <apex:repeat value="{!data.RPList}" var="rp" id="rplist">
+                                        <apex:repeat value="{!rp}" var="rp1" id="rp1list">
+                                            <apex:repeat value="{!rp1}" var="rp2" id="rp2list">
+                                                <apex:repeat value="{!rp2}" var="rp3" id="rp3list">
+                                                    <tr>
+                                                        <td style="text-align:center;">
+                                                            <apex:outputText value="{0, date, MMMM d','  yyyy}">
+                                                                <apex:param value="{!rp3.Start_Date__c}" /> 
+                                                            </apex:outputText>
+                                                            <apex:outputText value=" to " rendered="{!if(rp3.Start_Date__c !=null,true,false)}"></apex:outputText>  
+                                                            <apex:outputText value="{0, date, MMMM d','  yyyy}">
+                                                                <apex:param value="{!rp3.End_Date__c}" /> 
+                                                            </apex:outputText>
+                                                            <apex:outputText value="-" rendered="{!if(rp3.Start_Date__c !=null,false,true)}"></apex:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </apex:repeat>
+                                                <tr height="1" style="background-color:mediumturquoise;display:{!if(rp2[0].id==null,'none','')};"><td></td></tr>
+                                             </apex:repeat>
+                                        </apex:repeat>
+                                    </apex:repeat>                                
+                            </table>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </table>
+        </body>
+    </html>
+</apex:page>

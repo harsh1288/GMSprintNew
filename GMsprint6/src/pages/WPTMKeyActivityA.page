@@ -1,0 +1,77 @@
+<apex:page standardController="Key_Activity__c" extensions="WPTMKeyActivityExtension" showHeader="true" sidebar="true">
+<apex:outputpanel >
+        <apex:actionstatus id="gntStatusId">
+            <apex:facet name="start">
+                <div class="waitingSearchDiv" id="el_loading" style="background-color: #DCD6D6;
+                       height: 100%;opacity:0.65;width:100%;"> 
+                    <div class="waitingHolder" style="top: 74.2px; width: 91px;">
+                        <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                        <span class="waitingDescription">Refreshing...</span>
+                    </div>
+                </div>
+            </apex:facet>
+        </apex:actionstatus>
+    </apex:outputpanel>
+<apex:form >
+
+    <apex:pagemessages ></apex:pagemessages> 
+    <apex:pageBlock title="Key Activity Edit"> 
+        <apex:pageBlockbuttons >
+            <apex:commandButton value="Save"  action="{!saveRecord}" />
+            <apex:commandButton value="Cancel" action="{!cancelRecord}" immediate="true" />
+        </apex:pageBlockbuttons>       
+        <apex:pageBlockSection title="Information"  collapsible="false" columns="2">
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="Activity Description" />
+                <apex:inputField value="{!keyAcc.Activity_Description__c}" required="TRUE"  style="width:100%" />
+            </apex:pageBlockSectionItem> 
+            <apex:pageBlockSectionItem rendered="{!blfaprofile}">
+                <apex:outputLabel value="Module" style="margin-left: 10px;font-family: Helvetica;font-weight: bold;color: #4a4a56;font-size: 10.9200000762939px;"/>
+                <apex:outputtext value="{!keyAcc.Grant_Intervention__r.Module__r.name}" style="width: 323px;margin-left: 75px;"/>
+            </apex:pageBlockSectionItem> 
+            <apex:pageBlockSectionItem rendered="{!blfaprofile}">
+                <apex:outputLabel value="Grant Intervention" style="margin-left: 10px;font-family: Helvetica;font-weight: bold;color: #4a4a56;font-size: 10.9200000762939px;"/>
+                <apex:outputtext value="{!keyAcc.Grant_Intervention__r.name}" style="width: 323px;margin-left: 75px;" />
+            </apex:pageBlockSectionItem>
+            <apex:actionRegion > 
+            <table>
+                <tr>
+                
+                <td>    <apex:outputLabel value="Module" style="font-family: Helvetica;font-weight: bold;color: #4a4a56;font-size: 10.9200000762939px;" rendered="{!NOT(blfaprofile)}"/></td>
+                <td>    <apex:selectList value="{!moduleId}" multiselect="false" size="1" rendered="{!NOT(blfaprofile)}" style="width:100%">              
+                        <apex:selectOptions value="{!moduleOptions}" />
+                        <apex:actionSupport event="onchange" action="{!refreshGrantInterventionList}"  reRender="grantInList" status="gntStatusId"/>
+                    </apex:selectList></td>
+                </tr>
+               
+                <tr><td>
+                    <apex:outputLabel value="Grant Intervention  " style="font-family: Helvetica;font-weight: bold;color: #4a4a56;font-size: 10.9200000762939px;" rendered="{!NOT(blfaprofile)}"/></td>
+                   <td> <apex:selectList id="grantInList" value="{!keyAcc.Grant_Intervention__c}" multiselect="false" size="1" style="width:100%" rendered="{!NOT(blfaprofile)}">
+                    <apex:selectOptions value="{!options}" />
+                    </apex:selectList></td>
+                </tr>
+            </table>
+           </apex:actionRegion>          
+            <apex:pageBlockSectionItem rendered="{!securityMatrixObj.editTGFCommenttoLFA}">
+                <apex:outputLabel value="Global Fund Comments to LFA" />
+                <apex:inputField value="{!keyAcc.Global_Fund_Comments_to_LFA__c}" style="width:100%" />
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem rendered="{!securityMatrixObj.editTGFCommenttoPR}">
+                <apex:outputLabel value="Global Fund Comments to PR" />
+                <apex:inputField value="{!keyAcc.Global_Fund_Comments_to_PR__c}" style="width:100%" />
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem rendered="{!securityMatrixObj.editLFAComment}">
+                <apex:outputLabel value="LFA Comments" />
+                <apex:inputField value="{!keyAcc.LFA_Comments__c}" style="width:100%" />
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem rendered="{!securityMatrixObj.editPRComment}">
+                <apex:outputLabel value="PR Comments" />
+                <apex:inputField value="{!keyAcc.PR_Comments__c}" style="width:100%" />  
+            </apex:pageBlockSectionItem> 
+            
+            
+                      
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+</apex:form>
+</apex:page>

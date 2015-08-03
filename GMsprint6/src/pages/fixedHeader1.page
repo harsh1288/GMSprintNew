@@ -1,0 +1,113 @@
+<apex:page id="page" >
+<apex:includeScript value="{!$Resource.jquery142}" />
+<!--<apex:includeScript value="{!URLFOR($Resource.fixedColumnJS)}" />-->
+<apex:includeScript value="{!$Resource.fixedTableJS}" />
+  <style>
+
+</style>
+<script>
+       $(document).ready(function() {
+            $(".tableDiv").each(function() {
+                var Id = $(this).get(0).id;
+                var maintbheight = 1555;
+                var maintbwidth = 1760;
+        
+                $("#" + Id + " .FixedTables").fixedTable({
+                    width: maintbwidth,
+                    height: maintbheight,
+                    fixedColumns: 1,
+                    classHeader: "fixedHead",
+                    classColumn: "fixedColumn",
+                    fixedColumnWidth: 150,
+                    outerId: Id,
+                    backcolor: "#FFFFFF",
+                    hovercolor: "#99CCFF"
+                });
+            });
+        });
+</script>
+  
+<apex:form >
+ <div id="tableDiv_Arrays" class="tableDiv">
+                    <table id="Open_Text_Arrays" class="FixedTables">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Purpose
+                                </th>
+                                <th>
+                                    C#
+                                </th>
+                                <th>
+                                    Php4
+                                </th>
+                                <th>
+                                    Php5
+                                </th>
+                                <th>
+                                    ActionScript
+                                </th>
+                                <th>
+                                    JavaScript
+                                </th>
+                                <th>
+                                    Ruby
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th>
+                                    data1
+                                </th>
+                                <th>
+                                    data2
+                                </th>
+                                <th>
+                                    data3
+                                </th>
+                                <th>
+                                    data4
+                                </th>
+                                <th>
+                                    data5
+                                </th>
+                                <th>
+                                    data6
+                                </th>
+                                <th>
+                                    data7
+                                </th>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>
+                                    Purpose
+                                </th>
+                                <th>
+                                    C#
+                                </th>
+                                <th>
+                                    Php4
+                                </th>
+                                <th>
+                                    Php5
+                                </th>
+                                <th>
+                                    ActionScript
+                                </th>
+                                <th>
+                                    JavaScript
+                                </th>
+                                <th>
+                                    Ruby
+                                </th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+
+</apex:form>
+</apex:page>

@@ -1,0 +1,72 @@
+<apex:page standardController="Goals_Objectives__c" tabStyle="Goals_Objectives__c" extensions="TranslateGoalClass" sidebar="false" >
+    <script>
+        function cloaseWin(){
+          self.close();
+        }
+    </script>
+    
+    <style>
+    
+      .span{
+           align:right !important;
+           font:bold; !important; 
+         }
+    </style>
+    
+    <apex:form >
+    <apex:pageblock title="Goal/Objective Translation">
+      <apex:outputPanel rendered="{!if(lang='fr',true,false)}"> 
+      <apex:pageBlockSection columns="2">
+        <apex:repeat rendered="{!if(lang='fr',true,false)}" value="{!$ObjectType.Goals_Objectives__c.FieldSets.Translation_Goal_French}" var="f"> 
+             <apex:outputField value="{!Goals_Objectives__c[f]}" /><br/>
+         </apex:repeat>
+       </apex:pageBlockSection>
+       </apex:outputPanel> 
+       
+         <apex:outputPanel rendered="{!if(lang='es',true,false)}">
+          <apex:pageBlockSection columns="2">
+          <apex:repeat value="{!$ObjectType.Goals_Objectives__c.FieldSets.Translation_Goal_Spanish}" var="f"> 
+             <apex:outputField value="{!Goals_Objectives__c[f]}" /><br/>
+          </apex:repeat>
+          </apex:pageBlockSection>
+          </apex:outputPanel>
+       
+         <apex:outputPanel rendered="{!if(lang='ru',true,false)}">
+         <apex:pageBlockSection columns="2">
+          <apex:repeat value="{!$ObjectType.Goals_Objectives__c.FieldSets.Translation_Goal_Russian}" var="f"> 
+             <apex:outputField value="{!Goals_Objectives__c[f]}" /><br/>
+         </apex:repeat>
+         </apex:pageBlockSection>
+         </apex:outputPanel>
+        
+        
+        <apex:pageblockButtons >
+        <apex:commandButton value="Close" action="{!closeWindow}" onclick="cloaseWin()"/>
+        </apex:pageblockButtons>
+        
+        <apex:pageBlockSection columns="1" >
+              
+        <apex:outputField rendered="{!if(lang='en',true,false)}" value="{!goalRec.Implementer_Comments__c}"/>  
+        <apex:outputField rendered="{!if(lang='en',true,false)}" value="{!goalRec.Global_Fund_Comments_to_Implementer__c}"/> 
+        <apex:outputField rendered="{!if(lang='en',true,false)}" value="{!goalRec.Goal__c }"/>
+        </apex:pageBlockSection>
+         <!-- <apex:pageblockSection >
+      
+         <apex:outputField rendered="{!if(lang='es',true,false)}" value="{!goalRec.PR_Comments_Spanish__c}"/>
+         <apex:outputField rendered="{!if(lang='fr',true,false)}" value="{!goalRec.PR_Comments_French__c}"/>
+         <apex:outputField rendered="{!if(lang='ru',true,false)}" value="{!goalRec.PR_Comments_Russian__c}"/>
+        
+         <apex:outputField rendered="{!if(lang='en',true,false)}" value="{!goalRec.Global_Fund_Comments_to_Implementer__c}"/>
+         <apex:outputField rendered="{!if(lang='es',true,false)}" value="{!goalRec.Global_Fund_Comments_to_PR_Spanish__c}"/>
+         <apex:outputField rendered="{!if(lang='fr',true,false)}" value="{!goalRec.Global_Fund_Comments_to_PR_French__c}"/>
+         <apex:outputField rendered="{!if(lang='ru',true,false)}" value="{!goalRec.Global_Fund_Comments_to_PR_Russian__c}"/>
+       
+         <apex:outputField rendered="{!if(lang='en',true,false)}" value="{!goalRec.Goal__c }"/>
+         <apex:outputField rendered="{!if(lang='es',true,false)}" value="{!goalRec.Goal_Spanish__c }"/>
+         <apex:outputField rendered="{!if(lang='fr',true,false)}" value="{!goalRec.Goal_French__c}"/>
+         <apex:outputField rendered="{!if(lang='ru',true,false)}" value="{!goalRec.Goal_Russian__c}"/>
+       
+        </apex:pageblockSection> -->
+    </apex:pageblock>
+    </apex:form> 
+</apex:page>

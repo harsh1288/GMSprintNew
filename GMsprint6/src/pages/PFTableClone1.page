@@ -1,0 +1,162 @@
+<apex:page sidebar="false" showheader="false" standardController="Performance_Framework__c" standardstylesheets="false" extensions="PFTableExtClone1">  
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <html>
+        <Style>
+            .hdr{
+                text-align:center;
+                font-size:18px;
+                font-weight:bold;
+                background-color:darkturquoise;
+            }
+/*            td.actcol{
+                background-color:white;
+            }
+            td.actcol:hover{
+                background-color:darkturquoise;
+            }
+*/            .custDialogPopup{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 150;
+            left: 26%;
+            padding:10px;
+            position: fixed;
+            top:50%;
+            margin-top: -1em; 
+            margin-left: -1em;
+           
+            }
+            .popupDialogBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        }
+        </Style>
+        <body>
+        <apex:form id="frm">
+            <h style="font-size:20px;">Table for Performance Framework hierarchy view:</h><br/>
+            <table width="100%" border="1" style="border-collapse:collapse;" cellpadding="3px">
+                <tr>
+                    <th class="hdr" >S.No.</th>
+                    <th class="hdr">Module</th>
+                    <th class="hdr" >Interventions</th>
+                    <th class="hdr" >Activities</th>
+       <!--             <th style="border:0;"></th> -->
+                </tr>
+                <apex:variable value="{!0}" var="Serial"/>
+                <apex:variable value="{!0}" var="rowcount"/>
+                <apex:variable value="{!0}" var="span"/>                               
+                <apex:repeat value="{!tbldata}" var="data" id="rpt">                                
+                <apex:variable value="{!Serial +1}" var="Serial"/>
+                <apex:variable value="{!if(data.modulerowspan-Serial==0,0,Serial)}" var="Serial"/>
+                <apex:variable value="{!if(Serial==1,rowcount+1,rowcount)}" var="rowcount"/> 
+                    <tr>
+                        <td rowspan="{!data.modulerowspan}" Style="text-align:left;display:{!if(Serial==1,'','none')};">{!rowcount}</td>                        
+                        <td rowspan="{!data.modulerowspan}" Style="text-align:left;display:{!if(Serial==1,'','none')};">{!data.moduleName}</td>
+                        <td Style="text-align:left;">{!data.Intervention.Name}</td>
+                        <td style="padding:0px;">
+                            <table frame="void" width="100%" style="border-collapse:collapse;">       
+                                    <apex:repeat value="{!data.ActivitiesList}" var="act" id="rptint">
+                                        <tr>
+<!--                                            <td onclick="return shwchld('{!act.Id}','{!act.Name}');" class="actcol" Style="height:23px;text-align:{!if(act.Name=='-','center','')};" id="actTitle">{!act.Name}<span style="visibility:hidden;">{!$Label.Dialoge_Header}</span></td>                                             -->
+                                            <td class="actcol" Style="text-align:{!if(act.Name=='-','center','')};border:1px solid black;" id="actTitle">{!act.Name}
+                                            <span style="float:right;">
+                                                <apex:commandLink id="Commentbox" style="width:70px;height:20px;display:{!if(act.Name=='-','none','')};" action="{!showCommentTable}" styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" status="Processing" rerender="frm" rendered="true">
+                                                    <apex:param name="activitycmnts" value="{!act.id}" assignto="{!actforedit}"/>
+                                                    <apex:outputLabel value="{!$Label.Dialoge_Header}" style="align:left"/>
+                                                </apex:commandLink><br/>
+                                                <apex:commandLink id="childdata" style="width:70px;height:20px;margin-top:3px;display:{!if(act.Name=='-','none','')};" onclick="return shwchld('{!act.Id}','{!act.Name}');" styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" status="Processing" rerender="frm" rendered="true">                                                   
+                                                    <apex:outputLabel value="Milestones" style="align:left"/>
+                                                </apex:commandLink>
+                                            </span>
+                                            </td>
+                                        </tr>
+                                    </apex:repeat>                              
+                            </table>
+                        </td>
+<!--                        <td style="padding:0px;">
+                            <table frame="void" cellpadding="4px" width="100%" style="border-collapse:collapse;">       
+                                <apex:repeat value="{!data.ActivitiesList}" var="act">
+                                    <tr>
+                                        <td Style="height:23px;text-align:center;border:1px solid black;" ><span style="visibility:hidden;">{!act.Name}</span>
+                                            <CENTER>
+                                                <apex:commandLink id="Commentbox" style="width:70px;height:20px;display:{!if(act.Name=='-','none','')};" action="{!showCommentTable}" styleClass="TGFbtn TGFbtn-mini TGFbtn-warning" status="Processing" rerender="dialogPouup" rendered="true">
+                                                    <apex:param name="activitycmnts" value="{!act.id}" assignto="{!actforedit}"/>
+                                                    <apex:outputLabel value="{!$Label.Dialoge_Header}" style="align:left"/>
+                                                </apex:commandLink>
+                                            </CENTER>
+                                        </td>                                            
+                                    </tr>
+                                </apex:repeat>                               
+                            </table>
+                        </td>                                             
+-->                    </tr>
+                </apex:repeat>
+            </table>
+            <br/>
+            <apex:outputPanel id="dialogPopup">
+            <apex:outputPanel styleClass="popupDialogBackground" rendered="{!ShowComments}"/>
+                <apex:outputPanel styleClass="custDialogPopup" rendered="{!ShowComments}" >
+                    <apex:pageBlock >
+                            <apex:pageBlockButtons location="bottom">                        
+                                <apex:CommandButton value="Save" action="{!SaveComment}" reRender="dialogPopup"/>
+                                <apex:CommandButton value="Cancel" action="{!CancelComment}" reRender="dialogPopup"/>                        
+                            </apex:pageBlockButtons>
+                        <h>Comments for {!kaInScope.Name}</h>
+                       <apex:pageBlockSection columns="2">
+                           <apex:inputField value="{!kaInScope.Global_Fund_Comments_to_LFA__c}"/>
+                           <apex:inputField value="{!kaInScope.Global_Fund_Comments_to_PR__c}"/>
+                           <apex:inputField value="{!kaInScope.LFA_Comments__c}"/>
+                           <apex:inputField value="{!kaInScope.PR_Comments__c}"/>
+                       </apex:pageBlockSection> 
+                    </apex:pageBlock>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            <apex:outputPanel id="childtbl">
+                <apex:pageMessages id="msg" /><br/>
+                <table class="childtbl" width="100%" border="1" style="border-collapse:collapse;display:{!if(showChildtbl,'','none')};">
+                    <tr>
+                        <th class="hdr" rowspan="2">Key Activity</th>
+                        <th class="hdr" rowspan="2">Milestones</th>
+                        <th class="hdr" rowspan="2">Criteria</th>
+                        <th class="hdr" rowspan="1" colspan="{!allRP.size}">Milestones/Targets</th>
+                    </tr>
+                    <tr>
+                        <apex:variable value="{!0}" var="prd"/>
+                        <apex:repeat value="{!allRP}" var="rp">
+                        <apex:variable value="{!prd +1}" var="prd"/>
+                        <th class="hdr">P{!prd}</th>
+                        </apex:repeat>
+                    </tr> 
+                    <tr>                   
+                     <td rowspan="{!wrapdata.size +1}" Style="text-align:center;">{!actName}</td>
+                    </tr>
+                     <apex:repeat value="{!wrapdata}" var="wrap">
+                         <tr>                                
+                             <td Style="text-align:center;">{!wrap.mt.MilestoneTitle__c}</td>
+                             <td Style="text-align:center;">{!wrap.mt.Criteria__c}</td>
+                             <apex:repeat value="{!wrap.linkedRp}" var="lstbool">
+                                 <td Style="text-align:center;"><apex:image id="checkimg" value="{!$Resource.check_green}" rendered="{!lstbool}"/></td>
+                             </apex:repeat>
+                         </tr>
+                     </apex:repeat>                                                            
+                </table>
+            </apex:outputPanel>                                
+            <apex:actionFunction name="shwchld" action="{!createWrapperForAct}" rerender="childtbl" status="myStatus">
+                <apex:param id="param1" name="name1" value="" assignTo="{!actId}"/>
+                <apex:param id="param2" name="name2" value="" assignTo="{!actName}"/>
+            </apex:actionFunction>
+            </apex:form>         
+        </body>       
+    </html>
+</apex:page>

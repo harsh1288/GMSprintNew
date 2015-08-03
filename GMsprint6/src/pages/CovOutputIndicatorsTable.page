@@ -1,0 +1,195 @@
+<apex:page sidebar="false" showheader="false" standardController="Module__c" tabStyle="Module__c" extensions="CovOutputIndicatorsTableController" recordSetVar="Module">  
+<style>
+   #outertbl td
+    {
+       border: 1px solid black;
+       padding:3px;
+    }
+   #outertbl table
+   {
+       border-collapse:collapse;
+   }
+   #outertbl table td
+   {
+       border:none;
+       height:20px;
+   }
+   .hdr
+   {
+       background: none repeat scroll 0 0 #46b1f9;
+       border: 1px solid white;
+       color: white;
+       font-size: 14px;
+       font-weight: bolder;
+       padding: 6px;
+   }
+</style>
+    <apex:form >
+            <apex:outputPanel rendered="{!IndicatorList.size>0}">
+                <apex:PageBlock title="Coverage/Output indicators with Module filter">
+                    <div style="margin-top:10px;margin-left:20px;">
+                        <label for="List"><b>Choose Module : </b></label>
+                        <apex:selectList id="List" value="{!selectedMod}" size="1">
+                            <apex:actionSupport event="onchange" action="{!fetchData}" rerender="pnl" status="counterStatus"/>                
+                            <apex:selectOptions value="{!ModuleOptionsList}" /> 
+                        </apex:selectList>
+                    </div>
+                </apex:PageBlock>                                
+                <apex:OutputPanel id="pnl">                                    
+                        <table id="outertbl" style="border:1px;border-collapse:collapse;">
+                                <tr>
+                                    <th rowspan="2" class="hdr">S. No.</th>
+                                    <th rowspan="2" class="hdr">Module</th>
+                                    <th rowspan="2" class="hdr">Disaggregated Name</th>                                    
+                                    <th rowspan="2" class="hdr">Standard or Custom</th>
+                                    <th rowspan="2" class="hdr">Grant Status</th>
+                                    <th rowspan="2" class="hdr">Reporting Frequency</th>
+                                    <th rowspan="2" class="hdr">Data Type</th>
+                                    <th rowspan="2" class="hdr">Is Disaggregated</th>
+                                    <th rowspan="2" class="hdr">Component</th>
+                                    <th rowspan="2" class="hdr">Country</th>
+                                    <th rowspan="2" class="hdr">Responsible PR for Reporting</th>                                    
+                                    <th colspan="6" class="hdr">Result Target</th>
+                                    <th rowspan="2" class="hdr">Disaggregation Category</th>                                    
+                                </tr>
+                                <tr>
+                                    <th class="hdr">Period</th>
+                                    <th class="hdr">Target</th>
+                                    <th class="hdr">Actual</th>
+                                    <th class="hdr">Is New</th>
+                                    <th class="hdr">Achievement</th>
+                                    <th class="hdr">Data Source</th>
+                                </tr>
+                            <apex:variable value="{!1}" var="serial"/>
+                            <apex:repeat value="{!IndicatorList}" var="item">                            
+                                <tr>
+                                    <td style="vertical-align:middle;">
+                                        {!serial}
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        {!item.Parent_Module__r.Name}
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        {!item.Indicator_Full_Name__c}
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        {!item.Standard_or_Custom__c}
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        {!item.Grant_Status__c}
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        {!item.Reporting_Frequency__c}
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        {!item.Data_Type__c}
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        {!item.Is_Disaggregated__c}
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        {!item.Component_Multi__c}
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        {!item.Country__c}
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        {!item.PR_Responsible_for_Reporting__c}
+                                    </td>
+                                    <td style="">
+                                       <table style="">
+                                        <th></th> 
+                                            <apex:repeat value="{! if(item.Results__r.size>0,item.Results__r,tempres)}" var="resitem">
+                                                <tr>
+                                                    <td style="white-space: nowrap;border-right:1px;">
+                                                        {!resitem.Period_Short_Date__c}
+                                                    </td>
+                                                </tr>
+                                            </apex:repeat>                                      
+                                        </table>
+                                    </td>
+                                    <td style="">
+                                       <table style="">
+                                        <th></th> 
+                                            <apex:repeat value="{! if(item.Results__r.size>0,item.Results__r,tempres)}" var="resitem">
+                                                <tr>
+                                                    <td>
+                                                        {!resitem.Target__c}
+                                                    </td>
+                                                </tr>
+                                            </apex:repeat>                                      
+                                        </table>
+                                    </td>
+                                    <td style="">
+                                       <table  style="">
+                                        <th></th> 
+                                            <apex:repeat value="{! if(item.Results__r.size>0,item.Results__r,tempres)}" var="resitem">
+                                                <tr>
+                                                    <td style="white-space: nowrap;border-right:1px;">
+                                                        {!resitem.Actual__c}
+                                                    </td>
+                                                </tr>
+                                            </apex:repeat>                                      
+                                        </table>
+                                    </td>
+                                    <td style="">
+                                       <table style="">
+                                        <th></th> 
+                                            <apex:repeat value="{! if(item.Results__r.size>0,item.Results__r,tempres)}" var="resitem">
+                                                <tr>
+                                                    <td>
+                                                        {!resitem.isNew__c}
+                                                    </td>
+                                                </tr>
+                                            </apex:repeat>                                      
+                                        </table>
+                                    </td>
+                                    <td style="">
+                                       <table style="">
+                                        <th></th> 
+                                            <apex:repeat value="{! if(item.Results__r.size>0,item.Results__r,tempres)}" var="resitem">
+                                                <tr>
+                                                    <td style="white-space: nowrap;border-right:1px;">
+                                                        {!resitem.Achievement__c}
+                                                    </td>
+                                                </tr>
+                                            </apex:repeat>                                      
+                                        </table>
+                                    </td>
+                                    <td style="">
+                                       <table style="">
+                                        <th></th> 
+                                            <apex:repeat value="{! if(item.Results__r.size>0,item.Results__r,tempres)}" var="resitem">
+                                                <tr>
+                                                    <td>
+                                                        {!resitem.Data_Source__c}
+                                                    </td>
+                                                </tr>
+                                            </apex:repeat>                                      
+                                        </table>
+                                    </td>
+                                    <td style="">
+                                        <table style="">
+                                        <th>
+                                        </th>
+                                            <apex:repeat value="{! if(item.Grant_Indicator__r.size>0,item.Grant_Indicator__r,tempgd)}" var="gditem">
+                                                <tr>
+                                                    <td>
+                                                        {!gditem.Disaggregation_Category__c}
+                                                    </td>
+                                                </tr>
+                                            </apex:repeat>                                      
+                                        </table>
+                                    </td>
+                                </tr>
+                            <apex:variable value="{!serial +1}" var="serial"/>
+                            </apex:repeat>
+                        </table>                        
+                </apex:OutputPanel>
+            </apex:outputPanel>
+            <apex:outputPanel rendered="!{!IndicatorList.size>0}">
+                <apex:PageBlock title="There are no Coverage/Output indicators for this performance framework.">
+                </apex:PageBlock>
+            </apex:outputPanel>     
+    </apex:form>
+</apex:page>

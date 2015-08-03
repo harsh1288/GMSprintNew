@@ -1,0 +1,2001 @@
+<apex:page id="page" standardController="Budget_Line__c" extensions="ctrlAssumption" sidebar="false">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.ColorButton, 'ColorButton/assets/css/yellowcolor.css')}"/>
+    <style>
+        .headerRowUpper{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold !important;         
+        }
+        .headerRowLower{
+            border:1px solid #E0E3E5 !important;
+            font-weight:bold !important;
+            background-color:#0066BB !important;
+            color:white !important;
+            white-space: normal !important;
+        }
+        .totalRow{
+            border-top:1px;
+            font-weight:bold !important;
+        }
+        .TDstyle{
+            border:1px solid #E0E3E5 !important;
+            vertical-align: top;
+        }
+        input{
+            width: 50px;
+        }
+        label {
+            font-weight: bold;
+            display: inherit;
+        }
+        .pageContent {
+            color: #4A4A56; 
+            font-size: 0.9em; 
+            font-weight: bold; 
+            padding-left: 1px;
+        }
+        .pageTitleIcon {
+            margin-top: 5px;
+            background-image: url("/img/sprites/master.png");
+            background-position: 0 -1058px;
+            height: 32px;
+            width: 32px;
+            display: inline;
+            float: left;
+            margin-right: 5px;
+            margin-left: 10px;
+        }
+        .pageDescription{
+            font-size: 1.8em; 
+            font-weight: normal;
+            line-height: 1.1em;
+        }
+        .sidebarMenu{
+            width : 270px;
+        }
+        .custPopup{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            left: 50%;
+            margin-top:-60px;
+            padding:10px;
+            position: absolute;
+            width:300px;
+            height:130px;
+        }
+        .popupBackground{
+            background-color:black;
+            opacity: 0.50;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            top: 0;
+            left: 0;
+        }
+        
+        .custPopupApply{
+            background-color: #ededed;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;
+            left: 50%;
+            margin-top:-60px;
+            padding:10px;
+            position: absolute;
+            width:366px;
+            height:163px;
+        }
+        
+        .popupButtonYes{
+            background-color: #49C739 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .popupButtonCancel{
+            background-color: #d82516 !important;
+            background-image: none !important;
+            color: white !important;
+            font-size: 12.9pt !important;
+            font-weight: bold !important;
+            height: 30px !important;;
+            width: 90px !important;;
+        }
+        .deletePopup{
+            background-color: #EDEDED !important;
+            border-top: 0px !important;
+            text-align:center !important;
+        }
+        .deletePopupCancel{
+            background-color: #EDEDED !important;
+            border-top: 0px !important;
+            text-align:left !important;
+        }
+        .TGFbtn-mini{
+            margin-top:6px;
+        }
+        h3{
+            font-size:24px;
+        }
+        .chatterFeedPanel{
+            height: 225px !important;
+        }  
+        .imgclass:hover{  
+            background-image: url(/img/help/helpOrbs.gif);  
+            background-repeat: no-repeat;  
+            width: 16px;  
+            height: 15px;     
+            background-position: right;  
+         
+        }  
+        .imgclass{  
+            background-image: url(/img/help/helpOrbs.gif);  
+            background-repeat: no-repeat;  
+            width: 16px;  
+            height: 15px;  
+        } 
+        .h4 {
+        font-size:18px;
+        line-height: 1.5;
+        font-weight:bold;
+    }
+    .linkunderline{
+        color:#2E7BBB;
+        text-decoration:underline;
+    }
+    .fieldColor{
+        color: #0000FF !important;
+        
+    }
+     .bPageHeader td.left div
+    {
+      width:260px;
+    }
+    .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        } 
+    </style>
+   <apex:form id="frm">  
+    <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+    </div>  
+    <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+    </apex:actionStatus>
+    <apex:actionFunction name="actChangeCurrencyRateFromCode" action="{!ChangeCurrencyRateFromCode}" status="Processing" rerender="frm"  oncomplete="showRows(false);">
+         <apex:param value="" name="Code" id="Code"/>
+         <apex:param value="" name="ChangeIndex" id="ChangeIndex"/>
+         <apex:param value="" name="isNew" id="isNew"/>
+    </apex:actionFunction>
+    <apex:actionFunction name="actChangeCurrencyRateFromCodeNew" action="{!ChangeCurrencyRateFromCode}" status="Processing" rerender="frm"  oncomplete="showRows(true);">
+         <apex:param value="" name="Code" id="Codenew"/>
+         <apex:param value="" name="ChangeIndex" id="ChangeIndexnew"/>
+         <apex:param value="" name="isNew" id="isNewRecord"/>
+    </apex:actionFunction>
+    <apex:actionFunction name="actSaveAssumption" action="{!SaveAssumption}" status="Processing" rerender="frm" >
+         <apex:param value="" name="saveClose" id="AssCloseCode"/>
+         <apex:param value="" name="CheckNewLine" id="CheckNewLine"/>
+    </apex:actionFunction>
+    <apex:outputPanel id="tstpopup1" >
+            <apex:inputHidden value="{!strLocalCurrencyRate}" id="hdnstrLocalCurrencyRate"/>
+            <apex:inputHidden value="{!strGrantCurrencyRate}" id="hdnstrGrantCurrencyRate"/>
+            <apex:inputHidden value="{!strOtherCurrencyRate}" id="hdnstrOtherCurrencyRate"/>
+            <apex:inputHidden value="{!strSelectedYearAssumption}" id="hdnSelectedYearA"/>
+            <table width="100%">
+               <tr>
+                  <td colspan="4">
+                      <h3>
+                         Activity Description :{!lstbl[0].Activity__c}
+                      </h3>
+                      <br/>
+                      <apex:outputPanel id="ApplyAssumptionSet" rendered="{!blnApply}">
+                            <apex:outputtext value="Use Assumption Set"/>
+                            <apex:selectlist id="strAss" value="{!strAssumptionSet}" style="margin-left:20px" size="1" onchange="return displayApplyButton(this);">
+                                  <apex:selectOptions value="{!AssumptionSetsOptions}"/>
+                            </apex:selectlist>
+                            <apex:commandLink id="btnApply" styleClass="TGFbtn TGFbtn-mini TGFbtn-primary" style="width:35px;height:20px;margin-left:6px;display:{if(strAssumptionSet != null,'','none')};" onclick="return openAssumptionApplyPopup('{!$Component.tstpopupApply}','{!$Component.strAss}');">
+                                  <i><apex:outputLabel value="{!$Label.Apply}"/></i>
+                            </apex:commandLink>
+                      </apex:outputPanel>
+                      <apex:outputPanel id="tstpopupApply" style="display:none;">
+                            <apex:outputPanel id="popupBackgroundApply" styleClass="popupBackground"/>
+                                  <apex:outputPanel id="custPopupApply" styleClass="custPopupApply">
+                                        <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                              <tr>
+                                                  <td colspan="3" class="deletePopup">
+                                                      <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Assumption_Set_Alert}"/>
+                                                   </td>
+                                              </tr>
+                                              <tr>
+                                                  <td colspan="3" class="deletePopup">
+                                                     <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Delete_the_assumption_and_replace}"/>
+                                                  </td>
+                                              </tr>
+                                              <tr>
+                                                  <td width="47%" class="deletePopup">
+                                                      <apex:commandButton styleClass="popupButtonYes" value="Yes" action="{!RetriveAssumptionFromSet}" reRender="frm" status="Processing" oncomplete="OncompleteApplyPopup();"/>
+                                                                                    
+                                                  </td>
+                                                  <td width="6%" class="deletePopup"></td>
+                                                      <td width="47%" align="left" class="deletePopupCancel">
+                                                          <apex:commandButton styleClass="popupButtonCancel" value="No" onclick="return CloseAssumptionPopup('{!$Component.tstpopupApply}');" reRender="frm" status="Processing"/>
+                                                  </td>
+                                              </tr>
+                                       </table>
+                        </apex:outputPanel>
+                     </apex:outputPanel>
+                   </td>
+                   <th>
+                       <apex:commandLink styleClass="TGFbtn TGFbtn-success pull-right" style="width:175px;font-size:11px" action="/apex/AssumptionSet?id={!strImplementationPeriodId}&module={!strmoduleId}">
+                             <strong><apex:outputLabel value="{!$Label.Manage_Assumption_Sets}"/></strong>
+                       </apex:commandLink>
+                   </th>
+               </tr>
+            </table>
+            <table width="100%" cellspacing="0" cellsspacing="0" border="0" class="list" id="table">
+                   <thead class="rich-table-thead">
+                          <tr class="headerRow">
+                              <th width="50%"></th>
+                              <th class="headerRowUpper" id="MainThYear1A" style="color:{!if(strSelectedYearAssumption == 'Year1','#FFFFFF','#00688B')};text-decoration:underline;background-color:{!if(strSelectedYearAssumption == 'Year1','#434445','#DFEFF0')};" onclick="displayYearToggleAssumption('MainThYear1A','{!$Component.hdnSelectedYearA}','Year1','Year1thA','Year1tdA',{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '1. Human Resources (HR)'},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'});">
+                                  <apex:outputlabel value="{!YEAR(GIPstartdate)}" styleclass="link"/>
+                              </th>                
+                              <th class="headerRowUpper" id="MainThYear2A" style="color:{!if(strSelectedYearAssumption == 'Year2','#FFFFFF','#00688B')};text-decoration:underline;background-color:{!if(strSelectedYearAssumption == 'Year2','#7D9C9F','#E7F2D5')};" onclick="displayYearToggleAssumption('MainThYear2A','{!$Component.hdnSelectedYearA}','Year2','Year2thA','Year2tdA',{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '1. Human Resources (HR)'},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'});">
+                                  <apex:outputlabel value="{!YEAR(GIPstartdate)+1}" styleclass="link"/> 
+                              </th>                
+                              <th class="headerRowUpper" id="MainThYear3A" style="color:{!if(strSelectedYearAssumption == 'Year3','#FFFFFF','#00688B')};text-decoration:underline;background-color:{!if(strSelectedYearAssumption == 'Year3','#7D9C9F','#FAF3CA')};" onclick="displayYearToggleAssumption('MainThYear3A','{!$Component.hdnSelectedYearA}','Year3','Year3thA','Year3tdA',{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '1. Human Resources (HR)'},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'});">
+                                  <apex:outputlabel value="{!YEAR(GIPstartdate)+2}" styleclass="link"/>
+                              </th>               
+                              <th class="headerRowUpper" id="MainThYear4A" style="color:{!if(strSelectedYearAssumption == 'Year4','#FFFFFF','#00688B')};text-decoration:underline;background-color:{!if(strSelectedYearAssumption == 'Year4','#7D9C9F','#F0E1E2')};display:{!if(YEAR(GIPstartdate)+3 <= YEAR(GIPenddate),'','none')}" onclick="displayYearToggleAssumption('MainThYear4A','{!$Component.hdnSelectedYearA}','Year4','Year4thA','Year4tdA',{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '1. Human Resources (HR)'},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'});">
+                                  <apex:outputlabel value="{!YEAR(GIPstartdate)+3}" styleclass="link"/>
+                              </th>
+                           </tr>
+                    </thead>
+            </table>
+            <apex:outputpanel rendered="{!if(lstbl[0].Cost_Grouping__c != '1. Human Resources (HR)',true,false)}">
+                  <table width= "100%" class="table table-striped" style="display:{!if(lstbl[0].Cost_Grouping__c != '1. Human Resources (HR)','','none')};">
+                         <thead>
+                                <tr class="headerRow">
+                                    <th width="5%"></th>
+                                        <th class="headerRowLower" width="11%">
+                                            <apex:outputlabel value="{!$Label.Item_Description}"/>
+                                        </th>                
+                                        <th class="headerRowLower" width="15%">
+                                            <apex:outputlabel value="{!$Label.Currency}"/>
+                                        </th>                
+                                        <th class="headerRowLower" width="10%">
+                                            <apex:outputlabel value="{!$Label.Unit_of_Measure}"/>
+                                        </th>  
+                                        <th id="Year1thA" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y1_Unit_Cost}"/>
+                                        </th>
+                                        <th id="DurationTh1" class="headerRowLower" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year1','','none')}">
+                                            <apex:outputlabel value="{!$Label.Y1_Duration}"/>
+                                        </th>
+                                        <th id="Year1thA" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y1_Quantity}"/>
+                                        </th>  
+                                        <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 -->  
+                                        <th id="Year1thA" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year1','','none')}" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y1_Number_of_Persons}"/>
+                                        </th>             
+                                        <th id="Year1thA" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y1_Total_Cost}"/>
+                                        </th>  
+                                        <th id="Year2thA" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y2_Unit_Cost}"/>
+                                        </th>
+                                        <th id="DurationTh2" class="headerRowLower" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year2','','none')}" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y2_Duration_days}"/>
+                                        </th>
+                                        <th id="Year2thA" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y2_Quantity}"/>
+                                        </th>  
+                                        <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 -->  
+                                        <th id="Year2thA" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year2','','none')}" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y2_Number_of_persons}"/>
+                                        </th>              
+                                        <th id="Year2thA" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y2_Total_Cost}"/>
+                                        </th>
+                                        <th id="Year3thA" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y3_Unit_Cost}"/>
+                                        </th>
+                                        <th id="DurationTh3" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year3','','none')}" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y3_Duration_days}"/>
+                                        </th>
+                                        <th id="Year3thA" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y3_Quantity}"/>
+                                        </th>
+                                        <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 -->
+                                        <th id="Year3thA" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year3','','none')}" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y3_Number_of_persons}"/>
+                                        </th>                
+                                        <th id="Year3thA" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y3_Total_Cost}"/>
+                                        </th>
+                                        <th id="Year4thA" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y4_Unit_Cost}"/>
+                                        </th>
+                                        <th id="DurationTh4" class="headerRowLower" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year4','','none')}">
+                                            <apex:outputlabel value="{!$Label.Y4_Duration_days}"/>
+                                        </th>
+                                        <th id="Year4thA" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y4_Quantity}"/>
+                                        </th>     
+                                        <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 -->   
+                                        <th id="Year4thA" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year4','','none')}" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y4_Number_of_persons}"/>
+                                        </th> 
+                                        <th id="Year4thA" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};" class="headerRowLower" width="13%">
+                                            <apex:outputlabel value="{!$Label.Y4_Total_Cost}"/>
+                                        </th>
+                                        <th class="headerRowLower" width="10%">
+                                            <apex:outputlabel value="{!$Label.Assumptions_to_Support_Unit_Cost}"/>
+                                        </th>
+                                        <th class="headerRowLower" width="10%">
+                                            <apex:outputlabel value="{!$Label.Justification_Comments}"/>
+                                        </th>
+                                    </tr>
+                            </thead>
+                            <apex:variable value="{!0}" var="CountAssumption"/>
+                            <apex:repeat id="rptBudgetLine" value="{!lstAssumptions}" var="objA">
+                                 <tr>
+                                    <td>
+                                       <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="width:30px;height:25px;margin-top:6px;" onclick="return openAssumptionDeletePopup('{!$Component.tstpopup1}');" rendered="{!blnDelAssumption}">
+                                             <i class="icon-trash icon-white" style="margin-top:6px"></i> 
+                                       </apex:commandLink>
+                                       <apex:outputPanel id="tstpopup1" style="display:none;">
+                                            <apex:outputPanel id="popupBackground1" styleClass="popupBackground"/>
+                                                 <apex:outputPanel id="custPopup1" styleClass="custPopup">
+                                                      <table width="100%" cellspacing="0" cellpadding="0" border="0" >
+                                                             <tr>
+                                                                <td colspan="3" class="deletePopup">
+                                                                    <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.Are_you_sure}"/>
+                                                                </td>
+                                                              </tr>
+                                                              <tr>
+                                                                 <td colspan="3" class="deletePopup">
+                                                                     <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="{!$Label.This_Assumption_will_be_deleted}"/>
+                                                                 </td>
+                                                               </tr>
+                                                               <tr>
+                                                                  <td width="47%" class="deletePopup">
+                                                                      <apex:commandButton styleClass="popupButtonYes" value="Yes" action="{!DeleteAssumption}" reRender="frm" status="Processing" >
+                                                                            <apex:param value="{!CountAssumption}" name="DeleteIndex" />
+                                                                      </apex:commandButton>
+                                                                   </td>
+                                                                   <td width="6%" class="deletePopup"></td>
+                                                                   <td width="47%" align="left" class="deletePopupCancel">
+                                                                       <apex:commandButton styleClass="popupButtonCancel" value="Cancel" onclick="return CloseAssumptionPopup('{!$Component.tstpopup1}');"/>
+                                                                   </td>
+                                                                </tr>
+                                                         </table>
+                                                  </apex:outputPanel>
+                                            </apex:outputPanel>
+                                    </td>
+                                    <td class="dataCell TDstyle">
+                                        <apex:inputField value="{!objA.objAssumption.Item_Description__c}" style="height: 19px;resize:none"/>
+                                    </td>
+                                    <td class="dataCell TDstyle">
+                                        <apex:selectList id="txtCurrencyUsed" value="{!objA.strCurrencyUsedAssumption}" size="1" style="width:101px" onchange="return ChangeCurrencyRate(this.value,'{!CountAssumption}','false');">
+                                              <apex:selectOptions value="{!AllIPCurrencyOptions}"></apex:selectOptions>
+                                        </apex:selectList>
+                                    </td>
+                                    <td class="dataCell TDstyle">
+                                        <apex:outputField id="AssUoM" value="{!objA.objAssumption.Unit_of_Measure__c}" style="height: 19px;resize:none;width:130px;"/> 
+                                    </td>
+                                    <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                        <apex:inputField id="txtY1UnitCost" value="{!objA.objAssumption.Y1_Unit_Cost_Payment_Currency__c}"  onchange="CalculateTotalCost('1','{!$Component.txtY1UnitCost}','{!$Component.txtY1DurationDays}','{!$Component.txtY1Quantity}','{!$Component.txtTotalCostY1}','{!$Component.txtRateY1}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY1NumofPerson}');"/>
+                                    </td>
+                                    <td id="DurationTd1" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year1','','none')}" onchange="CalculateTotalCost('1','{!$Component.txtY1UnitCost}','{!$Component.txtY1DurationDays}','{!$Component.txtY1Quantity}','{!$Component.txtTotalCostY1}','{!$Component.txtRateY1}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY1NumofPerson}');">
+                                        <apex:inputField id="txtY1DurationDays" value="{!objA.objAssumption.Y1_Duration_Days__c}" />
+                                    </td>
+                                    <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};" onchange="CalculateTotalCost('1','{!$Component.txtY1UnitCost}','{!$Component.txtY1DurationDays}','{!$Component.txtY1Quantity}','{!$Component.txtTotalCostY1}','{!$Component.txtRateY1}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY1NumofPerson}');">
+                                        <apex:inputField id="txtY1Quantity" value="{!objA.objAssumption.Y1_Quantity__c}" />
+                                    </td>
+                                    <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 -->   
+                                    <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year1','','none')};" onchange="CalculateTotalCost('1','{!$Component.txtY1UnitCost}','{!$Component.txtY1DurationDays}','{!$Component.txtY1Quantity}','{!$Component.txtTotalCostY1}','{!$Component.txtRateY1}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY1NumofPerson}');">
+                                        <apex:inputField id="txtY1NumofPerson" value="{!objA.objAssumption.Y1_Number_of_Persons__c}" />
+                                    </td>
+                                    <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                    <apex:outputText id="txtTotalCostY1" value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                         <apex:param value="{!objA.TotalCostY1}"/>
+                                    </apex:outputText>
+                                    <br/>
+                                    <apex:outputText id="txtRateY1" value="{0,number,##,###,###,###({!strGrantCurrency})}" >
+                                         <apex:param value="{!objA.CurrencyRateInUSDY1}"/>
+                                    </apex:outputText>                                                          
+                                </td>
+                                <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                    <apex:inputField id="txtY2UnitCost" value="{!objA.objAssumption.Y2_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCost('2','{!$Component.txtY2UnitCost}','{!$Component.txtY2DurationDays}','{!$Component.txtY2Quantity}','{!$Component.txtTotalCostY2}','{!$Component.txtRateY2}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY2NumofPerson}');"/>
+                                </td>
+                                <td id="DurationTd2" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year2','','none')}">
+                                    <apex:inputField id="txtY2DurationDays" value="{!objA.objAssumption.Y2_Duration_Days__c}" onchange="CalculateTotalCost('2','{!$Component.txtY2UnitCost}','{!$Component.txtY2DurationDays}','{!$Component.txtY2Quantity}','{!$Component.txtTotalCostY2}','{!$Component.txtRateY2}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY2NumofPerson}');"/>
+                                </td>
+                                <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                    <apex:inputField id="txtY2Quantity" value="{!objA.objAssumption.Y2_Quantity__c}" onchange="CalculateTotalCost('2','{!$Component.txtY2UnitCost}','{!$Component.txtY2DurationDays}','{!$Component.txtY2Quantity}','{!$Component.txtTotalCostY2}','{!$Component.txtRateY2}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY2NumofPerson}');"/>
+                                </td>
+                                <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 -->  
+                                <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year2','','none')};">
+                                    <apex:inputField id="txtY2NumofPerson" value="{!objA.objAssumption.Y2_Number_of_Persons__c}" onchange="CalculateTotalCost('2','{!$Component.txtY2UnitCost}','{!$Component.txtY2DurationDays}','{!$Component.txtY2Quantity}','{!$Component.txtTotalCostY2}','{!$Component.txtRateY2}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY2NumofPerson}');"/>
+                                </td>
+                                <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                    <apex:outputText id="txtTotalCostY2" value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                         <apex:param value="{!objA.TotalCostY2}"/>
+                                    </apex:outputText>
+                                    <br/>
+                                    <apex:outputText id="txtRateY2" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                         <apex:param value="{!objA.CurrencyRateInUSDY2}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                    <apex:inputField id="txtY3UnitCost" value="{!objA.objAssumption.Y3_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCost('3','{!$Component.txtY3UnitCost}','{!$Component.txtY3DurationDays}','{!$Component.txtY3Quantity}','{!$Component.txtTotalCostY3}','{!$Component.txtRateY3}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY3NumofPerson}');"/>
+                                </td>
+                                <td id="DurationTd3" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year3','','none')}">
+                                    <apex:inputField id="txtY3DurationDays" value="{!objA.objAssumption.Y3_Duration_Days__c}" onchange="CalculateTotalCost('3','{!$Component.txtY3UnitCost}','{!$Component.txtY3DurationDays}','{!$Component.txtY3Quantity}','{!$Component.txtTotalCostY3}','{!$Component.txtRateY3}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY3NumofPerson}');"/>
+                                </td>
+                                <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                    <apex:inputField id="txtY3Quantity" value="{!objA.objAssumption.Y3_Quantity__c}" onchange="CalculateTotalCost('3','{!$Component.txtY3UnitCost}','{!$Component.txtY3DurationDays}','{!$Component.txtY3Quantity}','{!$Component.txtTotalCostY3}','{!$Component.txtRateY3}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY3NumofPerson}');"/>
+                                </td>
+                                <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 --> 
+                                <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year3','','none')};">
+                                    <apex:inputField id="txtY3NumofPerson" value="{!objA.objAssumption.Y3_Number_of_Persons__c}" onchange="CalculateTotalCost('3','{!$Component.txtY3UnitCost}','{!$Component.txtY3DurationDays}','{!$Component.txtY3Quantity}','{!$Component.txtTotalCostY3}','{!$Component.txtRateY3}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY3NumofPerson}');"/>
+                                </td> 
+                                <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                    <apex:outputText id="txtTotalCostY3" value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                         <apex:param value="{!objA.TotalCostY3}"/>
+                                    </apex:outputText>
+                                    <br/>
+                                    <apex:outputText id="txtRateY3" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                         <apex:param value="{!objA.CurrencyRateInUSDY3}"/>
+                                    </apex:outputText>
+                               </td>
+                               <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                   <apex:inputField id="txtY4UnitCost" value="{!objA.objAssumption.Y4_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCost('4','{!$Component.txtY4UnitCost}','{!$Component.txtY4DurationDays}','{!$Component.txtY4Quantity}','{!$Component.txtTotalCostY4}','{!$Component.txtRateY4}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY4NumofPerson}');"/>
+                               </td>
+                               <td id="DurationTd4" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year4','','none')}">
+                                   <apex:inputField id="txtY4DurationDays" value="{!objA.objAssumption.Y4_Duration_Days__c}" onchange="CalculateTotalCost('4','{!$Component.txtY4UnitCost}','{!$Component.txtY4DurationDays}','{!$Component.txtY4Quantity}','{!$Component.txtTotalCostY4}','{!$Component.txtRateY4}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY4NumofPerson}');"/>
+                               </td>
+                               <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                   <apex:inputField id="txtY4Quantity" value="{!objA.objAssumption.Y4_Quantity__c}" onchange="CalculateTotalCost('4','{!$Component.txtY4UnitCost}','{!$Component.txtY4DurationDays}','{!$Component.txtY4Quantity}','{!$Component.txtTotalCostY4}','{!$Component.txtRateY4}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY4NumofPerson}');"/>
+                               </td>
+                               <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 -->
+                               <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year4','','none')};">
+                                   <apex:inputField id="txtY4NumofPerson" value="{!objA.objAssumption.Y4_Number_of_Persons__c}" onchange="CalculateTotalCost('4','{!$Component.txtY4UnitCost}','{!$Component.txtY4DurationDays}','{!$Component.txtY4Quantity}','{!$Component.txtTotalCostY4}','{!$Component.txtRateY4}','{!$Component.txtCurrencyUsed}',{!lstAssumptions.size},{!lstbl[0].Cost_Input__r.Cost_Grouping__c == '2. Travel related costs (TRC)'},'{!$Component.txtY4NumofPerson}');"/>
+                               </td> 
+                               <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                   <apex:outputText id="txtTotalCostY4" value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                        <apex:param value="{!objA.TotalCostY4}"/>
+                                   </apex:outputText>
+                                   <br/>
+                                   <apex:outputText id="txtRateY4" value="{0,number,##,###,###,###({!strGrantCurrency})}" style="top-margin:10px">
+                                        <apex:param value="{!objA.CurrencyRateInUSDY4}"/>
+                                   </apex:outputText>
+                                </td>
+                                <td class="dataCell TDstyle">
+                                    <apex:inputField value="{!objA.objAssumption.Assumptions_to_Support_Unit_Cost__c}" style="width:180px;"/>
+                                </td>
+                                <td class="dataCell TDstyle">
+                                    <apex:inputField value="{!objA.objAssumption.Justifications_Comments__c}" style="height: 19px;resize:none;width:130px;"/>
+                                </td>
+                           </tr>
+                                <apex:variable value="{!CountAssumption+1}" var="CountAssumption"/>
+                            </apex:repeat>
+                           <tr id="NewAssumptionTR" style="display:none;">
+                               <td>
+                                   <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="width:30px;height:25px;margin-top:6px;" >
+                                         <i class="icon-trash icon-white" style="margin-top:6px"></i> 
+                                   </apex:commandLink>
+                               </td>
+                               <td class="dataCell TDstyle">
+                                   <apex:inputField id="idItemDecNew" value="{!objNewAssumption.objAssumption.Item_Description__c}" style="height: 19px;resize:none"/>
+                               </td>
+                               <td class="dataCell TDstyle">
+                                   <apex:selectList id="txtCurrencyUsedNew" value="{!objNewAssumption.strCurrencyUsedAssumption}" size="1" style="width:101px" onchange="ChangeCurrencyRate(this.value,'{!CountAssumption+1}','true');">
+                                         <apex:selectOptions value="{!AllIPCurrencyOptions}"></apex:selectOptions>
+                                   </apex:selectList>
+                               </td>
+                               <td class="dataCell TDstyle">
+                                    <apex:outputField id="idUnitMeasureNew" value="{!objNewAssumption.objAssumption.Unit_of_Measure__c}" style="height: 19px;resize:none;width:130px;"/> 
+                               </td>
+                               <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                   <apex:inputField id="txtY1UnitCostNew"  value="{!objNewAssumption.objAssumption.Y1_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCostNew('1','{!$Component.txtY1UnitCostNew}','{!$Component.txtY1DurationDaysNew}','{!$Component.txtY1QuantityNew}','{!$Component.txtTotalCostY1New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY1New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY1NumOfPersonsNew}');"/>
+                               </td>                                                        
+                               <td id="DurationTd1" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year1','','none')}">
+                                   <apex:inputField id="txtY1DurationDaysNew" value="{!objNewAssumption.objAssumption.Y1_Duration_Days__c}" onchange="CalculateTotalCostNew('1','{!$Component.txtY1UnitCostNew}','{!$Component.txtY1DurationDaysNew}','{!$Component.txtY1QuantityNew}','{!$Component.txtTotalCostY1New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY1New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY1NumOfPersonsNew}');"/>
+                               </td>
+                               <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                   <apex:inputField id="txtY1QuantityNew"  value="{!objNewAssumption.objAssumption.Y1_Quantity__c}" onchange="CalculateTotalCostNew('1','{!$Component.txtY1UnitCostNew}','{!$Component.txtY1DurationDaysNew}','{!$Component.txtY1QuantityNew}','{!$Component.txtTotalCostY1New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY1New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY1NumOfPersonsNew}');"/>
+                               </td>
+                               <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 -->
+                               <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year1','','none')};">
+                                   <apex:inputField id="txtY1NumOfPersonsNew"  value="{!objNewAssumption.objAssumption.Y1_Number_of_Persons__c}" onchange="CalculateTotalCostNew('1','{!$Component.txtY1UnitCostNew}','{!$Component.txtY1DurationDaysNew}','{!$Component.txtY1QuantityNew}','{!$Component.txtTotalCostY1New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY1New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY1NumOfPersonsNew}');"/>
+                               </td>
+                               <td  id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                   <apex:outputText id="txtTotalCostY1New" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                        <apex:param value="{!objNewAssumption.TotalCostY1}" />
+                                   </apex:outputText>
+                                   <br/>
+                                   <apex:outputText id="txtRateY1New" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                        <apex:param value="{!objNewAssumption.CurrencyRateInUSDY1}"/>
+                                   </apex:outputText>
+                               </td> 
+                               <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};" >
+                                   <apex:inputField id="txtY2UnitCostNew" value="{!objNewAssumption.objAssumption.Y2_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCostNew('2','{!$Component.txtY2UnitCostNew}','{!$Component.txtY2DurationDaysNew}','{!$Component.txtY2QuantityNew}','{!$Component.txtTotalCostY2New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY2New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY2NumOfPersonsNew}');"/>
+                               </td>                                                        
+                               <td id="DurationTd2" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year2','','none')}">
+                                   <apex:inputField id="txtY2DurationDaysNew" value="{!objNewAssumption.objAssumption.Y2_Duration_Days__c}" onchange="CalculateTotalCostNew('2','{!$Component.txtY2UnitCostNew}','{!$Component.txtY2DurationDaysNew}','{!$Component.txtY2QuantityNew}','{!$Component.txtTotalCostY2New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY2New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY2NumOfPersonsNew}');"/>
+                               </td>
+                               <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                   <apex:inputField id="txtY2QuantityNew" value="{!objNewAssumption.objAssumption.Y2_Quantity__c}" onchange="CalculateTotalCostNew('2','{!$Component.txtY2UnitCostNew}','{!$Component.txtY2DurationDaysNew}','{!$Component.txtY2QuantityNew}','{!$Component.txtTotalCostY2New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY2New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY2NumOfPersonsNew}');"/>
+                               </td>
+                               <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 -->
+                               <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year2','','none')};">
+                                   <apex:inputField id="txtY2NumOfPersonsNew" value="{!objNewAssumption.objAssumption.Y2_Number_of_Persons__c}" onchange="CalculateTotalCostNew('2','{!$Component.txtY2UnitCostNew}','{!$Component.txtY2DurationDaysNew}','{!$Component.txtY2QuantityNew}','{!$Component.txtTotalCostY2New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY2New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY2NumOfPersonsNew}');"/>
+                               </td>
+                               <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                   <apex:outputText id="txtTotalCostY2New" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                         <apex:param value="{!objNewAssumption.TotalCostY2}" />
+                                   </apex:outputText>
+                                   <br/>
+                                   <apex:outputText id="txtRateY2New" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                        <apex:param value="{!objNewAssumption.CurrencyRateInUSDY2}"/>
+                                   </apex:outputText>
+                               </td>
+                               <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                   <apex:inputField id="txtY3UnitCostNew" value="{!objNewAssumption.objAssumption.Y3_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCostNew('3','{!$Component.txtY3UnitCostNew}','{!$Component.txtY3DurationDaysNew}','{!$Component.txtY3QuantityNew}','{!$Component.txtTotalCostY3New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY3New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY3NumOfPersonsNew}');"/>
+                               </td>                                                        
+                               <td id="DurationTd3" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year3','','none')}">
+                                   <apex:inputField id="txtY3DurationDaysNew" value="{!objNewAssumption.objAssumption.Y3_Duration_Days__c}" onchange="CalculateTotalCostNew('3','{!$Component.txtY3UnitCostNew}','{!$Component.txtY3DurationDaysNew}','{!$Component.txtY3QuantityNew}','{!$Component.txtTotalCostY3New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY3New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY3NumOfPersonsNew}');"/>
+                               </td>
+                               <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                   <apex:inputField id="txtY3QuantityNew" value="{!objNewAssumption.objAssumption.Y3_Quantity__c}" onchange="CalculateTotalCostNew('3','{!$Component.txtY3UnitCostNew}','{!$Component.txtY3DurationDaysNew}','{!$Component.txtY3QuantityNew}','{!$Component.txtTotalCostY3New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY3New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY3NumOfPersonsNew}');"/>
+                               </td>
+                               <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 -->
+                               <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year3','','none')};">
+                                   <apex:inputField id="txtY3NumOfPersonsNew" value="{!objNewAssumption.objAssumption.Y3_Number_of_Persons__c}" onchange="CalculateTotalCostNew('3','{!$Component.txtY3UnitCostNew}','{!$Component.txtY3DurationDaysNew}','{!$Component.txtY3QuantityNew}','{!$Component.txtTotalCostY3New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY3New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY3NumOfPersonsNew}');"/>
+                               </td>
+                               <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                   <apex:outputText id="txtTotalCostY3New" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                        <apex:param value="{!objNewAssumption.TotalCostY3}" />
+                                   </apex:outputText>
+                                   <br/>
+                                   <apex:outputText id="txtRateY3New" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                        <apex:param value="{!objNewAssumption.CurrencyRateInUSDY3}"/>
+                                   </apex:outputText>
+                               </td> 
+                               <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                   <apex:inputField id="txtY4UnitCostNew" value="{!objNewAssumption.objAssumption.Y4_Unit_Cost_Payment_Currency__c}" onchange="CalculateTotalCostNew('4','{!$Component.txtY4UnitCostNew}','{!$Component.txtY4DurationDaysNew}','{!$Component.txtY4QuantityNew}','{!$Component.txtTotalCostY4New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY4New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY4NumOfPersonsNew}');"/>
+                               </td>                                                        
+                               <td id="DurationTd4" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year4','','none')}">
+                                   <apex:inputField id="txtY4DurationDaysNew" value="{!objNewAssumption.objAssumption.Y4_Duration_Days__c}" onchange="CalculateTotalCostNew('4','{!$Component.txtY4UnitCostNew}','{!$Component.txtY4DurationDaysNew}','{!$Component.txtY4QuantityNew}','{!$Component.txtTotalCostY4New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY4New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY4NumOfPersonsNew}');"/>
+                               </td>
+                               <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                   <apex:inputField id="txtY4QuantityNew" value="{!objNewAssumption.objAssumption.Y4_Quantity__c}" onchange="CalculateTotalCostNew('4','{!$Component.txtY4UnitCostNew}','{!$Component.txtY4DurationDaysNew}','{!$Component.txtY4QuantityNew}','{!$Component.txtTotalCostY4New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY4New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY4NumOfPersonsNew}');"/>
+                               </td>
+                               <!--PP:15/4/2015: Adding Number of Persons fields as a change in Sprint 16 -->
+                               <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)' && strSelectedYearAssumption == 'Year4','','none')};">
+                                   <apex:inputField id="txtY4NumOfPersonsNew" value="{!objNewAssumption.objAssumption.Y4_Number_of_Persons__c}" onchange="CalculateTotalCostNew('4','{!$Component.txtY4UnitCostNew}','{!$Component.txtY4DurationDaysNew}','{!$Component.txtY4QuantityNew}','{!$Component.txtTotalCostY4New}','{!$Component.txtCurrencyUsedNew}','{!$Component.txtRateY4New}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'{!$Component.txtY4NumOfPersonsNew}');"/>
+                               </td>
+                               <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                   <apex:outputText id="txtTotalCostY4New" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                         <apex:param value="{!objNewAssumption.TotalCostY4}" />
+                                   </apex:outputText>
+                                   <br/>
+                                   <apex:outputText id="txtRateY4New" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                         <apex:param value="{!objNewAssumption.CurrencyRateInUSDY4}"/>
+                                   </apex:outputText>
+                                </td>    
+                                <td class="dataCell TDstyle">
+                                    <apex:inputField id="idSupportNew" value="{!objNewAssumption.objAssumption.Assumptions_to_Support_Unit_Cost__c}" style="width:180px;"/>
+                                </td>
+                                <td class="dataCell TDstyle">
+                                    <apex:inputField id="idJustificationNew" value="{!objNewAssumption.objAssumption.Justifications_Comments__c}" style="height: 19px;resize:none;width:130px;"/>
+                                </td>   
+                           </tr>
+                           <tr>
+                              <td id="AddButtonTD" colspan="2" style="text-align:center;">
+                                  <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return AddNewAssumption('NewAssumptionTR','AddButtonTD','AddButtonTDHide','{!lstbl[0].Cost_Input__r.Unit_Cost_Definition__c}','{!$Component.idUnitMeasureNew}','{!$Component.txtCurrencyUsedNew}');" rendered="{!blnAddAssumption}">
+                                        <i class="icon-plus-sign icon-white"></i>
+                                        <strong><apex:outputlabel value="{!$Label.Add}"/></strong>
+                                  </apex:commandLink>
+                               </td>
+                               <td colspan="2" id="AddButtonTDHide" style="display:none;"></td>
+                               <td class="dataCell TDstyle"></td>
+                               <td style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)','','none')}"></td>
+                               <td style="display:{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)','','none')}"></td>
+                               <td class="dataCell TDstyle"></td>
+                               <th colspan="2">
+                                   {!$Label.Total_Cost} ({!strGrantCurrency})<br/>
+                                   {!$Label.Average_Unit_Cost} ({!strGrantCurrency})
+                               </th>
+                               <td class="dataCell TDstyle">
+                                  <apex:outputText id="txtTotalUnitCostY1" value="{0,number,##,###,###,###}" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                       <apex:param value="{!TotalOfAllY1Cost}" />
+                                  </apex:outputText>
+                                  <apex:outputText id="txtTotalUnitCostY2" value="{0,number,##,###,###,###}"  style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                        <apex:param value="{!TotalOfAllY2Cost}" />
+                                   </apex:outputText>
+                                   <apex:outputText id="txtTotalUnitCostY3" value="{0,number,##,###,###,###}"  style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                        <apex:param value="{!TotalOfAllY3Cost}" />
+                                   </apex:outputText>
+                                   <apex:outputText id="txtTotalUnitCostY4" value="{0,number,##,###,###,###}"  style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                         <apex:param value="{!TotalOfAllY4Cost}" />
+                                   </apex:outputText>
+                                   <br/>
+                                   <apex:outputText id="txtUnitCostY1" value="{0,number,##,###,###,###}"  style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                        <apex:param value="{!UnitCostY1}" />
+                                   </apex:outputText>
+                                   <apex:outputText id="txtUnitCostY2" value="{0,number,##,###,###,###}"  style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                        <apex:param value="{!UnitCostY2}" />
+                                   </apex:outputText>
+                                   <apex:outputText id="txtUnitCostY3" value="{0,number,##,###,###,###}"  style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                        <apex:param value="{!UnitCostY3}" />
+                                   </apex:outputText>
+                                   <apex:outputText id="txtUnitCostY4" value="{0,number,##,###,###,###}"  style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                         <apex:param value="{!UnitCostY4}" />
+                                   </apex:outputText>
+                               </td>
+                               <td class="dataCell TDstyle"></td>
+                               <td class="dataCell TDstyle"></td>
+                           </tr>
+                           <tr>
+                              <td class="dataCell TDstyle" colspan="{!if(lstbl[0].Cost_Grouping__c == '2. Travel related costs (TRC)',10,9)}" style="text-align:center;">                                                            
+                                  <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;align:right;" onclick="return SaveAssumptionRecords('NewAssumptionTR','False');" rendered="{!blnSaveAssumption}">
+                                        <strong>{!$Label.Save}</strong>
+                                  </apex:commandLink>
+                                  <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="width:85px;align:right;" onclick="return SaveAssumptionRecords('NewAssumptionTR','True');" status="Processing" rendered="{!blnSaveAssumption}">
+                                        <strong>{!$Label.Save_and_Close}</strong>
+                                  </apex:commandLink>
+                                  <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="align:left;" action="{!CancelAssumptionRecords}" status="Processing" rerender="tstpopup1" > 
+                                        <strong>{!$Label.Cancel}</strong>
+                                  </apex:commandLink>
+                              </td>
+                          </tr>
+                    </table>
+            </apex:outputpanel>
+            <apex:outputPanel rendered="{!if(lstbl[0].Cost_Grouping__c == '1. Human Resources (HR)',true,false)}">
+                  <table width="90%" class="table table-striped" style="display:{!if(lstbl[0].Cost_Grouping__c == '1. Human Resources (HR)','','none')};">
+                         <thead>
+                                <tr class="headerRow">
+                                    <th width="3%"></th>
+                                    <th class="headerRowLower" width="8%">
+                                        <apex:outputlabel value="{!$Label.Role_Description}"/>
+                                    </th> 
+                                    <th class="headerRowLower" width="6%">
+                                        <apex:outputlabel value="{!$Label.Unit_of_Measure}"/>
+                                    </th>           
+                                    <th class="headerRowLower" width="8%">
+                                        <apex:outputlabel value="{!$Label.Currency}"/>
+                                    </th>      
+                                    <th id="Year1thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y1_Net_Salary}"/>
+                                    </th>           
+                                    <th id="Year1thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y1_Social_Security_Other_Obligatory_Charges}"/>
+                                    </th>
+                                    <th id="Year1thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y1_Total_Salary}"/>
+                                    </th>                
+                                    <th id="Year1thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y1_Level_of_Effort}"/>
+                                    </th>  
+                                    <th id="Year1thA" class="headerRowLower" width="9%" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y1_Number_of_Persons}"/>
+                                    </th>                                                            
+                                    <th id="Year1thA" class="headerRowLower" width="9%" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y1_Total_Cost}"/>
+                                    </th>    
+                                    <th id="Year2thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y2_Net_Salary}"/>
+                                    </th>           
+                                    <th id="Year2thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y2_Social_Security_Other_Obligatory_Charges}"/>
+                                    </th>
+                                    <th id="Year2thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y2_Total_Salary}"/>
+                                    </th>                
+                                    <th id="Year2thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y2_Level_of_Effort}"/>
+                                    </th>  
+                                    <th id="Year2thA" class="headerRowLower" width="9%" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y2_Number_of_persons}"/>
+                                    </th>                                                            
+                                    <th id="Year2thA" class="headerRowLower" width="9%" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y2_Total_Cost}"/>
+                                    </th> 
+                                    <th id="Year3thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y3_Net_Salary}"/>
+                                    </th>           
+                                    <th id="Year3thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y3_Social_Security_Other_Obligatory_Charges}"/>
+                                    </th>
+                                    <th id="Year3thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y3_Total_Salary}"/>
+                                    </th>                
+                                    <th id="Year3thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y3_Level_of_Effort}"/>
+                                    </th>  
+                                    <th id="Year3thA" class="headerRowLower" width="9%" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y3_Number_of_persons}"/>
+                                    </th>                                                            
+                                    <th id="Year3thA" class="headerRowLower" width="9%" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y3_Total_Cost}"/>
+                                    </th> 
+                                    <th id="Year4thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y4_Net_Salary}"/>
+                                    </th>           
+                                    <th id="Year4thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y4_Social_Security_Other_Obligatory_Charges}"/>
+                                    </th>
+                                    <th id="Year4thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y4_Total_Salary}"/>
+                                    </th>                
+                                    <th id="Year4thA" class="headerRowLower" width="8%" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y4_Level_of_Effort}"/>
+                                    </th>  
+                                    <th id="Year4thA" class="headerRowLower" width="9%" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y4_Number_of_persons}"/>
+                                    </th>                                                            
+                                    <th id="Year4thA" class="headerRowLower" width="9%" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                        <apex:outputlabel value="{!$Label.Y4_Total_Cost}"/>
+                                    </th> 
+                                    <th class="headerRowLower" width="9%">
+                                        <apex:outputlabel value="{!$Label.Assumptions_to_Support_Unit_Cost}"/>
+                                    </th>
+                                    <th class="headerRowLower" width="9%">
+                                        <apex:outputlabel value="{!$Label.Justification_Comments}"/>
+                                    </th>
+                                </tr>
+                         </thead>
+                         <apex:variable value="{!0}" var="CountAssumption"/>
+                         <apex:repeat id="rptBudgetLineFirst" value="{!lstAssumptions}" var="objA">
+                               <tr>
+                                   <td>
+                                       <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="width:30px;height:25px;margin-top:6px;" onclick="return openAssumptionDeletePopup('{!$Component.tstpopupFirst}');" rendered="{!blnDelAssumption}" rerender="tstpopup1">
+                                            <i class="icon-trash icon-white" style="margin-top:6px"></i> 
+                                       </apex:commandLink>
+                                       <apex:outputPanel id="tstpopupFirst" style="display:none;">
+                                            <apex:outputPanel id="popupBackgroundFirst" styleClass="popupBackground"/>
+                                                 <apex:outputPanel id="custPopupFirst" styleClass="custPopup">
+                                                       <table width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                              <tr>
+                                                                  <td colspan="3" class="deletePopup">
+                                                                      <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="Are you sure?"/>
+                                                                  </td>
+                                                               </tr>
+                                                               <tr>
+                                                                   <td colspan="3" class="deletePopup">
+                                                                       <apex:outputtext style="color:#6590c4; font-size: 13.9pt;font-weight: bold;" value="This Assumption will be deleted."/>
+                                                                   </td>
+                                                               </tr>
+                                                               <tr>
+                                                                   <td width="47%" class="deletePopup">
+                                                                       <apex:commandButton styleClass="popupButtonYes" value="Yes" action="{!DeleteAssumption}" reRender="frm" status="Processing">
+                                                                             <apex:param value="{!CountAssumption}" name="DeleteIndex" />
+                                                                       </apex:commandButton>
+                                                                   </td>
+                                                                   <td width="6%" class="deletePopup"></td>
+                                                                   <td width="47%" align="left" class="deletePopupCancel">
+                                                                       <apex:commandButton styleClass="popupButtonCancel" value="Cancel" onclick="return CloseAssumptionPopup('{!$Component.tstpopupFirst}');"/>
+                                                                   </td>
+                                                                </tr>
+                                                         </table>
+                                                   </apex:outputPanel>
+                                            </apex:outputPanel>
+                                            </td>
+                                                                   <td class="dataCell TDstyle">
+                                                                       <apex:inputField value="{!objA.objAssumption.Item_Description__c}" style="height: 19px;resize:none;width:150px;"/>
+                                                                   </td>
+                                                                   <td class="dataCell TDstyle">
+                                                                       <apex:outputField id="AssUnitMeas" value="{!objA.objAssumption.Unit_of_Measure__c}" style="height: 19px;resize:none;width:100px;"/>
+                                                                   </td>
+                                                                   <td class="dataCell TDstyle">
+                                                                       <apex:selectList id="txtCurrencyUsedFirst" value="{!objA.strCurrencyUsedAssumption}" size="1" style="width:101px" onchange="ChangeCurrencyRate(this.value,'{!CountAssumption}','false');">
+                                                                             <apex:selectOptions value="{!AllIPCurrencyOptions}"></apex:selectOptions>
+                                                                       </apex:selectList>
+                                                                   </td>
+                                                                   <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                                                       <apex:inputField id="txtY1UnitCostFirst" value="{!objA.objAssumption.Y1_Net_Salary_Payment_Currency__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY1UnitCostFirst}','{!$Component.txtY1ChargesFirst}','{!$Component.txtTotalSalaryY1First}','{!$Component.txtY1LevelFirst}','{!$Component.txtY1NumberFirst}','{!$Component.txtTotalCostY1First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY1First}',{!lstAssumptions.size},'Year1','{!$Component.txtTotalSalaryY1FirstRate}');"/>
+                                                                   </td>
+                                                                   <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                                                       <apex:inputField id="txtY1ChargesFirst" value="{!objA.objAssumption.Y1_Social_Security_Obligatory_Charges__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY1UnitCostFirst}','{!$Component.txtY1ChargesFirst}','{!$Component.txtTotalSalaryY1First}','{!$Component.txtY1LevelFirst}','{!$Component.txtY1NumberFirst}','{!$Component.txtTotalCostY1First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY1First}',{!lstAssumptions.size},'Year1','{!$Component.txtTotalSalaryY1FirstRate}');"/>
+                                                                   </td>
+                                                                   <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                                                       <apex:outputText id="txtTotalSalaryY1First" value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                                                             <apex:param value="{!objA.TotalSalaryY1}"/>
+                                                                       </apex:outputText>
+                                                                       <br/>
+                                                                       <apex:outputText id="txtTotalSalaryY1FirstRate" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                                                             <apex:param value="{!objA.TotalSalaryY1GrntCurrency}"/>
+                                                                       </apex:outputText>
+                                                                   </td>
+                                                                   <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};"> 
+                                                                       <apex:inputField id="txtY1LevelFirst" value="{!objA.objAssumption.Y1_Level_of_Effort__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY1UnitCostFirst}','{!$Component.txtY1ChargesFirst}','{!$Component.txtTotalSalaryY1First}','{!$Component.txtY1LevelFirst}','{!$Component.txtY1NumberFirst}','{!$Component.txtTotalCostY1First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY1First}',{!lstAssumptions.size},'Year1','{!$Component.txtTotalSalaryY1FirstRate}');"/>
+                                                                   </td>
+                                                                   <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                                                       <apex:inputField id="txtY1NumberFirst" value="{!objA.objAssumption.Y1_Number_of_Persons__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY1UnitCostFirst}','{!$Component.txtY1ChargesFirst}','{!$Component.txtTotalSalaryY1First}','{!$Component.txtY1LevelFirst}','{!$Component.txtY1NumberFirst}','{!$Component.txtTotalCostY1First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY1First}',{!lstAssumptions.size},'Year1','{!$Component.txtTotalSalaryY1FirstRate}');"/>
+                                                                   </td>               
+                                                                   <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                                                       <apex:outputText id="txtTotalCostY1First" value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                                                             <apex:param value="{!objA.TotalCostY1}"/>
+                                                                       </apex:outputText>
+                                                                       <br/>
+                                                                       <apex:outputText id="txtRateY1First" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                                                             <apex:param value="{!objA.CurrencyRateInUSDY1}"/>
+                                                                       </apex:outputText>
+                                                                   </td>
+                                                                   <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                                                       <apex:inputField id="txtY2UnitCostFirst" value="{!objA.objAssumption.Y2_Net_Salary_Payment_Currency__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY2UnitCostFirst}','{!$Component.txtY2ChargesFirst}','{!$Component.txtTotalSalaryY2First}','{!$Component.txtY2LevelFirst}','{!$Component.txtY2NumberFirst}','{!$Component.txtTotalCostY2First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY2First}',{!lstAssumptions.size},'Year2','{!$Component.txtTotalSalaryY2FirstRate}');"/>
+                                                                   </td>
+                                                                   <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                                                       <apex:inputField id="txtY2ChargesFirst" value="{!objA.objAssumption.Y2_Social_Security_Obligatory_Charges__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY2UnitCostFirst}','{!$Component.txtY2ChargesFirst}','{!$Component.txtTotalSalaryY2First}','{!$Component.txtY2LevelFirst}','{!$Component.txtY2NumberFirst}','{!$Component.txtTotalCostY2First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY2First}',{!lstAssumptions.size},'Year2','{!$Component.txtTotalSalaryY2FirstRate}');"/>
+                                                                   </td>
+                                                                   <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                                                       <apex:outputText id="txtTotalSalaryY2First" value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                                                             <apex:param value="{!objA.TotalSalaryY2}"/>
+                                                                       </apex:outputText>
+                                                                       <br/>
+                                                                       <apex:outputText id="txtTotalSalaryY2FirstRate" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                                                             <apex:param value="{!objA.TotalSalaryY2GrntCurrency}"/>
+                                                                       </apex:outputText>
+                                                                   </td>
+                                                                   <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                                                       <apex:inputField id="txtY2LevelFirst" value="{!objA.objAssumption.Y2_Level_of_Effort__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY2UnitCostFirst}','{!$Component.txtY2ChargesFirst}','{!$Component.txtTotalSalaryY2First}','{!$Component.txtY2LevelFirst}','{!$Component.txtY2NumberFirst}','{!$Component.txtTotalCostY2First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY2First}',{!lstAssumptions.size},'Year2','{!$Component.txtTotalSalaryY2FirstRate}');"/>
+                                                                   </td>
+                                                                   <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                                                       <apex:inputField id="txtY2NumberFirst" value="{!objA.objAssumption.Y2_Number_of_Persons__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY2UnitCostFirst}','{!$Component.txtY2ChargesFirst}','{!$Component.txtTotalSalaryY2First}','{!$Component.txtY2LevelFirst}','{!$Component.txtY2NumberFirst}','{!$Component.txtTotalCostY2First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY2First}',{!lstAssumptions.size},'Year2','{!$Component.txtTotalSalaryY2FirstRate}');"/>
+                                                                   </td>               
+                                                                   <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                                                       <apex:outputText id="txtTotalCostY2First" value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                                                             <apex:param value="{!objA.TotalCostY2}"/>
+                                                                       </apex:outputText>
+                                                                       <br/>
+                                                                       <apex:outputText id="txtRateY2First"  value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                                                             <apex:param value="{!objA.CurrencyRateInUSDY2}"/>
+                                                                       </apex:outputText>
+                                                                   </td>
+                                                                   <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                                       <apex:inputField id="txtY3UnitCostFirst" value="{!objA.objAssumption.Y3_Net_Salary_Payment_Currency__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY3UnitCostFirst}','{!$Component.txtY3ChargesFirst}','{!$Component.txtTotalSalaryY3First}','{!$Component.txtY3LevelFirst}','{!$Component.txtY3NumberFirst}','{!$Component.txtTotalCostY3First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY3First}',{!lstAssumptions.size},'Year3','{!$Component.txtTotalSalaryY3FirstRate}');"/>
+                                                                   </td>
+                                                                   <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                                       <apex:inputField id="txtY3ChargesFirst" value="{!objA.objAssumption.Y3_Social_Security_Obligatory_Charges__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY3UnitCostFirst}','{!$Component.txtY3ChargesFirst}','{!$Component.txtTotalSalaryY3First}','{!$Component.txtY3LevelFirst}','{!$Component.txtY3NumberFirst}','{!$Component.txtTotalCostY3First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY3First}',{!lstAssumptions.size},'Year3','{!$Component.txtTotalSalaryY3FirstRate}');"/>
+                                                                   </td> 
+                                                                   <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                                       <apex:outputText id="txtTotalSalaryY3First" value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                                                             <apex:param value="{!objA.TotalSalaryY3}"/>
+                                                                       </apex:outputText>
+                                                                       <br/>
+                                                                       <apex:outputText id="txtTotalSalaryY3FirstRate" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                                                             <apex:param value="{!objA.TotalSalaryY3GrntCurrency}"/>
+                                                                       </apex:outputText>
+                                                                   </td>
+                                                                   <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                                       <apex:inputField id="txtY3LevelFirst" value="{!objA.objAssumption.Y3_Level_of_Effort__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY3UnitCostFirst}','{!$Component.txtY3ChargesFirst}','{!$Component.txtTotalSalaryY3First}','{!$Component.txtY3LevelFirst}','{!$Component.txtY3NumberFirst}','{!$Component.txtTotalCostY3First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY3First}',{!lstAssumptions.size},'Year3','{!$Component.txtTotalSalaryY3FirstRate}');"/>
+                                                                   </td>
+                                                                   <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                                       <apex:inputField id="txtY3NumberFirst" value="{!objA.objAssumption.Y3_Number_of_Persons__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY3UnitCostFirst}','{!$Component.txtY3ChargesFirst}','{!$Component.txtTotalSalaryY3First}','{!$Component.txtY3LevelFirst}','{!$Component.txtY3NumberFirst}','{!$Component.txtTotalCostY3First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY3First}',{!lstAssumptions.size},'Year3','{!$Component.txtTotalSalaryY3FirstRate}');"/>
+                                                                   </td>               
+                                                                   <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                                                       <apex:outputText id="txtTotalCostY3First" value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                                                             <apex:param value="{!objA.TotalCostY3}"/>
+                                                                       </apex:outputText>
+                                                                       <br/>
+                                                                       <apex:outputText id="txtRateY3First" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                                                            <apex:param value="{!objA.CurrencyRateInUSDY3}"/>
+                                                                       </apex:outputText>
+                                                                   </td>
+                                                                   <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                                       <apex:inputField id="txtY4UnitCostFirst" value="{!objA.objAssumption.Y4_Net_Salary_Payment_Currency__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY4UnitCostFirst}','{!$Component.txtY4ChargesFirst}','{!$Component.txtTotalSalaryY4First}','{!$Component.txtY4LevelFirst}','{!$Component.txtY4NumberFirst}','{!$Component.txtTotalCostY4First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY4First}',{!lstAssumptions.size},'Year4','{!$Component.txtTotalSalaryY4FirstRate}');"/>
+                                                                   </td>
+                                                                   <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                                       <apex:inputField id="txtY4ChargesFirst" value="{!objA.objAssumption.Y4_Social_Security_Obligatory_Charges__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY4UnitCostFirst}','{!$Component.txtY4ChargesFirst}','{!$Component.txtTotalSalaryY4First}','{!$Component.txtY4LevelFirst}','{!$Component.txtY4NumberFirst}','{!$Component.txtTotalCostY4First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY4First}',{!lstAssumptions.size},'Year4','{!$Component.txtTotalSalaryY4FirstRate}');"/>
+                                                                   </td>
+                                                                   <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                                       <apex:outputText id="txtTotalSalaryY4First"  value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                                                             <apex:param value="{!objA.TotalSalaryY4}"/>
+                                                                       </apex:outputText>
+                                                                       <br/>
+                                                                       <apex:outputText id="txtTotalSalaryY4FirstRate" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                                                             <apex:param value="{!objA.TotalSalaryY4GrntCurrency}"/>
+                                                                       </apex:outputText>
+                                                                   </td>
+                                                                   <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                                       <apex:inputField id="txtY4LevelFirst" value="{!objA.objAssumption.Y4_Level_of_Effort__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY4UnitCostFirst}','{!$Component.txtY4ChargesFirst}','{!$Component.txtTotalSalaryY4First}','{!$Component.txtY4LevelFirst}','{!$Component.txtY4NumberFirst}','{!$Component.txtTotalCostY4First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY4First}',{!lstAssumptions.size},'Year4','{!$Component.txtTotalSalaryY4FirstRate}');"/>
+                                                                   </td>
+                                                                   <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                                       <apex:inputField id="txtY4NumberFirst" value="{!objA.objAssumption.Y4_Number_of_Persons__c}" onchange="CalculateTotalCostFirst('{!$Component.txtY4UnitCostFirst}','{!$Component.txtY4ChargesFirst}','{!$Component.txtTotalSalaryY4First}','{!$Component.txtY4LevelFirst}','{!$Component.txtY4NumberFirst}','{!$Component.txtTotalCostY4First}','{!$Component.txtCurrencyUsedFirst}','{!$Component.txtRateY4First}',{!lstAssumptions.size},'Year4','{!$Component.txtTotalSalaryY4FirstRate}');"/>
+                                                                   </td>               
+                                                                   <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                                                       <apex:outputText id="txtTotalCostY4First" value="{0,number,##,###,###,###({!objA.strAssumptionCurrency})}">
+                                                                             <apex:param value="{!objA.TotalCostY4}"/>
+                                                                       </apex:outputText>
+                                                                       <br/>
+                                                                       <apex:outputText id="txtRateY4First" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                                                             <apex:param value="{!objA.CurrencyRateInUSDY4}"/>
+                                                                       </apex:outputText>
+                                                                   </td>
+                                                                   <td class="dataCell TDstyle">
+                                                                       <apex:inputField value="{!objA.objAssumption.Assumptions_to_Support_Unit_Cost__c}" style="width:160px;"/>
+                                                                   </td>
+                                                                   <td class="dataCell TDstyle">
+                                                                       <apex:inputField value="{!objA.objAssumption.Justifications_Comments__c}" style="height: 19px;resize:none;width:130px;"/>
+                                                                   </td>
+                                                               </tr>
+                                                               <apex:variable value="{!CountAssumption+1}" var="CountAssumption"/>
+                         </apex:repeat>
+                         <tr id="NewAssumptionTRFirst" style="display:none;">
+                             <td>
+                                 <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="width:30px;height:25px;margin-top:6px;" >
+                                       <i class="icon-trash icon-white" style="margin-top:6px"></i> 
+                                 </apex:commandLink>
+                             </td>
+                             <td class="dataCell TDstyle">
+                                 <apex:inputField id="idItDecNewFirst" value="{!objNewAssumption.objAssumption.Item_Description__c}" style="height: 19px;resize:none;width:150px;"/>
+                             </td>
+                             <td class="dataCell TDstyle">
+                                 <apex:outputField id="idUMNewFirst" value="{!objNewAssumption.objAssumption.Unit_of_Measure__c}" style="height: 19px;resize:none;width:100px;"/> 
+                             </td>
+                             <td class="dataCell TDstyle">
+                                 <apex:selectList id="txtCurrencyUsedFirstNew" value="{!objNewAssumption.strCurrencyUsedAssumption}" size="1" style="width:101px" onchange="ChangeCurrencyRate(this.value,'{!CountAssumption+1}','true');">
+                                       <apex:selectOptions value="{!AllIPCurrencyOptions}"></apex:selectOptions>
+                                 </apex:selectList>
+                             </td>
+                             <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                 <apex:inputField id="txtY1UnitCostNewFirst" value="{!objNewAssumption.objAssumption.Y1_Net_Salary_Payment_Currency__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY1UnitCostNewFirst}','{!$Component.txtY1ChargesNewFirst}','{!$Component.txtTotalSalaryY1NewFirst}','{!$Component.txtY1LevelNewFirst}','{!$Component.txtY1NumberNewFirst}','{!$Component.txtTotalCostY1NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY1NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year1','{!$Component.txtTotalSalaryY1NewFirstRate}');"/>
+                             </td>
+                             <td id="Year1tdA" class="dataCell TDstyle"  style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                 <apex:inputField id="txtY1ChargesNewFirst" value="{!objNewAssumption.objAssumption.Y1_Social_Security_Obligatory_Charges__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY1UnitCostNewFirst}','{!$Component.txtY1ChargesNewFirst}','{!$Component.txtTotalSalaryY1NewFirst}','{!$Component.txtY1LevelNewFirst}','{!$Component.txtY1NumberNewFirst}','{!$Component.txtTotalCostY1NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY1NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year1','{!$Component.txtTotalSalaryY1NewFirstRate}');"/>
+                             </td>
+                             <td id="Year1tdA" class="dataCell TDstyle " style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                 <apex:outputText id="txtTotalSalaryY1NewFirst" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                       <apex:param value="{!objNewAssumption.TotalSalaryY1}"/>
+                                 </apex:outputText>
+                                 <br/>
+                                 <apex:outputText id="txtTotalSalaryY1NewFirstRate" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                       <apex:param value="{!objNewAssumption.TotalSalaryY1GrntCurrency}"/>
+                                 </apex:outputText>
+                             </td>
+                             <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                 <apex:inputField id="txtY1LevelNewFirst" value="{!objNewAssumption.objAssumption.Y1_Level_of_Effort__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY1UnitCostNewFirst}','{!$Component.txtY1ChargesNewFirst}','{!$Component.txtTotalSalaryY1NewFirst}','{!$Component.txtY1LevelNewFirst}','{!$Component.txtY1NumberNewFirst}','{!$Component.txtTotalCostY1NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY1NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year1','{!$Component.txtTotalSalaryY1NewFirstRate}');"/>
+                             </td>
+                             <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                 <apex:inputField id="txtY1NumberNewFirst" value="{!objNewAssumption.objAssumption.Y1_Number_of_Persons__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY1UnitCostNewFirst}','{!$Component.txtY1ChargesNewFirst}','{!$Component.txtTotalSalaryY1NewFirst}','{!$Component.txtY1LevelNewFirst}','{!$Component.txtY1NumberNewFirst}','{!$Component.txtTotalCostY1NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY1NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year1','{!$Component.txtTotalSalaryY1NewFirstRate}');"/>
+                             </td>               
+                             <td id="Year1tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                 <apex:outputText id="txtTotalCostY1NewFirst" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                       <apex:param value="{!objNewAssumption.TotalCostY1}"/>
+                                 </apex:outputText>
+                                 <br/>
+                                 <apex:outputText id="txtRateY1NewFirst" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                       <apex:param value="{!objNewAssumption.CurrencyRateInUSDY1}"/>
+                                 </apex:outputText>
+                              </td>
+                              <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                  <apex:inputField id="txtY2UnitCostNewFirst" value="{!objNewAssumption.objAssumption.Y2_Net_Salary_Payment_Currency__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY2UnitCostNewFirst}','{!$Component.txtY2ChargesNewFirst}','{!$Component.txtTotalSalaryY2NewFirst}','{!$Component.txtY2LevelNewFirst}','{!$Component.txtY2NumberNewFirst}','{!$Component.txtTotalCostY2NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY2NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year2','{!$Component.txtTotalSalaryY2NewFirstRate}');"/>
+                              </td>
+                              <td  id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                   <apex:inputField id="txtY2ChargesNewFirst" value="{!objNewAssumption.objAssumption.Y2_Social_Security_Obligatory_Charges__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY2UnitCostNewFirst}','{!$Component.txtY2ChargesNewFirst}','{!$Component.txtTotalSalaryY2NewFirst}','{!$Component.txtY2LevelNewFirst}','{!$Component.txtY2NumberNewFirst}','{!$Component.txtTotalCostY2NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY2NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year2','{!$Component.txtTotalSalaryY2NewFirstRate}');"/>
+                              </td>
+                              <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                   <apex:outputText id="txtTotalSalaryY2NewFirst" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                         <apex:param value="{!objNewAssumption.TotalSalaryY2}"/>                                                             
+                                   </apex:outputText>
+                                   <br/>
+                                   <apex:outputText id="txtTotalSalaryY2NewFirstRate" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                         <apex:param value="{!objNewAssumption.TotalSalaryY2GrntCurrency}"/>
+                                   </apex:outputText>
+                              </td>
+                              <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                  <apex:inputField id="txtY2LevelNewFirst" value="{!objNewAssumption.objAssumption.Y2_Level_of_Effort__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY2UnitCostNewFirst}','{!$Component.txtY2ChargesNewFirst}','{!$Component.txtTotalSalaryY2NewFirst}','{!$Component.txtY2LevelNewFirst}','{!$Component.txtY2NumberNewFirst}','{!$Component.txtTotalCostY2NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY2NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year2','{!$Component.txtTotalSalaryY2NewFirstRate}');"/>
+                              </td>
+                              <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                  <apex:inputField id="txtY2NumberNewFirst" value="{!objNewAssumption.objAssumption.Y2_Number_of_Persons__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY2UnitCostNewFirst}','{!$Component.txtY2ChargesNewFirst}','{!$Component.txtTotalSalaryY2NewFirst}','{!$Component.txtY2LevelNewFirst}','{!$Component.txtY2NumberNewFirst}','{!$Component.txtTotalCostY2NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY2NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year2','{!$Component.txtTotalSalaryY2NewFirstRate}');"/>
+                              </td>               
+                              <td id="Year2tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                  <apex:outputText id="txtTotalCostY2NewFirst" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                        <apex:param value="{!objNewAssumption.TotalCostY2}"/>
+                                  </apex:outputText>
+                                  <br/>
+                                  <apex:outputText id="txtRateY2NewFirst" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                        <apex:param value="{!objNewAssumption.CurrencyRateInUSDY2}"/>
+                                  </apex:outputText>  
+                              </td>
+                              <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                  <apex:inputField id="txtY3UnitCostNewFirst" value="{!objNewAssumption.objAssumption.Y3_Net_Salary_Payment_Currency__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY3UnitCostNewFirst}','{!$Component.txtY3ChargesNewFirst}','{!$Component.txtTotalSalaryY3NewFirst}','{!$Component.txtY3LevelNewFirst}','{!$Component.txtY3NumberNewFirst}','{!$Component.txtTotalCostY3NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY3NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year3','{!$Component.txtTotalSalaryY3NewFirstRate}');"/>
+                              </td>
+                              <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};" >
+                                  <apex:inputField id="txtY3ChargesNewFirst" value="{!objNewAssumption.objAssumption.Y3_Social_Security_Obligatory_Charges__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY3UnitCostNewFirst}','{!$Component.txtY3ChargesNewFirst}','{!$Component.txtTotalSalaryY3NewFirst}','{!$Component.txtY3LevelNewFirst}','{!$Component.txtY3NumberNewFirst}','{!$Component.txtTotalCostY3NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY3NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year3','{!$Component.txtTotalSalaryY3NewFirstRate}');"/>
+                              </td>
+                              <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                  <apex:outputText id="txtTotalSalaryY3NewFirst" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                        <apex:param value="{!objNewAssumption.TotalSalaryY3}"/>
+                                  </apex:outputText>
+                                  <br/>
+                                  <apex:outputText id="txtTotalSalaryY3NewFirstRate" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                        <apex:param value="{!objNewAssumption.TotalSalaryY3GrntCurrency}"/>
+                                  </apex:outputText>
+                               </td>
+                               <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                   <apex:inputField id="txtY3LevelNewFirst" value="{!objNewAssumption.objAssumption.Y3_Level_of_Effort__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY3UnitCostNewFirst}','{!$Component.txtY3ChargesNewFirst}','{!$Component.txtTotalSalaryY3NewFirst}','{!$Component.txtY3LevelNewFirst}','{!$Component.txtY3NumberNewFirst}','{!$Component.txtTotalCostY3NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY3NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year3','{!$Component.txtTotalSalaryY3NewFirstRate}');"/>
+                               </td>
+                               <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                   <apex:inputField id="txtY3NumberNewFirst" value="{!objNewAssumption.objAssumption.Y3_Number_of_Persons__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY3UnitCostNewFirst}','{!$Component.txtY3ChargesNewFirst}','{!$Component.txtTotalSalaryY3NewFirst}','{!$Component.txtY3LevelNewFirst}','{!$Component.txtY3NumberNewFirst}','{!$Component.txtTotalCostY3NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY3NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year3','{!$Component.txtTotalSalaryY3NewFirstRate}');"/>
+                               </td>               
+                               <td id="Year3tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                   <apex:outputText id="txtTotalCostY3NewFirst" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                         <apex:param value="{!objNewAssumption.TotalCostY3}"/>
+                                   </apex:outputText>
+                                   <br/>
+                                   <apex:outputText id="txtRateY3NewFirst" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                         <apex:param value="{!objNewAssumption.CurrencyRateInUSDY3}"/>
+                                   </apex:outputText>
+                              </td>
+                              <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                  <apex:inputField id="txtY4UnitCostNewFirst" value="{!objNewAssumption.objAssumption.Y4_Net_Salary_Payment_Currency__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY4UnitCostNewFirst}','{!$Component.txtY4ChargesNewFirst}','{!$Component.txtTotalSalaryY4NewFirst}','{!$Component.txtY4LevelNewFirst}','{!$Component.txtY4NumberNewFirst}','{!$Component.txtTotalCostY4NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY4NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year4','{!$Component.txtTotalSalaryY4NewFirstRate}');"/>
+                              </td>
+                              <td id="Year4tdA" class="dataCell TDstyle"  style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                  <apex:inputField id="txtY4ChargesNewFirst" value="{!objNewAssumption.objAssumption.Y4_Social_Security_Obligatory_Charges__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY4UnitCostNewFirst}','{!$Component.txtY4ChargesNewFirst}','{!$Component.txtTotalSalaryY4NewFirst}','{!$Component.txtY4LevelNewFirst}','{!$Component.txtY4NumberNewFirst}','{!$Component.txtTotalCostY4NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY4NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year4','{!$Component.txtTotalSalaryY4NewFirstRate}');"/>
+                              </td>
+                              <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                  <apex:outputText id="txtTotalSalaryY4NewFirst" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                       <apex:param value="{!objNewAssumption.TotalSalaryY4}"/>
+                                  </apex:outputText>
+                                  <br/>
+                                  <apex:outputText id="txtTotalSalaryY4NewFirstRate" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                        <apex:param value="{!objNewAssumption.TotalSalaryY4GrntCurrency}"/>
+                                  </apex:outputText>
+                               </td>
+                               <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                   <apex:inputField id="txtY4LevelNewFirst" value="{!objNewAssumption.objAssumption.Y4_Level_of_Effort__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY4UnitCostNewFirst}','{!$Component.txtY4ChargesNewFirst}','{!$Component.txtTotalSalaryY4NewFirst}','{!$Component.txtY4LevelNewFirst}','{!$Component.txtY4NumberNewFirst}','{!$Component.txtTotalCostY4NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY4NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year4','{!$Component.txtTotalSalaryY4NewFirstRate}');"/>
+                               </td>
+                               <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                   <apex:inputField id="txtY4NumberNewFirst" value="{!objNewAssumption.objAssumption.Y4_Number_of_Persons__c}" onchange="CalculateTotalCostFirstNew('{!$Component.txtY4UnitCostNewFirst}','{!$Component.txtY4ChargesNewFirst}','{!$Component.txtTotalSalaryY4NewFirst}','{!$Component.txtY4LevelNewFirst}','{!$Component.txtY4NumberNewFirst}','{!$Component.txtTotalCostY4NewFirst}','{!$Component.txtCurrencyUsedFirstNew}','{!$Component.txtRateY4NewFirst}',{!if(lstAssumptions != null && lstAssumptions.size > 0,lstAssumptions.size,0)},'Year4','{!$Component.txtTotalSalaryY4NewFirstRate}');"/>
+                               </td>               
+                               <td id="Year4tdA" class="dataCell TDstyle" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                   <apex:outputText id="txtTotalCostY4NewFirst" value="{0,number,##,###,###,###({!objNewAssumption.strAssumptionCurrency})}">
+                                         <apex:param value="{!objNewAssumption.TotalCostY4}"/>
+                                   </apex:outputText>
+                                   <br/>
+                                   <apex:outputText id="txtRateY4NewFirst" value="{0,number,##,###,###,###({!strGrantCurrency})}">
+                                         <apex:param value="{!objNewAssumption.CurrencyRateInUSDY4}"/>
+                                   </apex:outputText>
+                              </td>
+                              <td class="dataCell TDstyle">
+                                  <apex:inputField id="idSuppoetFirstNew" value="{!objNewAssumption.objAssumption.Assumptions_to_Support_Unit_Cost__c}" style="width:160px;"/>
+                              </td>
+                              <td class="dataCell TDstyle">
+                                  <apex:inputField id="idJCFirstNew" value="{!objNewAssumption.objAssumption.Justifications_Comments__c}" style="height: 19px;resize:none;width:130px;"/>
+                              </td>
+                         </tr>
+                         <tr>
+                             <td class="dataCell TDstyle" id="AddButtonTDFirst" colspan="2" style="text-align:center;">
+                                 <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" onclick="return AddNewAssumption('NewAssumptionTRFirst','AddButtonTDFirst','AddButtonTDHideFirst','{!lstbl[0].Cost_Input__r.Unit_Cost_Definition__c}','{!$Component.idUMNewFirst}','{!$Component.txtCurrencyUsedFirstNew}');" rendered="{!blnAddAssumption}">
+                                      <i class="icon-plus-sign icon-white"></i>
+                                         <strong>{!$Label.Add}</strong>
+                                 </apex:commandLink>
+                             </td>
+                             <td class="dataCell TDstyle" colspan="2" id="AddButtonTDHideFirst" style="display:none;"></td>
+                             <td class="dataCell TDstyle" colspan="5"></td> 
+                             <th class="dataCell TDstyle"  colspan="2">
+                             {!$Label.Total_Cost} ({!strGrantCurrency})<br/>
+                             {!$Label.Average_Unit_Cost} ({!strGrantCurrency})
+                             </th>
+                                 <td class="dataCell TDstyle">
+                                     <apex:outputText id="txtTotalUnitCostY1First" value="{0,number,##,###,###,###}" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                           <apex:param value="{!TotalOfAllY1Cost}"/>
+                                     </apex:outputText>
+                                     <apex:outputText id="txtTotalUnitCostY2First" value="{0,number,##,###,###,###}" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                           <apex:param value="{!TotalOfAllY2Cost}"/>
+                                     </apex:outputText>
+                                     <apex:outputText id="txtTotalUnitCostY3First" value="{0,number,##,###,###,###}" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                           <apex:param value="{!TotalOfAllY3Cost}"/>
+                                     </apex:outputText>
+                                     <apex:outputText id="txtTotalUnitCostY4First" value="{0,number,##,###,###,###}" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                           <apex:param value="{!TotalOfAllY4Cost}"/>
+                                     </apex:outputText>
+                                     <br/>
+                                     <apex:outputText id="txtUnitCostY1First" value="{0,number,##,###,###,###}" style="display:{!if(strSelectedYearAssumption == 'Year1','','none')};">
+                                           <apex:param value="{!UnitCostY1}"/>
+                                     </apex:outputText>
+                                     <apex:outputText id="txtUnitCostY2First" value="{0,number,##,###,###,###}" style="display:{!if(strSelectedYearAssumption == 'Year2','','none')};">
+                                          <apex:param value="{!UnitCostY2}"/>
+                                     </apex:outputText>
+                                     <apex:outputText id="txtUnitCostY3First" value="{0,number,##,###,###,###}" style="display:{!if(strSelectedYearAssumption == 'Year3','','none')};">
+                                           <apex:param value="{!UnitCostY3}"/>
+                                     </apex:outputText>
+                                     <apex:outputText id="txtUnitCostY4First" value="{0,number,##,###,###,###}" style="display:{!if(strSelectedYearAssumption == 'Year4','','none')};">
+                                           <apex:param value="{!UnitCostY4}"/>
+                                     </apex:outputText>
+                                 </td>
+                                 <td class="dataCell TDstyle" ></td>
+                                 <td class="dataCell TDstyle"></td>
+                          </tr>
+                          <tr>
+                              <td class="dataCell TDstyle" colspan="12" style="text-align:center;">
+                                  <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="width:37px;align:right;" onclick="return SaveAssumptionRecords('NewAssumptionTRFirst','False');" rendered="{!blnSaveAssumption}">
+                                        <strong>{!$Label.Save}</strong>
+                                  </apex:commandLink>
+                                  <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-success" style="width:85px;align:right;" onclick="return SaveAssumptionRecords('NewAssumptionTRFirst','True');" status="Processing" rendered="{!blnSaveAssumption}">
+                                        <strong>{!$Label.Save_and_Close}</strong>
+                                  </apex:commandLink>
+                                  <apex:commandLink styleClass="TGFbtn TGFbtn-mini TGFbtn-danger" style="align:left;"  action="{!CancelAssumptionRecords}" status="Processing" rerender="tstpopup1" > 
+                                        <strong>{!$Label.Cancel}</strong>
+                                  </apex:commandLink>
+                              </td>  
+                         </tr>
+                  </table> 
+            </apex:outputPanel>
+       </apex:outputPanel>
+     </apex:form>
+     <script>
+       var globalTR;
+            var globalBtn;
+            var globalhide;
+            var globalIndex;
+            var globalBLUnitMeasure;
+            var globalAssUnitMeasure;
+       function displayApplyButton(AssmptionSet){                
+                if(AssmptionSet.value != ''){
+                    document.getElementById('page:frm:btnApply').style.display = '';
+                }else{
+                    document.getElementById('page:frm:btnApply').style.display = 'none';
+                }
+                return false;
+       }
+       function openAssumptionApplyPopup(popupId,strAss){
+                if(document.getElementById(strAss).value != ''){
+                    document.getElementById(popupId).style.display = '';
+                } 
+                return false;
+       }
+       function OncompleteApplyPopup(){
+                document.getElementById('page:frm:rptBudgetLine:btnApply').style.display = '';
+                return false;
+       }
+       function CloseAssumptionPopup(popupId){
+                document.getElementById(popupId).style.display = 'none';
+                return false;
+       }
+       function displayYearToggleAssumption(thisTH,SelectedYear,NewYear,NewYearth,NewYeartd,isHR,isTRC){
+                var AllTD = document.getElementsByTagName("td");
+                var AllTH = document.getElementsByTagName("th");
+                
+                var hdnYear = document.getElementById(SelectedYear);
+                var thId;
+                var tdId;
+                var DthId;
+                var DtdId;
+                var NewYearthD;
+                var NewYeartdD;
+                if(hdnYear.value == 'Year1'){
+                    thId = 'Year1thA';
+                    tdId = 'Year1tdA';
+                    DthId = 'DurationTh1';
+                    DtdId = 'DurationTd1';
+                    
+                }else if(hdnYear.value == 'Year2'){
+                    thId = 'Year2thA';
+                    tdId = 'Year2tdA';
+                    DthId = 'DurationTh2';
+                    DtdId = 'DurationTd2';
+                }else if(hdnYear.value == 'Year3'){
+                    thId = 'Year3thA';
+                    tdId = 'Year3tdA';
+                    DthId = 'DurationTh3';
+                    DtdId = 'DurationTd3';
+                }else if(hdnYear.value == 'Year4'){
+                    thId = 'Year4thA';
+                    tdId = 'Year4tdA';
+                    DthId = 'DurationTh4';
+                    DtdId = 'DurationTd4';
+                }
+                if(NewYear == 'Year1'){
+                    NewYearthD = 'DurationTh1';
+                    NewYeartdD = 'DurationTd1';
+                }else if(NewYear == 'Year2'){
+                    NewYearthD = 'DurationTh2';
+                    NewYeartdD = 'DurationTd2';
+                }else if(NewYear == 'Year3'){
+                    NewYearthD = 'DurationTh3';
+                    NewYeartdD = 'DurationTd3';
+                }else if(NewYear == 'Year4'){
+                    NewYearthD = 'DurationTh4';
+                    NewYeartdD = 'DurationTd4';
+                }
+                if(hdnYear.value != NewYear){
+                    for(var i=0;i<AllTD.length;i++){
+                        if(AllTD[i].id == tdId){
+                            AllTD[i].style.display = 'none';
+                        }else if(AllTD[i].id == NewYeartd){
+                            AllTD[i].style.display = '';
+                        }
+                        if(isTRC == true){
+                            if(AllTD[i].id == DtdId){
+                                AllTD[i].style.display = 'none';
+                            }else if(AllTD[i].id == NewYeartdD){
+                                AllTD[i].style.display = '';
+                            }
+                        }
+                    } 
+                    for(var i=0;i<AllTH.length;i++){
+                        if(AllTH[i].id == thId){
+                            AllTH[i].style.display = 'none';
+                        }else if(AllTH[i].id == NewYearth){
+                            AllTH[i].style.display = '';
+                        }
+                        if(isTRC == true){
+                            if(AllTH[i].id == DthId){
+                                AllTH[i].style.display = 'none';
+                            }else if(AllTH[i].id == NewYearthD){
+                                AllTH[i].style.display = '';
+                            }
+                        }
+                    }
+                    
+                    var TYCY1;
+                    var TYCY2;
+                    var TYCY3;
+                    var TYCY4;
+                    if(isHR == true){
+                        TYCY1 = 'txtTotalUnitCostY1First';
+                        TYCY2 = 'txtTotalUnitCostY2First';
+                        TYCY3 = 'txtTotalUnitCostY3First';
+                        TYCY4 = 'txtTotalUnitCostY4First';
+                        
+                        UCY1 = 'txtUnitCostY1First';
+                        UCY2 = 'txtUnitCostY2First';
+                        UCY3 = 'txtUnitCostY3First';
+                        UCY4 = 'txtUnitCostY4First';
+                    }else{
+                        TYCY1 = 'txtTotalUnitCostY1';
+                        TYCY2 = 'txtTotalUnitCostY2';
+                        TYCY3 = 'txtTotalUnitCostY3';
+                        TYCY4 = 'txtTotalUnitCostY4';
+                        
+                        UCY1 = 'txtUnitCostY1';
+                        UCY2 = 'txtUnitCostY2';
+                        UCY3 = 'txtUnitCostY3';
+                        UCY4 = 'txtUnitCostY4';
+                    }
+                    
+                    document.getElementById(thisTH).style.background = '#434445';
+                    document.getElementById(thisTH).style.color = '#FFFFFF';
+                    if(NewYear=='Year1'){
+                        var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY1));
+                        TotalObj.style.display = '';                        
+                        var Obj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",UCY1));
+                        Obj.style.display = '';
+                        
+                    }else if(NewYear=='Year2'){
+                        var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY2));
+                        TotalObj.style.display = '';                        
+                        var Obj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",UCY2));
+                         
+                        Obj.style.display = '';
+                    }else if(NewYear=='Year3'){
+                        var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY3));
+                        TotalObj.style.display = '';                        
+                        var Obj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",UCY3));
+                        Obj.style.display = '';
+                        
+                    }else if(NewYear=='Year4'){
+                        var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY4));
+                        TotalObj.style.display = '';
+                        var Obj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",UCY4));
+                        Obj.style.display = '';
+                        
+                    }
+                    if(hdnYear.value == 'Year1'){
+                        document.getElementById('MainThYear1A').style.background = '#DFEFF0';
+                        document.getElementById('MainThYear1A').style.color = '#00688B';
+                        var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY1));
+                        TotalObj.style.display = 'none';
+                        var Obj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",UCY1));
+                        Obj.style.display = 'none';
+                    }else if(hdnYear.value == 'Year2'){
+                        document.getElementById('MainThYear2A').style.background = '#E7F2D5';
+                        document.getElementById('MainThYear2A').style.color = '#00688B';                        
+                        var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY2));
+                        TotalObj.style.display = 'none';
+                        var Obj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",UCY2));
+                        Obj.style.display = 'none';
+                    }else if(hdnYear.value == 'Year3'){
+                        document.getElementById('MainThYear3A').style.background = '#FAF3CA';
+                        document.getElementById('MainThYear3A').style.color = '#00688B';
+                        var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY3));
+                        TotalObj.style.display = 'none';
+                        var Obj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",UCY3));
+                        Obj.style.display = 'none';
+                    }else if(hdnYear.value == 'Year4'){
+                        document.getElementById('MainThYear4A').style.background = '#F0E1E2';
+                        document.getElementById('MainThYear4A').style.color = '#00688B';
+                        var TotalObj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",TYCY4));
+                        TotalObj.style.display = 'none';
+                        var Obj = document.getElementById(SelectedYear.replace("hdnSelectedYearA",UCY4));
+                        Obj.style.display = 'none';
+                    }
+                    document.getElementById(SelectedYear).value = NewYear;
+                }
+            }
+            
+            function ChangeCurrencyRate(Code,ChangeIndex,isNew){
+            if(isNew == 'false'){
+            actChangeCurrencyRateFromCode(Code,ChangeIndex,isNew);
+            }else{
+            actChangeCurrencyRateFromCodeNew(Code,ChangeIndex,isNew);
+            }
+            return false;
+            }
+            
+            function showRows(showNewRow){
+                if(showNewRow == true){
+                        if(globalTR != '')document.getElementById(globalTR).style.display = '';
+                document.getElementById(globalAssUnitMeasure).innerHTML = globalBLUnitMeasure;
+                if(globalBtn != '')document.getElementById(globalBtn).style.display = 'none';
+                if(globalhide != '')document.getElementById(globalhide).style.display = '';
+                }else{
+                if(globalTR != '')document.getElementById(globalTR).style.display = 'none';
+                document.getElementById(globalAssUnitMeasure).innerHTML = globalBLUnitMeasure;
+                if(globalBtn != '')document.getElementById(globalBtn).style.display = '';
+                if(globalhide != '')document.getElementById(globalhide).style.display = 'none';
+                
+             }
+            }
+            
+            function AddNewAssumption(trid,btnid,hide,meas,UMNew,Currency){
+                globalTR = trid;
+                globalBtn = btnid;
+                globalhide = hide;
+                globalAssUnitMeasure = UMNew;
+                globalBLUnitMeasure = meas;
+                document.getElementById(trid).style.display = '';
+                document.getElementById(UMNew).innerHTML = meas;
+                document.getElementById(btnid).style.display = 'none';
+                document.getElementById(hide).style.display = '';
+                document.getElementById(Currency).selectedIndex = 0;
+                return false;
+            }
+            
+            function SaveAssumptionRecords(TrId,closeAss){
+                if(document.getElementById(TrId).style.display == 'none'){
+                    actSaveAssumption(closeAss,false);
+                    return false;
+                }else{
+                    actSaveAssumption(closeAss, true);
+                    return false;
+                }
+            }
+            
+            function openAssumptionDeletePopup(popupId){
+                document.getElementById(popupId).style.display = '';
+                return false;
+            }
+            
+            function RemoveComma(CostValue){
+                CostValue += '';
+                var ReComma = new RegExp("\\,","g");
+                var ReQuate = new RegExp("\\'","g");
+                CostValue = CostValue.replace(ReComma,"");
+                CostValue = CostValue.replace(ReQuate,"");
+                CostValue = CostValue.replace(",.",".");
+                CostValue = CostValue.replace("'.",".");
+                return CostValue;
+            }
+            
+            function addCommas(nStr)
+            {
+                
+                nStr += '';
+                x = nStr.split('.');
+                x1 = x[0];
+                x2 = x.length > 1 ? '.' + x[1] : '';
+                var rgx = /(\d+)(\d{3})/;
+                while (rgx.test(x1)) {
+                    x1 = x1.replace(rgx, '$1' + ',' + '$2');
+                }
+                return x1 + x2;
+            }
+            
+            function CalculateTotalCost(YearIndex,Cost,Duration,Quantity,TotalCost,CurrencyRate,Currency,size,Type,NumofPerson){
+              var txtCost = document.getElementById(Cost).value;
+              var txtDuration = document.getElementById(Duration).value;
+              var txtQuantity = document.getElementById(Quantity).value;               
+              var txtNumofPerson = document.getElementById(NumofPerson).value;   
+              var intDurationIndex=parseInt(YearIndex);
+              var MaxNumberofPersons = 0;
+              var MaxDuration =0;
+              txtCost = RemoveComma(txtCost);
+              txtDuration = RemoveComma(txtDuration);
+              txtDuration = parseFloat(parseFloat(txtDuration).toFixed(1));
+              txtQuantity = RemoveComma(txtQuantity);
+              if(document.getElementById('DurationTd'+intDurationIndex).style.display != 'none'){
+                 for(var i=0;i<size;i++){
+                     if(RemoveComma(document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'NumofPerson').value)>MaxNumberofPersons)
+                        MaxNumberofPersons = document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'NumofPerson').value;
+                     if(RemoveComma(document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'DurationDays').value)>MaxDuration)
+                                        MaxDuration = document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'DurationDays').value;
+                 }
+                 //Script for highest value of Number of Person ends here
+                 
+                 if(txtCost == '' || txtCost == null) txtCost = 0;
+                if(txtDuration == '' || txtDuration == null) txtDuration = 0;
+                if(txtQuantity == '' || txtQuantity == null) txtQuantity = 0;
+                if(txtNumofPerson == '' || txtNumofPerson == null) txtNumofPerson =0;
+                
+                var Total;
+                
+                if(document.getElementById('DurationTd'+intDurationIndex).style.display != 'none'){
+                    Total = txtCost * txtDuration * txtQuantity * txtNumofPerson;
+                }else{
+                    Total = txtCost * txtQuantity;
+                }
+                
+                if(Total == 0 || isNaN(Total)){
+                    document.getElementById(TotalCost).innerHTML = '';
+                    document.getElementById(CurrencyRate).innerHTML = '';
+                }else{
+                    Total = Math.round(Total);
+                    document.getElementById(TotalCost).innerHTML = addCommas(Total.toString())+ '('+document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text+')';
+                    if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strLocalCurrency}'){
+                        document.getElementById(CurrencyRate).innerHTML = addCommas(Math.round(((Total * parseFloat(document.getElementById('page:frm:hdnstrLocalCurrencyRate').value)).toFixed(2))).toString()) + '({!strGrantCurrency})';
+                    }
+                    if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strOtherCurrency}'){
+                        document.getElementById(CurrencyRate).innerHTML = addCommas(Math.round(((Total * parseFloat(document.getElementById('page:frm:hdnstrOtherCurrencyRate').value)).toFixed(2))).toString())+ '({!strGrantCurrency})';
+                    }
+                }
+              }
+              var TotalUcost = 0;
+                var TotalQuantity = 0;
+                for(var i=0;i<size;i++){
+                    if(document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'Quantity').value != ''){
+                       if(Type == false){
+                          TotalQuantity += parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'Quantity').value));
+                       }else{
+                            TotalQuantity = MaxNumberofPersons * MaxDuration;
+                       }
+                    }
+                    if(document.getElementById('page:frm:rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML == '' &&
+                        document.getElementById('page:frm:rptBudgetLine:'+i+':txtTotalCostY'+YearIndex).innerHTML == ''){
+                            TotalUcost += 0;
+                        
+                    }else if(document.getElementById('page:frm:rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML != ''){
+                        TotalUcost += parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML));
+                    }else{
+                        TotalUcost += parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLine:'+i+':txtTotalCostY'+YearIndex).innerHTML));
+                    }
+                 }
+                 if(document.getElementById('page:frm:txtY'+YearIndex+'QuantityNew').value != ''){
+                    if(Type == false){
+                        TotalQuantity += parseFloat(RemoveComma(document.getElementById('page:frm:txtY'+YearIndex+'QuantityNew').value));
+                    }else{
+                        //TotalQuantity = count;
+                        if(RemoveComma(document.getElementById('page:frm:txtY'+YearIndex+'NumOfPersonsNew').value)>MaxNumberofPersons)
+                                MaxNumberofPersons = RemoveComma(document.getElementById('page:frm:txtY'+YearIndex+'NumOfPersonsNew').value);
+                        if(RemoveComma(document.getElementById('page:frm:txtY'+YearIndex+'DurationDaysNew').value)>MaxDuration)
+                                MaxNumberofPersons = RemoveComma(document.getElementById('page:frm:txtY'+YearIndex+'DurationDaysNew').value);
+                        TotalQuantity = MaxNumberofPersons * MaxDuration;
+                     }
+                }
+                var TotalnewCost = 0;
+                if(document.getElementById('page:frm:txtRateY'+YearIndex+'New').innerHTML != ''){
+                    TotalnewCost = parseInt(RemoveComma(document.getElementById('page:frm:txtRateY'+YearIndex+'New').innerHTML));
+                }else if(document.getElementById('page:frm:txtTotalCostY'+YearIndex+'New').innerHTML != ''){
+                    TotalnewCost = parseInt(RemoveComma(document.getElementById('page:frm:txtTotalCostY'+YearIndex+'New').innerHTML));
+                }
+                if(document.getElementById('page:frm:txtTotalUnitCostY'+YearIndex).innerHTML != ''){
+                    document.getElementById('page:frm:txtTotalUnitCostY'+YearIndex).innerHTML = '';
+                }
+                if(TotalnewCost == ''){
+                    TotalnewCost = 0;
+                } 
+                if(TotalnewCost != 0){
+                    TotalUcost = +TotalUcost + +TotalnewCost;
+                }
+                if(TotalUcost == 0 || isNaN(TotalUcost)){
+                    document.getElementById('page:frm:txtTotalUnitCostY'+YearIndex).innerHTML = '';
+                }else{
+                    TotalUcost = Math.round(TotalUcost.toFixed(1));
+                    
+                    document.getElementById('page:frm:txtTotalUnitCostY'+YearIndex).innerHTML = addCommas(TotalUcost.toString());
+                    if(TotalQuantity == 0 || isNaN(TotalQuantity)){
+                        document.getElementById('page:frm:txtUnitCostY'+YearIndex).innerHTML = ''; 
+                    }
+                    if(TotalQuantity != 0){
+                        var TotalCostRe = 0;                        
+                        TotalCostRe = parseFloat((parseFloat(TotalUcost) / parseFloat(TotalQuantity)).toFixed(2));
+                        document.getElementById('page:frm:txtUnitCostY'+YearIndex).innerHTML = addCommas(Math.round(TotalCostRe.toString()));
+                    }
+                }
+            }
+            
+            function CalculateTotalCostNew(YearIndex,Cost,Duration,Quantity,TotalCost,Currency,CurrencyRate,size,NumofPerson){
+                var txtCost = document.getElementById(Cost).value;
+                var txtDuration = document.getElementById(Duration).value;
+                var txtQuantity = document.getElementById(Quantity).value;
+                var txtNumberofPerson = document.getElementById(NumofPerson).value;
+                txtCost = RemoveComma(txtCost);
+                txtDuration = RemoveComma(txtDuration);
+                txtDuration = parseFloat(parseFloat(txtDuration).toFixed(1));
+                txtQuantity = RemoveComma(txtQuantity);
+                txtNumberofPerson = RemoveComma(txtNumberofPerson);
+                if(txtCost == '' || txtCost == null) txtCost = 0;
+                if(txtDuration == '' || txtDuration == null) txtDuration = 0;
+                if(txtQuantity == '' || txtQuantity == null) txtQuantity = 0;         
+                if(txtNumberofPerson == '' || txtNumberofPerson == null) txtNumberofPerson = 0;  
+                
+                var intDurationIndex=parseInt(YearIndex);
+                
+                //Code for getting the highest value of Number of Person
+                var NumPerson1;
+                var NumPerson2;
+                var NumPerson3;
+                var NumPerson4;
+               
+                //Script for highest value of Number of Person ends here
+                var MaxDuration =0;
+                var MaxNumberofPersons = 0;
+                if(document.getElementById('DurationTd'+intDurationIndex).style.display != 'none'){
+                        for(var i=0;i<size;i++){
+                                if(RemoveComma(document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'NumofPerson').value)>MaxNumberofPersons)
+                                        MaxNumberofPersons = document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'NumofPerson').value;
+                                if(RemoveComma(document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'DurationDays').value)>MaxDuration)
+                                        MaxDuration = document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'DurationDays').value;
+                        
+                        }
+                }
+                if(document.getElementById('DurationTd'+intDurationIndex).style.display != 'none'){
+                    var Total = txtCost * txtDuration * txtQuantity * txtNumberofPerson; //For Cost Grouping == '2. Travel' 
+                }else{
+                    var Total = txtCost * txtQuantity; // For Other Cost Grouping 
+                }
+                if(Total == 0 || isNaN(Total)){
+                    document.getElementById(TotalCost).innerHTML = '';
+                    document.getElementById(CurrencyRate).innerHTML = '';
+                }else{
+                    Total = Math.round(Total);
+                    document.getElementById(TotalCost).innerHTML = addCommas(Total.toString())+ '('+document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text+')';
+                   if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strLocalCurrency}'){
+                        document.getElementById(CurrencyRate).innerHTML = addCommas(Math.round(((Total * parseFloat(document.getElementById('page:frm:hdnstrLocalCurrencyRate').value)).toFixed(2))).toString())+ '({!strGrantCurrency})';
+                    }
+                    if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strOtherCurrency}'){
+                        document.getElementById(CurrencyRate).innerHTML = addCommas(Math.round(((Total * parseFloat(document.getElementById('page:frm:hdnstrOtherCurrencyRate').value)).toFixed(2))).toString())+ '({!strGrantCurrency})';
+                    } 
+                } 
+                var FinalTotalToAdd = 0;
+                if(document.getElementById(CurrencyRate).innerHTML != ''){
+                    FinalTotalToAdd = parseFloat(RemoveComma(document.getElementById(CurrencyRate).innerHTML));
+                }else{
+                    FinalTotalToAdd = Total;
+                } 
+                var TotalQuantityNew = 0;
+                if(document.getElementById('page:frm:txtY'+YearIndex+'NumOfPersonsNew').value != ''){
+                        if(document.getElementById('DurationTd'+intDurationIndex).style.display == 'none'){
+                        TotalQuantityNew = parseFloat(RemoveComma(document.getElementById('page:frm:txtY'+YearIndex+'QuantityNew').value));
+                        }else{
+                            //if(size == 0)TotalQuantityNew = count;
+                            if(RemoveComma(document.getElementById('page:frm:txtY'+YearIndex+'NumOfPersonsNew').value)>MaxNumberofPersons)
+                                MaxNumberofPersons = RemoveComma(document.getElementById('page:frm:txtY'+YearIndex+'NumOfPersonsNew').value);
+                        }
+                    } 
+                    if(document.getElementById('page:frm:txtY'+YearIndex+'DurationDaysNew').value != ''){
+                        if(document.getElementById('DurationTd'+intDurationIndex).style.display == 'none'){
+                        TotalQuantityNew = parseFloat(RemoveComma(document.getElementById('page:frm:txtY'+YearIndex+'QuantityNew').value));
+                        }else{
+                           if(RemoveComma(document.getElementById('page:frm:txtY'+YearIndex+'DurationDaysNew').value)>MaxDuration)
+                                MaxDuration = RemoveComma(document.getElementById('page:frm:txtY'+YearIndex+'DurationDaysNew').value);
+                        }
+                      } 
+                var TotalUcost = 0; 
+                var TotalQuantity = 0;
+                if(size > 0){
+                    for(var i=0;i<size;i++){
+                        if(document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'Quantity').value != ''){
+                            if(document.getElementById('DurationTd'+intDurationIndex).style.display != 'none'){
+                                TotalQuantity = 0;
+                            }else{
+                                TotalQuantity += parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLine:'+i+':txtY'+YearIndex+'Quantity').value));
+                            }
+                        } 
+                        if(document.getElementById('page:frm:rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML == '' &&
+                            document.getElementById('page:frm:rptBudgetLine:'+i+':txtTotalCostY'+YearIndex).innerHTML == ''){
+                                TotalUcost += 0;
+                            
+                        }else if(document.getElementById('page:frm:rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML != ''){
+                            TotalUcost += parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLine:'+i+':txtRateY'+YearIndex).innerHTML));
+                        }else{
+                            TotalUcost += parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLine:'+i+':txtTotalCostY'+YearIndex).innerHTML));
+                        }  
+                    } 
+                    TotalUcost = TotalUcost + FinalTotalToAdd;
+                    TotalQuantity = MaxNumberofPersons*MaxDuration;
+                }else{
+                    TotalQuantity = MaxNumberofPersons*MaxDuration;
+                    TotalUcost = FinalTotalToAdd;
+                }
+                
+                if(document.getElementById('page:frm:txtTotalUnitCostY'+YearIndex).innerHTML != ''){
+                    document.getElementById('page:frm:txtTotalUnitCostY'+YearIndex).innerHTML = '';
+                }
+                if(TotalUcost == 0 || isNaN(TotalUcost)){
+                    document.getElementById('page:frm:txtTotalUnitCostY'+YearIndex).innerHTML = '';
+                }else{
+                    TotalUcost = Math.round(TotalUcost.toFixed(1));
+                    if(TotalQuantity == 0 || isNaN(TotalQuantity)){
+                        document.getElementById('page:frm:txtUnitCostY'+YearIndex).innerHTML = ''; 
+                    }
+                    if(TotalQuantity != 0){
+                        var TotalCostRe = 0;
+                        TotalCostRe = parseFloat((parseFloat(TotalUcost) / parseFloat(TotalQuantity)).toFixed(2));
+                        
+                        document.getElementById('page:frm:txtUnitCostY'+YearIndex).innerHTML = addCommas(Math.round(TotalCostRe.toString()));
+                    }
+                    document.getElementById('page:frm:txtTotalUnitCostY'+YearIndex).innerHTML = addCommas(TotalUcost.toString());
+                }
+            }
+            function CalculateTotalCostFirstNew(Cost,Charges,TotalSalary,Level,Number,TotalCost,Currency,CurrencyRate,size,SelectedYear,TotalSalaryRate){
+                
+                var txtCost = document.getElementById(Cost).value;
+                var txtCharges = document.getElementById(Charges).value;
+                
+                var txtLevel = document.getElementById(Level).value;
+                var txtNumber = document.getElementById(Number).value;
+                
+                txtCost = RemoveComma(txtCost);
+                txtCharges = RemoveComma(txtCharges);
+                txtLevel = RemoveComma(txtLevel);
+                 txtLevel = parseFloat(Math.floor(parseFloat(txtLevel)));
+                txtNumber = RemoveComma(txtNumber);
+                txtNumber = parseFloat(Math.floor(parseFloat(txtNumber)));
+                
+                if(txtCost == '' || txtCost == null) txtCost = 0;
+                if(txtCharges == '' || txtCharges == null) txtCharges = 0;
+                if(txtLevel == '' || txtLevel == null) txtLevel = 0;
+                if(txtNumber == '' || txtNumber == null) txtNumber = 0;
+                
+                var txtTotalSalary = parseFloat(parseFloat(txtCost).toFixed(2)) + parseFloat(parseFloat(txtCharges).toFixed(2));
+                
+                if(txtTotalSalary == 0 || isNaN(txtTotalSalary)){
+                    document.getElementById(TotalSalary).innerHTML = '';
+                    document.getElementById(TotalSalaryRate).innerHTML = '';
+                }else{
+                    document.getElementById(TotalSalary).innerHTML = addCommas(txtTotalSalary.toString())+ '('+document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text+')';
+                }
+                if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strLocalCurrency}'){
+                        document.getElementById(TotalSalaryRate).innerHTML = addCommas(Math.round(((txtTotalSalary * parseFloat(document.getElementById('page:frm:hdnstrLocalCurrencyRate').value)).toFixed(2))).toString())+'({!strGrantCurrency})';
+                    }
+                    if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strOtherCurrency}'){
+                       document.getElementById(TotalSalaryRate).innerHTML = addCommas(Math.round(((txtTotalSalary * parseFloat(document.getElementById('page:frm:hdnstrOtherCurrencyRate').value)).toFixed(2))).toString())+'({!strGrantCurrency})';
+                    }
+                var txtTotalCost = txtTotalSalary * txtLevel * txtNumber;   
+                if(txtTotalCost == 0 || isNaN(txtTotalCost)){
+                    document.getElementById(TotalCost).innerHTML = '';
+                }else{
+                    txtTotalCost = Math.round(txtTotalCost/100);
+                    document.getElementById(TotalCost).innerHTML = addCommas(txtTotalCost.toString())+ '('+document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text+')';
+                    if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strLocalCurrency}'){
+                        document.getElementById(CurrencyRate).innerHTML = addCommas(Math.round(((txtTotalCost * parseFloat(document.getElementById('page:frm:hdnstrLocalCurrencyRate').value)).toFixed(2))).toString())+'({!strGrantCurrency})';
+                    }
+                    if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strOtherCurrency}'){
+                        document.getElementById(CurrencyRate).innerHTML = addCommas(Math.round(((txtTotalCost * parseFloat(document.getElementById('page:frm:hdnstrOtherCurrencyRate').value)).toFixed(2))).toString())+'({!strGrantCurrency})';
+                    }
+                }
+                var txtTotalCostFinal = 0;
+                if(document.getElementById(CurrencyRate).innerHTML != ''){
+                    txtTotalCostFinal = parseFloat(RemoveComma(document.getElementById(CurrencyRate).innerHTML));
+                }else{
+                    txtTotalCostFinal = txtTotalCost;
+                }
+                var TotalUcost = 0;
+                
+                var TotalCostAll;
+                var TotalUnitCostAll;
+                var TotalRateAll;
+                var TotalCostAllNew;
+                var TotalRateAllNew;
+                var NumberPerson;
+                var NumberPersonNew;
+                var levelEffort;
+                var levelEffortNew;
+                if(SelectedYear == 'Year1'){
+                    TotalCostAll = 'txtTotalCostY1First';
+                    TotalUnitCostAll = 'txtTotalUnitCostY1First';
+                    TotalRateAll = 'txtRateY1First';
+                    TotalCostAllNew = 'txtTotalCostY1NewFirst';
+                    TotalRateAllNew = 'txtRateY1NewFirst';
+                    NumberPerson = 'txtY1NumberFirst';
+                    NumberPersonNew = 'txtY1NumberNewFirst'
+                    UnitCost = 'txtUnitCostY1First';
+                    levelEffort = 'txtY1LevelFirst';
+                    levelEffortNew = 'txtY1LevelNewFirst';
+                }else if(SelectedYear == 'Year2'){
+                    TotalCostAll = 'txtTotalCostY2First';
+                    TotalUnitCostAll = 'txtTotalUnitCostY2First';
+                    TotalRateAll = 'txtRateY2First';
+                    TotalCostAllNew = 'txtTotalCostY2NewFirst';
+                    TotalRateAllNew = 'txtRateY2NewFirst';
+                    NumberPerson = 'txtY2NumberFirst';
+                    NumberPersonNew = 'txtY2NumberNewFirst'
+                    UnitCost = 'txtUnitCostY2First';
+                    levelEffort = 'txtY2LevelFirst';
+                    levelEffortNew = 'txtY2LevelNewFirst';
+                }else if(SelectedYear == 'Year3'){
+                    TotalCostAll = 'txtTotalCostY3First';
+                    TotalUnitCostAll = 'txtTotalUnitCostY3First';
+                    TotalRateAll = 'txtRateY3First';
+                    TotalCostAllNew = 'txtTotalCostY3NewFirst';
+                    TotalRateAllNew = 'txtRateY3NewFirst';
+                    NumberPerson = 'txtY3NumberFirst';
+                    NumberPersonNew = 'txtY3NumberNewFirst'
+                    UnitCost = 'txtUnitCostY3First';
+                    levelEffort = 'txtY3LevelFirst';
+                    levelEffortNew = 'txtY3LevelNewFirst';
+                }else if(SelectedYear == 'Year4'){
+                    TotalCostAll = 'txtTotalCostY4First';
+                    TotalUnitCostAll = 'txtTotalUnitCostY4First';
+                    TotalRateAll = 'txtRateY4First';
+                    TotalCostAllNew = 'txtTotalCostY4NewFirst';
+                    TotalRateAllNew = 'txtRateY4NewFirst';
+                    NumberPerson = 'txtY4NumberFirst';
+                    NumberPersonNew = 'txtY4NumberNewFirst'
+                    UnitCost = 'txtUnitCostY4First';
+                    levelEffort = 'txtY4LevelFirst';
+                    levelEffortNew = 'txtY4LevelNewFirst';
+                }
+                var TotalQuantity = 0;
+                if(size > 0){
+                    TotalUcost = 0;
+                    
+                    for(var i=0;i<size;i++){  
+                        if(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+NumberPerson).value != ''  && document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+levelEffort).value != ''){
+                            TotalQuantity += (parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+NumberPerson).value)) * parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+levelEffort).value)));
+                        }
+                        
+                        if(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML == '' &&
+                            document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML == ''){
+                                TotalUcost += 0;
+                        }else if(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML != '') {
+                            TotalUcost += parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML));
+                        }else {
+                            TotalUcost += parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML));
+                        }
+                       /* if(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML == ''){
+                        TotalUcost += 0;
+                    }else{
+                        TotalUcost += parseInt(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML);
+                    }*/
+                    }                    
+                    TotalUcost = TotalUcost + txtTotalCostFinal;
+                    //TotalUcost = TotalUcost + txtTotalCost;
+                }else{
+                    
+                    TotalUcost = txtTotalCostFinal;
+                   //TotalUcost = txtTotalCost;
+                }
+                
+                if(document.getElementById('page:frm:'+NumberPersonNew).value != '' && document.getElementById('page:frm:'+levelEffortNew).value != ''){
+                    
+                    TotalQuantity += (parseFloat(RemoveComma(document.getElementById('page:frm:'+NumberPersonNew).value)) * parseFloat(RemoveComma(document.getElementById('page:frm:'+levelEffortNew).value)));
+                    
+                }
+                if(document.getElementById('page:frm:'+TotalUnitCostAll).innerHTML != ''){
+                    document.getElementById('page:frm:'+TotalUnitCostAll).innerHTML = '';
+                }
+                if(TotalUcost == 0 || isNaN(TotalUcost)){
+                    document.getElementById('page:frm:'+TotalUnitCostAll).innerHTML = '';
+                }else{
+                    TotalUcost = Math.round(TotalUcost.toFixed(1));
+                     if(TotalQuantity == 0 || isNaN(TotalQuantity)){
+                        document.getElementById('page:frm:'+UnitCost).innerHTML = ''; 
+                    }
+                    if(TotalQuantity != 0){
+                        var TotalCostRe = 0;
+                        TotalQuantity = parseFloat(TotalQuantity)/100;
+                        TotalCostRe = parseFloat((parseFloat(TotalUcost) / parseFloat(TotalQuantity)).toFixed(2));
+                        TotalCostRe = TotalCostRe/4;
+                        document.getElementById('page:frm:'+UnitCost).innerHTML = addCommas(Math.round(TotalCostRe.toString()));
+                    }            
+                    document.getElementById('page:frm:'+TotalUnitCostAll).innerHTML = addCommas(TotalUcost.toString());
+                   
+                }
+            }
+            
+            function CalculateTotalCostFirst(Cost,Charges,TotalSalary,Level,Number,TotalCost,Currency,CurrencyRate,size,SelectedYear,TotalSalaryRate){
+                var txtCost = document.getElementById(Cost).value;
+                var txtCharges = document.getElementById(Charges).value;
+                
+                var txtLevel = document.getElementById(Level).value;
+                var txtNumber = document.getElementById(Number).value;
+                 
+                txtCost = RemoveComma(txtCost);
+                txtCharges = RemoveComma(txtCharges);
+                txtLevel = RemoveComma(txtLevel);
+                txtLevel = parseFloat(Math.floor(parseFloat(txtLevel)));
+                txtNumber = RemoveComma(txtNumber);
+                txtNumber = parseFloat(Math.floor(parseFloat(txtNumber)));
+                    
+                if(txtCost == '' || txtCost == null) txtCost = 0;
+                if(txtCharges == '' || txtCharges == null) txtCharges = 0;
+                if(txtLevel == '' || txtLevel == null) txtLevel = 0;
+                if(txtNumber == '' || txtNumber == null) txtNumber = 0;
+                    
+                var txtTotalSalary = parseFloat(parseFloat(txtCost).toFixed(2)) + parseFloat(parseFloat(txtCharges).toFixed(2));
+                if(txtTotalSalary == 0 || isNaN(txtTotalSalary)){
+                    document.getElementById(TotalSalary).innerHTML = '';
+                    document.getElementById(TotalSalaryRate).innerHTML = '';
+                }else{                    
+                    document.getElementById(TotalSalary).innerHTML = addCommas(Math.round(txtTotalSalary.toString()))+ '('+document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text+')';
+                }
+                if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strLocalCurrency}'){
+                        document.getElementById(TotalSalaryRate).innerHTML = addCommas(Math.round(((txtTotalSalary * parseFloat(document.getElementById('page:frm:hdnstrLocalCurrencyRate').value)).toFixed(2))).toString())+'({!strGrantCurrency})';
+                    }
+                    if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strOtherCurrency}'){
+                        document.getElementById(TotalSalaryRate).innerHTML = addCommas(Math.round(((txtTotalSalary * parseFloat(document.getElementById('page:frm:hdnstrOtherCurrencyRate').value)).toFixed(2))).toString()) +'({!strGrantCurrency})';
+                    }
+                var txtTotalCost = txtTotalSalary * txtLevel * txtNumber;   
+                if(txtTotalCost == 0 || isNaN(txtTotalCost)){
+                    document.getElementById(TotalCost).innerHTML = '';
+                    document.getElementById(CurrencyRate).innerHTML = '';
+                }else{
+                    txtTotalCost = Math.round(txtTotalCost/100);
+                    document.getElementById(TotalCost).innerHTML = addCommas(txtTotalCost.toString())+ '('+document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text+')';
+                   
+                    if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strLocalCurrency}'){
+                        document.getElementById(CurrencyRate).innerHTML = addCommas(Math.round(((txtTotalCost * parseFloat(document.getElementById('page:frm:hdnstrLocalCurrencyRate').value)).toFixed(2))).toString())+'({!strGrantCurrency})';
+                    }
+                    if(document.getElementById(Currency).options[document.getElementById(Currency).selectedIndex].text == '{!strOtherCurrency}'){
+                        document.getElementById(CurrencyRate).innerHTML = addCommas(Math.round(((txtTotalCost * parseFloat(document.getElementById('page:frm:hdnstrOtherCurrencyRate').value)).toFixed(2))).toString())+'({!strGrantCurrency})';
+                    }
+                }
+                     
+                var TotalCostAll;
+                var TotalUnitCostAll;
+                var TotalRateAll;
+                var TotalCostAllNew;
+                var TotalRateAllNew;
+                var NumberPerson;
+                var NumberPersonNew;
+                var levelEffort;
+                var levelEffortNew;
+                if(SelectedYear == 'Year1'){
+                    TotalCostAll = 'txtTotalCostY1First';
+                    TotalUnitCostAll = 'txtTotalUnitCostY1First';
+                    TotalRateAll = 'txtRateY1First';
+                    TotalCostAllNew = 'txtTotalCostY1NewFirst';
+                    TotalRateAllNew = 'txtRateY1NewFirst';
+                    NumberPerson = 'txtY1NumberFirst';
+                    NumberPersonNew = 'txtY1NumberNewFirst';
+                    UnitCost = 'txtUnitCostY1First';
+                    levelEffort = 'txtY1LevelFirst';
+                    levelEffortNew = 'txtY1LevelNewFirst';
+                }else if(SelectedYear == 'Year2'){
+                    TotalCostAll = 'txtTotalCostY2First';
+                    TotalUnitCostAll = 'txtTotalUnitCostY2First';
+                    TotalRateAll = 'txtRateY2First';
+                    TotalCostAllNew = 'txtTotalCostY2NewFirst';
+                    TotalRateAllNew = 'txtRateY2NewFirst';
+                    NumberPerson = 'txtY2NumberFirst';
+                    NumberPersonNew = 'txtY2NumberNewFirst';
+                    UnitCost = 'txtUnitCostY2First';
+                    levelEffort = 'txtY2LevelFirst';
+                    levelEffortNew = 'txtY2LevelNewFirst';
+                }else if(SelectedYear == 'Year3'){
+                    TotalCostAll = 'txtTotalCostY3First';
+                    TotalUnitCostAll = 'txtTotalUnitCostY3First';
+                    TotalRateAll = 'txtRateY3First';
+                    TotalCostAllNew = 'txtTotalCostY3NewFirst';
+                    TotalRateAllNew = 'txtRateY3NewFirst';
+                    NumberPerson = 'txtY3NumberFirst';
+                    NumberPersonNew = 'txtY3NumberNewFirst';
+                    UnitCost = 'txtUnitCostY3First';
+                    levelEffort = 'txtY3LevelFirst';
+                    levelEffortNew = 'txtY3LevelNewFirst';
+                }else if(SelectedYear == 'Year4'){
+                    TotalCostAll = 'txtTotalCostY4First';
+                    TotalUnitCostAll = 'txtTotalUnitCostY4First';
+                    TotalRateAll = 'txtRateY4First';
+                    TotalCostAllNew = 'txtTotalCostY4NewFirst';
+                    TotalRateAllNew = 'txtRateY4NewFirst';
+                    NumberPerson = 'txtY4NumberFirst';
+                    NumberPersonNew = 'txtY4NumberNewFirst';
+                    UnitCost = 'txtUnitCostY4First';
+                    levelEffort = 'txtY4LevelFirst';
+                    levelEffortNew = 'txtY4LevelNewFirst';
+                }
+                var TotalUcost = 0;
+                var TotalQuantity = 0;
+                
+                for(var i=0;i<size;i++){
+                    
+                    if(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+NumberPerson).value != '' && document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+levelEffort).value != ''){
+                        TotalQuantity += (parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+NumberPerson).value)) * parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+levelEffort).value)));
+                    }
+                    if(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML == '' &&
+                        document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML == ''){
+                            TotalUcost += 0;
+                        
+                    }else if(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML != ''){
+                        TotalUcost += parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalRateAll).innerHTML));
+                    }else{
+                        TotalUcost += parseFloat(RemoveComma(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML));
+                    }
+                
+                
+                   /* if(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML == ''){
+                        TotalUcost += 0;
+                    }else{
+                        TotalUcost += parseInt(document.getElementById('page:frm:rptBudgetLineFirst:'+i+':'+TotalCostAll).innerHTML);
+                    }*/
+                }
+                
+                if(document.getElementById('page:frm:'+NumberPersonNew).value != ''  && document.getElementById('page:frm:'+levelEffortNew).value != ''){
+                    TotalQuantity += (parseFloat(RemoveComma(document.getElementById('page:frm:'+NumberPersonNew).value)) * parseFloat(RemoveComma(document.getElementById('page:frm:'+levelEffortNew).value)));
+                }
+                
+                var TotalnewCost = 0;
+                
+                if(document.getElementById('page:frm:'+TotalRateAllNew).innerHTML != ''){
+                    TotalnewCost = parseInt(RemoveComma(document.getElementById('page:frm:'+TotalRateAllNew).innerHTML));
+                }else if(document.getElementById('page:frm:'+TotalCostAllNew).innerHTML != ''){
+                    TotalnewCost = parseInt(RemoveComma(document.getElementById('page:frm:'+TotalCostAllNew).innerHTML));
+                }
+                
+                if(document.getElementById('page:frm:'+TotalUnitCostAll).innerHTML != ''){
+                    document.getElementById('page:frm:'+TotalUnitCostAll).innerHTML = '';
+                }
+                if(TotalnewCost == ''){
+                    TotalnewCost = 0;
+                }
+                if(TotalnewCost != 0){
+                    TotalUcost = TotalUcost + TotalnewCost;
+                }
+                if(TotalUcost == 0  || isNaN(TotalUcost)){
+                    document.getElementById('page:frm:'+TotalUnitCostAll).innerHTML = '';
+                }else{
+                     if(TotalQuantity == 0 || isNaN(TotalQuantity)){
+                        document.getElementById('page:frm:'+UnitCost).innerHTML = ''; 
+                    }
+                    if(TotalQuantity != 0){
+                        var TotalCostRe = 0;
+                        TotalQuantity = parseFloat(TotalQuantity)/100;
+                        TotalCostRe = parseFloat((parseFloat(TotalUcost) / parseFloat(TotalQuantity)).toFixed(2));
+                        TotalCostRe = TotalCostRe/4;
+                        document.getElementById('page:frm:'+UnitCost).innerHTML = addCommas(Math.round(TotalCostRe.toString()));
+                    }
+                    TotalUcost = Math.round(TotalUcost.toFixed(1));
+                    document.getElementById('page:frm:'+TotalUnitCostAll).innerHTML = addCommas(TotalUcost.toString());
+                }
+            
+            }
+            
+     </script>
+</apex:page>

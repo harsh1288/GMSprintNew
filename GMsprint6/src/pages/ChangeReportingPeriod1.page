@@ -1,0 +1,417 @@
+<apex:page id="page" standardController="Period__c" sidebar="false" extensions="changeReportingPeriodExt" showHeader="false">
+
+   <style>
+    
+    table {
+        font-size:14px;
+        margin-top:16px;
+        //position:relative;
+    }
+    .table-striped1 tbody > tr:nth-child(odd) > td,
+    .table-striped1 tbody > tr:nth-child(odd) > th {
+      background-color: #f9f9f9;
+       margin:20px 40px;
+    }
+    
+    body .bodyDiv #bodyTable {
+        font-size: 14px;
+        }
+        .pull-right {
+        margin-right: 30px !important;
+    }
+        
+   .Processing
+        {
+            z-index: 9997;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        } 
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed; 
+            z-index: 9997;
+            top:0;
+            left:0;
+        }  
+      .thClass{
+            border:1.5px solid black;
+            
+      }  
+          .loadingSearchDiv{
+         background-color: lightgrey;
+         opacity: .75;
+         filter: alpha(opacity=75); /* IE's opacity*/
+         text-align: center;
+         width: 100%;
+         height: 100%;
+         position: fixed;
+         z-index: 300;
+         top: 0;
+         left: 0; 
+        }
+        
+        .loadingHolder{
+             background-color: #FFFFCC;
+             border: 1px solid #333333;
+             font-size: 1.2em;
+             font-weight: bold;
+             padding: 0.5em;
+             position: relative;
+             top: 42%;
+             white-space: nowrap;
+        }
+        
+        .loadingImage { vertical-align:bottom; }
+        .loadingDescription { padding:0 1.5em 0 0.5em; }
+   </style>
+   <script>
+   window.onload = addScroll;
+   function addScroll(){
+       browsername=navigator.appCodeName;
+       if( browsername == 'Mozilla' ){
+           var elem = document.getElementById("outerdiv");
+           elem.style = "overflow:auto;height:470px;";
+       }
+   }
+   function actOnSave(){
+        var cnf = '';   
+        var isExecutedval = document.getElementById('page:frm:theHiddenInput').value;
+        
+        if( isExecutedval == 'true'){
+            cnf = confirm("{!$Label.Confirm_Generate_Period}");
+        }else{
+           
+            cnf = confirm("{!$Label.Confirm_Reporting_Periods_Merge}");
+        } 
+       
+       if(cnf == true){
+           actionOnSavePeriod();
+       }
+   
+   }
+   
+   function closePopup(){
+      var browsername=navigator.appName;                                
+          if (browsername.indexOf("Microsoft")!=-1)
+          {
+              alert('here');
+              //window.top.opener.location.href='/{!objPFId}';
+              window.top.opener.reload();
+              //alert('The new reporting periods have been successfully saved.\n Please refresh the performance framework page to view the updated periods.');
+          }else{
+          //window.top.opener.location.href='/{!objPFId}';
+          window.top.opener.reload();
+         //window.opener.parent.location.href='/{!objPFId}';
+         //window.top.opener.location.href="/{!objPFId}";        
+         
+     }
+     window.top.close();
+
+     //window.close();
+     
+   }
+   
+          
+   
+   </script>
+  <apex:form id="frm"> 
+        <apex:inputHidden value="{!isExecuted}" id="theHiddenInput"/>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div> 
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus> 
+      <apex:actionFunction name="actionOnSavePeriod" action="{!CreateNewRP}" status="Processing" rerender="null" onComplete="closePopup();"/>
+      
+      <apex:actionFunction status="Processing" name="refreshTable" action="{!showMergeList}" rerender="viewPanle1,viewPanle2,existTable,showTable,pbButton,pbButtonCancel" oncomplete=""/>
+      <apex:actionFunction status="Processing" name="refreshUnMergeTable" action="{!showUnmergeList}" rerender="viewPanle1,viewPanle2,existTable,showTable,pbButton,pbButtonCancel" oncomplete=""/>
+      
+      <div style="width:100%;background-color:#28b7e5;height:100%">
+     
+            <apex:outputText style="font-size: 25px;width:100%;font-weight: bold;" value="{!$Label.RP_Header}"/><br/><br/>
+            
+            <apex:outputText style="font-size: 13px;width:100%;font-weight: bold;" value="{!$Label.RP_SMText}"/>
+     
+     </div> 
+     
+     <!-- <apex:actionstatus id="LoadingStatusSpinner">
+        <apex:facet name="start">
+            <div class="loadingSearchDiv"> 
+                <div class="loadingHolder">
+                    <img class="loadingImage" src="{!$Resource.SFDC_Loading}" title="Please Wait..." alt="Loading..."/>
+                    <span class="loadingDescription">{!message}</span>
+                </div>
+            </div>
+        </apex:facet>
+     </apex:actionstatus>-->
+     
+     <apex:outputPanel id="errOut">
+     <apex:pageMessages />
+     </apex:outputPanel>
+      <apex:pageBlock >     
+          <apex:pageBlockSection > 
+              <apex:inputField value="{!objIP.Start_Date__c}" required="true" rendered="{!!disableButton}"/>
+              <apex:outputfield value="{!objIP.Start_Date__c}" rendered="{!disableButton}"/>
+              
+              <apex:inputField value="{!objIP.End_Date__c}" required="true" rendered="{!!disableButton}"/>
+              <apex:outputfield value="{!objIP.End_Date__c}" rendered="{!disableButton}"/>
+              
+              <apex:inputField value="{!objIP.Reporting__c}" required="true" rendered="{!!disableButton}"/>
+              <apex:outputfield value="{!objIP.Reporting__c}" rendered="{!disableButton}"/>
+              
+              <apex:inputField value="{!objIP.PR_Fiscal_Cycle__c}" required="true" rendered="{!!disableButton}"/>  
+              <apex:outputfield value="{!objIP.PR_Fiscal_Cycle__c}" rendered="{!disableButton}"/>
+                
+          </apex:pageBlockSection> 
+          <apex:pageBlockButtons location="bottom">     
+              <apex:commandButton value="{!$Label.RP_Apply}"  disabled="{!disableButton}" action="{!GeneratePeriod}" rerender="viewPanle1,viewPanle2,existTable,showTable,colorPanel,pbButton,pbButtonCancel,errOut,theHiddenInput" />
+            <apex:outputpanel id="pbButtonCancel">     
+              <apex:commandButton value="Cancel" rendered="{!if(lstToShowRP.size ==0,true,false)}" onclick="window.close();"/>
+            </apex:outputpanel>
+          </apex:pageBlockButtons> 
+      </apex:pageBlock>
+     <div id="outerdiv" style="">
+      <apex:outputPanel id="pbOut" >
+      <apex:pageBlock > 
+          <apex:outputPanel id="periodPanel">
+              <table id="pbTable" cellspacing="0" cellpadding="7" width="100%" align="left">
+                       <tr> 
+                            <td style="vertical-align:top;">
+                                <apex:outputpanel id="viewPanle1">
+                                <apex:outputpanel style="width:30%;" rendered="{!if((eligibleMergeList.size>0 || eligibleUnMergeList.size >0) && !isExecuted  && !isPreviewChanged  ,true,false)}" >
+                                        <div style="width:450px;margin-left:1%;">
+                                        <table id="eligibleM1" >
+                                                <tr>
+                                                    <th>
+                                                        <apex:outputlabel style="{!IF(eligibleMergeList.size >0, 'margin-left:9%;','margin-left:24% !important;')}" value="{!$Label.Merge}"/>
+                                                    </th>
+                                                </tr>
+                                                <apex:repeat value="{!eligibleMergeList}" var="rec">
+                                                <tr>
+                                                    <td style="width:55%;">
+                                                        <apex:inputcheckbox disabled="{!If(rec.periodStr == 'None', true, false)}"   style="margin-left:10%;" value="{!rec.selected}" onclick="refreshTable();" />&nbsp;
+                                                        <apex:outputlabel value="{!rec.periodStr}"/>
+                                                    </td> 
+                                                </tr>
+                                                </apex:repeat>
+                                              
+                                         </table>
+                                        <table id="eligibleU1" style="{!IF(eligibleUnMergeList.size >0,
+                                                                                If(eligibleUnMergeList.size ==1 &&  eligibleMergeList.size != 0, 'float: right;margin-top: -46px;width:50%;','float: right;margin-top: -22px;width:50%;'),
+                                                                                If( eligibleMergeList.size>0, 
+                                                                                If(eligibleMergeList.size ==1, 'float: right;margin-top: -46px;width:50%;','float: right;margin-top: -68px;width:50%;'),
+                                                                                'float: right;margin-top: -68px;width:50%;'))}">
+                                            <tr>
+                                                <th>
+                                                    <apex:outputlabel style="margin-right:10%" value="{!$Label.Undo_Merge}"/>
+                                                </th>
+                                            </tr>         
+                                            <apex:repeat value="{!eligibleUnMergeList}" var="rec">   
+                                                <tr>
+                                                    <td>
+                                                        <apex:inputcheckbox disabled="{!If(rec.periodStr == 'None', true, false)}"   value="{!rec.selected}" onclick="refreshUnMergeTable();"/>&nbsp;
+                                                        <apex:outputlabel value="{!rec.periodStr}"/>
+        
+                                                    </td>
+                                                </tr>
+                                            </apex:repeat>
+                                           
+                                        </table>
+                                        </div>
+                                     </apex:outputpanel>    
+                                    </apex:outputpanel>
+                                  </td>
+                                  <td style="vertical-align:top;">  
+                                     <apex:outputpanel id="viewPanle2">
+                                         <apex:outputpanel rendered="{!if((lstToShowRP.size>0 && ( eligibleMergeList.size>0 || eligibleUnMergeList.size >0 )) && (isExecuted  || isPreviewChanged),true,false)}">
+                                            <div style="width:450px;margin-left:2%;">
+                                                <table id="eligibleM2">
+                                                    <tr>
+                                                        <th>
+                                                            <apex:outputlabel style="{!IF(eligibleMergeList.size >0, 'margin-left:9%;','margin-left:24% !important;')}" value="{!$Label.Merge}"/>
+                                                        </th>
+                                                    </tr>
+                                                        <apex:repeat value="{!eligibleMergeList}" var="rec">
+                                                        <tr>
+                                                            <td style="width:55%;">
+                                                                <apex:inputcheckbox disabled="{!If(rec.periodStr == 'None', true, false)}"   style="margin-left:10%;" value="{!rec.selected}" onclick="refreshTable();" />&nbsp;
+                                                                <apex:outputlabel value="{!rec.periodStr}"/>
+                                                                
+                                                            </td> 
+                                                        </tr>
+                                                        </apex:repeat>
+                                                       
+                                                    
+                                                </table>
+                                                <table id="eligibleU2" style="{!IF(eligibleUnMergeList.size >0,
+                                                                                If(eligibleUnMergeList.size ==1 &&  eligibleMergeList.size != 0, 'float: right;margin-top: -46px;width:50%;','float: right;margin-top: -22px;width:50%;'),
+                                                                                If( eligibleMergeList.size>0, 
+                                                                                If(eligibleMergeList.size ==1, 'float: right;margin-top: -46px;width:50%;','float: right;margin-top: -68px;width:50%;'),
+                                                                                'float: right;margin-top: -68px;width:50%;'))}">
+                                                    <tr>
+                                                        <th>
+                                                            <apex:outputlabel style="margin-right:10%" value="{!$Label.Undo_Merge}"/>     
+                                                        </th>
+                                                    </tr>
+                                                    <tbody>
+                                                        <apex:repeat value="{!eligibleUnMergeList}" var="rec">   
+                                                            <tr>
+                                                                <td>
+                                                                    <apex:inputcheckbox disabled="{!If(rec.periodStr == 'None', true, false)}"   value="{!rec.selected}" onclick="refreshUnMergeTable();"/>&nbsp;
+                                                                    <apex:outputlabel value="{!rec.periodStr}"/>
+                                                            
+                                                                </td>
+                                                            </tr>
+                                                        </apex:repeat>
+                                                        
+                                                    
+                                                    </tbody>
+                                                </table>
+                                                 
+                                           </div>  
+                                        </apex:outputpanel> 
+                                      </apex:outputpanel>
+                                    </td>
+                                    </tr>       
+                                    <tr>
+                                        <td style="vertical-align: top;">
+                                            <apex:outputpanel id="existTable"> 
+                                                <apex:outputPanel rendered="{!if((lstPeriods.size >0),true,false)}">
+                                                    <table width="10%" cellspacing="0" cellpadding="7" border="">
+                                                       <th></th>
+                                                       <th colspan="4" style="border:1.5px solid black;border-bottom:none!important;">{!$Label.RP_TableCurrent}</th>
+                                                       <th colspan="3"></th>
+                                                        <tr> 
+                                                            <th align="center" style=""></th>       
+                                                            <th align="center" style="border:1.5px solid black;">{!$Label.Period_Label}</th>
+                                                            <th align="center" style="border:1.5px solid black;">{!$Label.Period_Start_Date}</th>
+                                                            <th align="center" style="border:1.5px solid black;">{!$Label.Period_End_Date}</th>
+                                                            <th align="center" style="border:1.5px solid black;">{!$Label.Period_Length}</th>
+                                                        </tr>  
+                                                           
+                                                        <apex:repeat id="rptPR" value="{!lstPeriods}" var="RPEdit">
+                                                        <tr>    
+                                                            <td style="">
+                                                                <div style="background-color:{!IF( RPEdit.isDeleted__c, 'Red','')};width:15px;height:15px;"/>
+                                                            </td>
+                                                            <td width="5%" class="middle center" style="border:1.5px solid black;">
+                                                                <apex:outputtext value="{!RPEdit.Period_Number__c}" styleclass="badge badge-inverse"/>
+                                                            </td>
+                                                            <td class="middle center" text-align="left" style="border:1.5px solid black;">
+                                                                <apex:outputfield id="start" value="{!RPEdit.Start_Date__c}"/>
+                                                        
+                                                            </td>
+                                                            <td class="middle center" style="border:1.5px solid black;">
+                                                                <apex:outputfield id="end" value="{!RPEdit.End_Date__c}"/>
+                                                            </td>
+                                                            <td class="middle center" style="border:1.5px solid black;">
+                                                                <apex:outputfield id="length" value="{!RPEdit.Period_Length__c}"/>
+                                                            </td>
+                                                        </tr>
+                                                    </apex:repeat>         
+                                                 </table>
+                                            </apex:outputPanel>
+                                        </apex:outputpanel>
+                                    </td>
+                                    <td style="vertical-align:top;">
+                                        <apex:outputpanel id="showTable" >
+                                         <apex:outputpanel rendered="{!if(lstToShowRP.size>0,true,false)}" >
+                                             <table  width="10%" cellspacing="0" cellpadding="7" border="">
+                                               <th></th>
+                                               <th colspan="4" style="border:1.5px solid black;border-bottom:none!important;">
+                                               <apex:outputText value="{!if( ( lstToShowRP.size>0 && lstPeriods.size>0 ),IF( !isExecuted , $Label.Merged_Unmerged_Current_Reporting_Periods , $Label.RP_TableReg) , $Label.RP_TableRep)}"/> 
+                                                
+                                               </th> 
+                                               <th colspan="3"></th>
+                                                <tr>        
+                                                    <th align="center" style="border-style: none;"></th>
+                                                    <th align="center" style="border:1.5px solid black;">{!$Label.Period_Label}</th>
+                                                    <th align="center" style="border:1.5px solid black;">{!$Label.Period_Start_Date}</th>
+                                                    <th align="center" style="border:1.5px solid black;">{!$Label.Period_End_Date}</th>
+                                                    <th align="center" style="border:1.5px solid black;">{!$Label.Period_Length}</th>
+                                                </tr>  
+                                           
+                                                <apex:repeat id="rptPRNew" value="{!lstToShowRP}" var="RPNew">
+                                                    <tr>
+                                                           <td style="border-style: none;">
+                                                                <div style="background-color:{!IF( RPNew.isNew__c && isExecuted, 'Green', IF(RPNew.isChanged__c && isExecuted, 'Orange', 'none'))};width:15px;height:15px;"/>
+                                                           </td>
+                                                            <td width="5%" class="middle center" style="border:1.5px solid black;">
+                                                               
+                                                                <apex:outputtext value="{!RPNew.Period_Number__c}" styleclass="badge badge-inverse"/>
+                                                            </td>
+                                                            <td class="middle center" text-align="left" style="border:1.5px solid black;">
+                                                                <apex:outputfield id="start" value="{!RPNew.Start_Date__c}"/>
+                                                        
+                                                            </td>
+                                                            <td class="middle center" style="border:1.5px solid black;">
+                                                                <apex:outputfield id="end" value="{!RPNew.End_Date__c}"/>
+                                                            </td>
+                                                            <td class="middle center" style="border:1.5px solid black;">
+                                                                <apex:outputText id="monthLength" value="{!periodLengthMap[RPNew.Start_Date__c]}"/>
+                                                            </td>
+                                                    </tr>
+                                                 </apex:repeat>         
+                                             </table>
+                                    </apex:outputpanel>
+                                </apex:outputpanel>
+                            </td> 
+                        </tr>
+                 </table>
+                  
+          </apex:outputPanel>
+          <apex:outputpanel id="colorPanel" style="float:left;">
+            <apex:outputpanel style="width:100px;height:100px;" rendered="{!if((lstToShowRP.size >0),true,false)}"> 
+               <table width="100%" cellspacing="0" cellpadding="5" border=""> 
+                    <tr>
+                    
+                    <td style="width: 3%;">
+                        <div style="background-color:Red;width:15px;height:15px;"/>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!$Label.RP_Pdel}"/>
+                    </td>
+                    </tr>
+                    <tr>
+                    
+                    <td style="width: 3%;">
+                        <div style="background-color:Orange;width:15px;height:15px;"/>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!$Label.RP_PUpd}"/>
+                    </td>
+                    </tr>
+                    <tr>
+                    <td style="width: 3%;">
+                        <div style="background-color:Green;width:15px;height:15px;"/>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!$Label.RP_NewP}"/>
+                    </td>
+                 </tr>
+               </table>  
+            </apex:outputpanel>
+          </apex:outputpanel>
+          
+          <apex:pageBlockButtons location="bottom"> 
+          <apex:outputpanel id="pbButton">      
+            <apex:commandButton value="{!$Label.RP_Save}" rendered="{!if(lstToShowRP.size >0 ,true,false)}"  oncomplete="return actOnSave();" rerender="null"/>
+            
+            <apex:commandButton value="Cancel"  rendered="{!if(lstToShowRP.size  >0 ,true,false)}" onclick="window.close();"/>
+          </apex:outputpanel>   
+          </apex:pageBlockButtons>         
+       </apex:pageBlock>
+      </apex:outputPanel>
+      </div>
+  </apex:form>
+</apex:page>

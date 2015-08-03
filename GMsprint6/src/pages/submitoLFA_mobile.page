@@ -1,0 +1,34 @@
+<apex:page standardController="Performance_Framework__c">
+<apex:includeScript value="/soap/ajax/29.0/connection.js"/>
+ <apex:includeScript value="/soap/ajax/29.0/apex.js"/>
+
+<script>
+    
+    window.onload= loadValues();
+    function loadValues(){
+     sforce.connection.sessionId = "{!$Api.Session_ID}";  
+     
+     var PerStatus = new sforce.SObject("Performance_Framework__c"); 
+        PerStatus.id= "{!Performance_Framework__c.Id}"; 
+        
+        var recType = sforce.connection.query("SELECT name,Id from RecordType where name = 'Send to LFA' AND SobjectType = 'Performance_Framework__c'"); 
+        
+        var recTyperecords = recType.getArray("records"); 
+        
+        PerStatus.RecordTypeId = recTyperecords[0].Id; 
+        PerStatus.PF_Status__c = "{!$Label.PF_Status_Submitted_to_LFA}"; 
+        PerStatus.Performance_Framework_Status__c = "{!$Label.IP_Sub_to_GF}"; 
+        PerStatus.Last_Submitted_By__c = "{!$User.Id}"; 
+        
+        //var cnf = confirm("{!$Label.PF_LFA_Popup}"); 
+        
+        //if(cnf==true) 
+        //{ 
+        var t=sforce.connection.update([PerStatus]); 
+        var url ='/'+'{!Performance_Framework__c.Id}'; 
+        sforce.one.navigateToURL(url);
+        //location.reload(true); //reload screen to reflect changes 
+        //}
+      }  
+     </script>
+</apex:page>

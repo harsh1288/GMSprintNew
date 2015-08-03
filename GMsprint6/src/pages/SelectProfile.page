@@ -1,0 +1,20 @@
+<apex:page controller="Switch_User_Profile_Controller" action="{!initialize}">    
+    <apex:pageBlock >
+    <apex:pageMessage severity="info" strength="1" summary="your current profile is '{!currentUser.Profile.Name}'"/>
+        <apex:form >
+            <apex:pageBlockTable value="{!ProfileList}" var="profile">            
+                <apex:Column styleClass="actionColumn">
+                    <apex:CommandLink action="{!selectProfile}" value="Select">
+                        <apex:param name="profileId" value="{!profile.Id}"/>
+                    </apex:CommandLink>
+                </apex:Column>
+                <apex:Column headerValue="Profile Name">
+                    <apex:outputText value="{!profile.Name}"/>
+                    <apex:outputText value=" {"/>
+                    <apex:outputLink value="{!profile.Id}">View</apex:outputLink>
+                    <apex:outputText value=" }"/>
+                </apex:Column>                        
+            </apex:pageBlockTable>
+        </apex:form>    
+    </apex:pageBlock>    
+</apex:page>

@@ -1,0 +1,56 @@
+<apex:page standardController="Milestone_Target__c" sidebar="false"> <!-- extensions="milestoneController"-->
+
+   <style>
+       .headerClass{
+           font-size: 1.8em;
+           font-weight: normal;
+           line-height: 1.1em;
+           margin-left:37px;
+       }
+   </style>
+   
+        <div class="bPageTitle">
+        <div class="ptBody">
+            <div class="content">
+                <h1 class="headerClass">Milestone/Target</h1>
+                <h2 class="pageDescription"> {!Milestone_Target__c.name} </h2>
+                <div class="blank">&nbsp;</div>
+            </div>
+        </div>
+        </div>
+   
+    
+    <!-- apex:form >
+        <apex:outputPanel id="errorPanel">
+            <apex:pageMessages ></apex:pageMessages>
+        </apex:outputPanel>
+        <apex:pageBlock title="Milestone/Target Details">
+            <apex:pageBlockSection columns="2">
+               
+                <!--<apex:outputField value="{!milestoneObj.Key_Activity__c}"/>-->
+             <!--    <apex:inputField value="{!milestoneObj.MilestoneTitle__c}"/>  -->
+             <!-- <apex:inputField value="{!milestoneObj.Criteria__c}"/>
+               
+            </apex:pageBlockSection>
+            <br/><br/>
+        <apex:pageBlock title="Associate Reporting periods">
+            <apex:pageBlockTable value="{!wrapperList}" rendered="{!IF(wrapperList.size >0, true, false)}" var="wrap" title="Associate Reporting periods">
+                <apex:column headerValue="Status">
+                    <apex:inputcheckbox value="{!wrap.status}"/>
+                </apex:column>
+                <apex:column headerValue="Period Name" value="{!wrap.PeriodObj.Name}"/>
+                <apex:column headerValue="Period Start Date" value="{!wrap.PeriodObj.Start_Date__c}"/>
+                <apex:column headerValue="Period End Date" value="{!wrap.PeriodObj.End_Date__c}"/>
+            </apex:pageBlockTable>
+            <apex:outputPanel rendered="{!IF(wrapperList.size == 0, true, false)}">
+                There no reporting periods present. Please configure the periods from Performance framework.
+            </apex:outputPanel>
+        
+        </apex:pageBlock>
+            <apex:pageBlockButtons location="both">
+                <apex:commandButton value="Save" action="{!save}" rerender="errorPanel"/>
+                <apex:commandButton value="Cancel" action="{!cancel}" immediate="true" rerender="null"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form> -->
+</apex:page>

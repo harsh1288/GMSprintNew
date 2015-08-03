@@ -1,0 +1,40 @@
+<apex:page id="page" standardController="Goals_Objectives__c" sidebar="false" extensions="goalImpactReportController" showHeader="false" >
+    <apex:pageBlock >
+        
+       <table id="tbldata" border="2" > 
+        
+            <th>
+                Goal/Objective
+            </th>
+           
+            <th>
+                Indicator Full Name
+            </th>
+            <th>
+                Disaggregation Category
+            </th>
+             <th>
+                Disaggregation Value
+            </th>
+            <apex:repeat value="{!lstGoalIndi}" var="GI">
+            <tr>
+                <td >
+                    <apex:outputText value="{!GI.objGoal.Goal__c}"/>
+                </td>
+                 <td>
+                    <apex:outputText value="{!GI.objGrantIndicator.Indicator_Full_Name__c}"/>
+                </td>
+                
+                <apex:repeat value="{!GI.lstGrantD}" var="Diss" rendered="{!(GI.lstGrantD.size>0)}">
+                    <td>
+                        <apex:outputText value="{!Diss.Catalog_Disaggregated__r.Disaggregation_Category__c}"/>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!Diss.Catalog_Disaggregated__r.Disaggregation_Value__c}"/>
+                    </td>
+                </apex:repeat>
+            </tr>
+        </apex:repeat>
+       </table> 
+    </apex:pageBlock>
+</apex:page>

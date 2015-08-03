@@ -1,0 +1,549 @@
+<apex:page id="page" standardController="Grant_Indicator__c" sidebar="false" standardstylesheets="true" tabstyle="Grant_Indicator__c" showHeader="false" extensions="CovOutputInlineEditController" recordSetVar="indicators">
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+<apex:includeScript value="{!$Resource.jquery142}" />
+<apex:includeScript value="{!URLFOR($Resource.ScrollToFixed_JS)}" />
+<apex:includeScript value="{!URLFOR($Resource.FixedTable_CSS)}" />
+ 
+ <style>
+     #spinner{
+            z-index:9999;
+       } 
+       #popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 9998;
+        }
+        span.dateInput span.dateFormat{
+           display:none;
+        }  
+        .headerRow  
+        {
+            background: #f2f3f3;
+            border-width: 0 0 1px 1px;
+            border-color: #e0e3e5;
+            color: #000;
+            font-size: .9em;
+            font-weight: bold;
+            padding: 5px 2px 4px 5px;
+            white-space: nowrap;
+            text-align: left;
+          
+        } 
+        
+        .valueClass{
+            margin-left: -66px !important;
+        }        
+   </style>
+       <!-- spinner -->
+       <div id="popupBackground" style="position:fixed;display:none;"/>
+       <div id="contentLoading" style="display:none;position:fixed;top:50%;left:50%;">
+        <div style="text-align: center;">
+          <img id="spinner" src="/img/loading.gif" alt="Loading graphic" />
+        </div>
+      </div>
+    <script>
+        
+        function AssignHeight() {
+            document.getElementById('tblhdr').style.width=document.getElementById('tbldata').offsetWidth+"px";
+            document.getElementById('tbl1hdr').style.width=document.getElementById('tbl1data').offsetWidth+"px";
+            formatNumber(); 
+            }
+        function valueAlert(row,decimal)
+        {
+            var rowid = row.id;
+            var numid = rowid.substr(0,rowid.length-3)+'num';
+            var denid = rowid.substr(0,rowid.length-3)+'den';
+            var valid = rowid.substr(0,rowid.length-3)+'basev';
+                       
+            //var hdnvalid = rowid.substr(0,rowid.length-3)+'hdnval';
+            if(document.getElementById(numid).value != 0 && document.getElementById(denid).value != 0)
+            {
+                var calval = (parseFloat(document.getElementById(numid).value)/parseFloat(document.getElementById(denid).value))*100;
+                calval = calval.toFixed(decimal);
+                 
+                document.getElementById(valid).value =  calval;
+                //document.getElementById(hdnvalid).value=  calval;
+            }
+            /*else if(document.getElementById(numid).value != 0 && document.getElementById(denid).value == 0)
+            {
+                alert('Please fill a non zero value in denominator.');
+                row.value=row.defaultValue;
+            }*/
+            else
+            {
+                document.getElementById(valid).value =  '';
+                //document.getElementById(hdnvalid).value=  '';
+            }
+            setdecimal(numid, decimal);
+            setdecimal(denid, decimal);
+            
+        } 
+        function valueAlertTarget(row,year,decimal)
+        {
+            var rowid = row.id;
+            var numid = rowid.substr(0,rowid.length-5)+'numy'+year;
+            var denid = rowid.substr(0,rowid.length-5)+'deny'+year;
+            var valid = rowid.substr(0,rowid.length-5)+'valy'+year;
+            var hdnvalid = rowid.substr(0,rowid.length-5)+'hdnvaly'+year;
+            if(document.getElementById(numid).value != 0 && document.getElementById(denid).value != 0)
+            {
+                var calval = (parseFloat(document.getElementById(numid).value)/parseFloat(document.getElementById(denid).value))*100;
+                calval = calval.toFixed(decimal);
+                document.getElementById(valid).innerHTML =  calval;
+                document.getElementById(hdnvalid).value=  calval;
+            }
+            /*else if(document.getElementById(numid).value != 0 && document.getElementById(denid).value == 0)
+            {
+                alert('Please fill a non zero value in denominator.');
+                row.value=row.defaultValue;
+            }*/
+            else
+            {
+                document.getElementById(valid).innerHTML =  '';
+                //document.getElementById(hdnvalid).value=  '';
+            }
+            setdecimal(numid, decimal);
+            setdecimal(denid, decimal);
+        }
+        function loading(val) 
+            {
+                if (val) 
+                {
+                  document.getElementById('contentLoading').style.display = 'block'; 
+                  document.getElementById('popupBackground').style.display = 'block';  
+                }
+                else 
+                {
+                  document.getElementById('contentLoading').style.display = 'none';
+                  document.getElementById('popupBackground').style.display = 'none';
+                }
+            }
+            
+            function setdecimal(target,decimal) {          
+                var targetvalue = document.getElementById(target).value;         
+                if(targetvalue == '' || isNaN(parseFloat(targetvalue)) == true) 
+                    document.getElementById(target).value = '';
+                else{                    
+                    targetvalue = targetvalue.replace(/\,/g, '');
+                    targetvalue = targetvalue.replace(/'/g, ''); 
+                    
+                    document.getElementById(target).value = parseFloat(targetvalue).toFixed(decimal);   
+                }
+            }
+            
+            function setdecimalForOp(target,decimal) {
+                var targetvalue = document.getElementById(target).innerHTML;          
+                if(isNaN(parseFloat(targetvalue))) 
+                    document.getElementById(target).innerHTML = '';
+                else{
+                    targetvalue = targetvalue.replace(/\,/g, '');
+                    targetvalue = targetvalue.replace(/'/g, ''); 
+                    document.getElementById(target).innerHTML = parseFloat(targetvalue).toFixed(decimal);   
+                
+                
+                }
+            }
+            function charLimit(el) {
+                var QuantityValue = el.value;
+                
+                var strValidChars = "0123456789.0000";
+                var strChar;
+                if(QuantityValue.indexOf(",") != -1){
+                    QuantityValue = QuantityValue.replace(/\,/g, '');
+                }
+                if( QuantityValue.indexOf("\'") != -1 ){
+                    QuantityValue = QuantityValue.replace(/'/g,''); 
+                }
+                 for (i = 0; i < QuantityValue.length ; i++){
+                     strChar = QuantityValue.charAt(i);
+                      if (strValidChars.indexOf(strChar) == -1 ){
+                          alert('Enter a Valid Number');
+                          el.value = '';
+                          return false;
+                      }
+                 }
+                
+                if (el.value.length > 14)
+                {   
+                    alert('Value should not be more than 14 digits');
+                    el.value = '';
+                    //document.getElementById(el).value = '';
+                    return false;
+                }else{
+                return true;
+                }
+            }
+
+            function clears(num,dum) {
+               document.getElementById(num).value = '';
+               document.getElementById(dum).value = '';
+            }  
+            
+            function formatNumber(){
+                alert('in format number ');
+            }
+           
+    </script>
+    <span id="countdown" class="timer"></span>
+    <apex:form id="frm">
+    <apex:outputpanel id="outer">
+       <apex:outputpanel id="indicators" rendered="{!indEdit}">
+        <apex:outputPanel rendered="{!saved}">
+        <script>
+                 
+              var browsername=navigator.appName;                                
+              if (browsername.indexOf("Microsoft")!=-1)
+              {
+                  alert('Records successfully saved.\n Please refresh tab to view update.');
+              }
+              else
+              {
+               alert('Records successfully saved');   
+               if('{!$User.ContactId}'== '')
+               {
+                //alert('Records successfully saved');
+                window.top.opener.location.href="/{!$CurrentPage.parameters.id}";
+               }
+               else
+               {
+               //alert('Records successfully saved');
+               window.top.opener.location.href="/GM/{!$CurrentPage.parameters.id}";
+               }
+              }
+               top.window.close();                                                                                           
+                        
+        </script>
+    </apex:outputPanel>
+   <!-- Hit and Trial for results allPanel,opPanelFreq,opPanelYearly --> 
+    <apex:actionFunction name="doInit" action="{!init}" status="running" oncomplete="AssignHeight();" rerender="allPanel,blk,opPanelFreq,opPanelYearly" />
+    <apex:outputPanel id="allPanel">
+      <apex:outputPanel rendered="{!NOT(myFlag)}">
+      <!--   <p align="center" style='{font-family:"Arial", Helvetica, sans-serif; font-size:20px;}'>
+         <apex:image value="/img/loading.gif"/>&nbsp;Please wait</p> -->
+        <script>
+           window.onload=function()
+           {
+             doInit();
+             
+           };
+        </script>
+      </apex:outputPanel>
+      </apex:outputPanel>
+   
+        <apex:PageBlock id="blk" mode="maindetail">        
+                <apex:pageBlockButtons style="padding-left: 300px;" location="top" rendered="{!if(lstResultFreq.size >0 || lstResultYear.size >0,true,false)}" >                
+                    <apex:commandButton value="Save" action="{!saveList}" reRender="frm" status="running"/>
+                    <apex:actionStatus id="running" onstart="loading(true)" onstop="loading(false)" />
+                    <apex:commandButton value="Cancel" onclick="window.close();" action="{!cancel}"/>                
+                </apex:pageBlockButtons>      
+            <apex:pagemessages escape="false" rendered="{!shwmsg}"></apex:pagemessages>  
+        </apex:PageBlock>    
+        <apex:outputPanel id="opPanelFreq">
+                
+           <!--<div id="tblhdr" style="width:100%;background-color:#28b7e5;height:20px;display:{!if(lstResultFreq.size >0,'','none')};">
+            <apex:outputText style="font-size: 17px;width:100%;font-weight: bold;" value="{!freqName}">
+            </apex:outputText>
+            </div>-->
+           <table id="tbldata" border="2" style="display:{!if(lstResultFreq.size >0,'','none')};">
+                <tr>
+                   <td colspan="100" style="background-color:#28b7e5;display:{!if(lstResultFreq.size >0,'','none')};">
+                       <apex:outputText style="font-size: 17px;width:100%;font-weight: bold;" value="{!freqName}"/>
+                   </td>
+               </tr> 
+                <tr >
+                    <th class="headerRow" id="Fixed1">
+                        {!$Label.EditCov_GID}
+                    </th>
+                    <th class="headerRow" id="Fixed2">
+                        {!$Label.EditCov_Module}
+                    </th>
+                    <th  class="headerRow" id="Fixed3">
+                        {!$Label.EditCov_Fname}
+                    </th>    
+                    <th class="headerRow" id="Fixed4">
+                        {!$Label.EditCov_SC}
+                    </th>
+                    <th class="headerRow" id="Fixed5">
+                        {!$Label.EditCov_DT}
+                    </th>        
+                    <th class="headerRow">
+                       {!$Label.EditCov_BND}
+                    </th>
+                    <th class="headerRow">
+                        {!$Label.EditCov_Bval}
+                    </th>
+                    <th class="headerRow">
+                        {!$Label.EditCov_BYear}
+                    </th>
+                    <th class="headerRow">
+                        {!$Label.EditCov_BSrc}
+                    </th>
+                    <th class="headerRow">
+                       Disaggregation
+                    </th>
+                    <apex:repeat value="{!lstPeriodPF}" var="data">
+                        <th colspan = "2" class="headerRow" style="padding-right: 75px !important;">
+                            {!data.Start_Date_Short__c}
+                        </th>
+                    </apex:repeat>
+                    
+                </tr>
+            <apex:repeat value="{!lstGrantIndicatorResult}" var="ind" rendered="{!if(lstGrantBasedonFreq.size > 0,true,false)}" > 
+                <tr style="border-color: white;">
+                    <td>
+                        <apex:outputText id="Col1" value="{!ind.objGrantIndicator.Name}"></apex:outputText>
+                    </td>
+                      <td>
+                        <apex:outputText id="Col2" value="{!ind.objGrantIndicator.Parent_Module__r.Name}"></apex:outputText>
+                    </td>
+                    <td>
+                        <apex:outputText id="Col3" value="{!ind.objGrantIndicator.Indicator_Full_Name__c}"></apex:outputText>
+                    </td>
+                    <td>
+                        <apex:outputText id="Col4" value="{!ind.objGrantIndicator.Standard_or_Custom__c}"></apex:outputText>
+                    </td>
+                     <td>
+                        <apex:outputText id="Col5" value="{!ind.objGrantIndicator.Data_Type__c}"></apex:outputText>
+                    </td>
+                     <td >
+                        <apex:inputField id="num" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.objGrantIndicator.Baseline_numerator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}">              
+                        <script> setdecimal('{!$Component.num}', '{!ind.objGrantIndicator.Decimal_Places__c}'); 
+                            
+                         </script>
+                        </apex:inputField><br/>  
+                        <apex:inputField id="den" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.objGrantIndicator.Baseline_Denominator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}" >
+                        <script> setdecimal('{!$Component.den}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                        </apex:inputField>
+                    </td>
+                    <td>
+                        <apex:inputField style="float:left;width:70%;" id="basev" onKeyPress="return charLimit(this)" onchange="setdecimal('{!$Component.basev}', '{!ind.objGrantIndicator.Decimal_Places__c}');clears('{!$Component.num}','{!$Component.den}');"  value="{!ind.objGrantIndicator.Baseline_Value1__c}" >
+                        <script> setdecimal('{!$Component.basev}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                        </apex:inputField>
+                        <!-- <apex:outputField style="padding-right:0px;margin-left: -66px !important;" id="val" value="{!ind.objGrantIndicator.Baseline_Value1__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}">
+                            <script> setdecimalForOp('{!$Component.val}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                        </apex:outputField> -->
+                        <apex:outputText style="padding-left:0px;font-style:italic" value="%" rendered="{!if((ind.objGrantIndicator.Data_Type__c=='Number and Percent' || ind.objGrantIndicator.Data_Type__c=='Percent'),true,false)}" />
+                        <apex:outputText style="padding-right:1px;float:right;font-style:italic" value=" per 100K" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Ratio',true,false)}"/>
+                       <!--apex:inputHidden id="hdnval" value="{!ind.objGrantIndicator.Baseline_Value1__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}"/> -->
+                    </td>
+                    <td>
+                        <apex:inputField style="width:97%;" value="{!ind.objGrantIndicator.Baseline_Year__c}"/>
+                    </td>
+                    <td>
+                        <apex:inputField style="width:40%;" value="{!ind.objGrantIndicator.Baseline_Sources__c}" />
+                    </td>
+                    <td>
+                    <Center>
+                       <apex:commandLink style="text-decoration: underline;color:blue;font-size:15px;" rendered="{!if(ind.objGrantIndicator.Is_Disaggregated1__c == true,true,false)}" onclick="switchView1('{!ind.objGrantIndicator.id}','{!ind.objGrantIndicator.Performance_Framework__r.Grant_Status__c}','{!ind.objGrantIndicator.Data_Type__c}','{!ind.objGrantIndicator.Decimal_Places__c}','{!ind.objGrantIndicator.Indicator_Full_Name__c}')"  value="Disaggregation" reRender="disaggregation" status="running"/> 
+                    </Center>
+                    </td>
+                    <apex:repeat value="{!ind.lstResults}" var="data">
+                        
+                        <td  colspan="2" >
+                         <table >
+                           <tr>
+                             <td>
+                                <apex:inputField id="num" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:right;width:50%;" value="{!data.Target_Numerator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}">              
+                                    <script>setdecimal('{!$Component.num}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                                </apex:inputField><br/>  <br/> 
+                              
+                                <apex:inputField id="den" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:right;width:50%;" value="{!data.Target_Denominator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}" >
+                                <script> setdecimal('{!$Component.den}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                                </apex:inputField>    
+                            </td>
+                       
+                            <td>
+                                <apex:inputField style="float:right;width:50%;" styleclass="valueClass" id="basev" onKeyPress="return charLimit(this)" onchange="setdecimal('{!$Component.basev}', '{!ind.objGrantIndicator.Decimal_Places__c}');clears('{!$Component.num}','{!$Component.den}');"  value="{!data.Target__c}" >
+                                <script> setdecimal('{!$Component.basev1}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                                </apex:inputField>
+                       
+                            </td>
+                            <td>
+                                <apex:outputText style="padding-right:1px;float:right;font-style:italic;" value="%" rendered="{!if((ind.objGrantIndicator.Data_Type__c=='Number and Percent' || ind.objGrantIndicator.Data_Type__c=='Percent'),true,false)}" />
+                                <apex:outputText style="padding-right:1px;float:right;font-style:italic;" value=" per 100K" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Ratio',true,false)}"/>
+                                 <!--apex:inputHidden id="hdnval" value="{!data.Target__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}"/> -->
+                            </td>
+                          </tr>
+                    </table>
+                    </td>
+                    </apex:repeat>
+                   
+                    <td style="display:none;">                        
+                        <apex:inputField value="{!ind.objGrantIndicator.Component__c}"/>
+                    </td>  
+                </tr>
+            </apex:repeat> 
+          </table> 
+          </apex:outputPanel> 
+          <!--
+            This below table is for the Indicators with frequency as Yearly.
+            --><br/>
+         <apex:outputPanel id="opPanelYearly">
+             <!--<div id="tbl1hdr" style="width:100%;background-color:#28b7e5;height:20px;display:{!if(lstResultYear.size >0,'','none')};">
+            <apex:outputText style="font-size: 17px;width:100%;font-weight: bold;" value="{!$Label.Edit_CovHeader}">
+            </apex:outputText>
+            </div>-->
+          <table id="tbl1data" border="2" style="display:{!if(lstResultYear.size >0,'','none')};">
+                  <tr>
+                   <td colspan="100" style="background-color:#28b7e5;display:{!if(lstResultYear.size >0,'','none')};">
+                      <apex:outputText style="font-size: 17px;width:100%;font-weight: bold;" value="{!$Label.Edit_CovHeader}"/>
+                   </td>
+                </tr>  
+                <tr>
+                    
+                    <th class="headerRow">
+                        {!$Label.EditCov_GID}
+                    </th>
+                      <th class="headerRow">
+                        {!$Label.EditCov_Module}
+                    </th>
+                    <th  class="headerRow">
+                        {!$Label.EditCov_Fname}
+                    </th>    
+                    <th class="headerRow">
+                        {!$Label.EditCov_SC}
+                    </th>
+                    <th class="headerRow">
+                        {!$Label.EditCov_DT}
+                    </th>        
+                    <th class="headerRow">
+                       {!$Label.EditCov_BND}
+                    </th>
+                    <th class="headerRow">
+                        {!$Label.EditCov_Bval}
+                    </th>
+                    <th class="headerRow">
+                        {!$Label.EditCov_BYear}
+                    </th>
+                    <th class="headerRow">
+                        {!$Label.EditCov_BSrc}
+                    </th>
+                    <th class="headerRow">
+                        Disaggregation
+                    </th>
+                    <apex:repeat value="{!lstPeriodYearly}" var="data">
+                        <th colspan = "2" class="headerRow" style="padding-right: 75px !important;">
+                            {!data.Start_Date_Short__c}
+                        </th>
+                    </apex:repeat>
+                    
+                </tr>
+            <apex:repeat value="{!lstGrantIndicatorResultYearly}" var="ind" rendered="{!if(lstGrantIndicatorResultYearly !=null,true,false)}" > 
+                <tr style="border-color: white;">
+                    <td>
+                        <apex:outputText value="{!ind.objGrantIndicator.Name}"></apex:outputText>
+                    </td>
+                      <td>
+                        <apex:outputText value="{!ind.objGrantIndicator.Parent_Module__r.Name}"></apex:outputText>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!ind.objGrantIndicator.Indicator_Full_Name__c}"></apex:outputText>
+                    </td>
+                    <td>
+                        <apex:outputText value="{!ind.objGrantIndicator.Standard_or_Custom__c}"></apex:outputText>
+                    </td>
+                     <td>
+                        <apex:outputText value="{!ind.objGrantIndicator.Data_Type__c}"></apex:outputText>
+                    </td>
+                     <td>
+                        <apex:inputField id="num" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.objGrantIndicator.Baseline_numerator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}">              
+                        <script> setdecimal('{!$Component.num}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                        </apex:inputField><br/>  
+                        <apex:inputField id="den" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.objGrantIndicator.Baseline_Denominator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}" >
+                        <script> setdecimal('{!$Component.den}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                        </apex:inputField>
+                    </td>
+                    <td>
+                        <apex:inputField style="float:left;width:70%;" id="basev" onKeyPress="return charLimit(this)" onchange="setdecimal('{!$Component.basev}', '{!ind.objGrantIndicator.Decimal_Places__c}');clears('{!$Component.num}','{!$Component.den}');"  value="{!ind.objGrantIndicator.Baseline_Value1__c}" >
+                        <script> setdecimal('{!$Component.basev}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                        </apex:inputField>
+                        <!--  apex:outputField style="padding-right:0px;margin-left: -66px !important;" id="val" value="{!ind.objGrantIndicator.Baseline_Value1__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}">
+                            <script> setdecimalForOp('{!$Component.val}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                        </apex:outputField -->
+                        <apex:outputText style="padding-left:0px;font-style:italic" value="%" rendered="{!if((ind.objGrantIndicator.Data_Type__c=='Number and Percent' || ind.objGrantIndicator.Data_Type__c=='Percent'),true,false)}" />
+                        <apex:outputText style="padding-right:1px;float:right;font-style:italic" value=" per 100K" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Ratio',true,false)}"/>
+                        <!-- apex:inputHidden id="hdnval" value="{!ind.objGrantIndicator.Baseline_Value1__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}"/-->
+                    </td>
+                    <td>
+                        <apex:inputField style="width:97%;" value="{!ind.objGrantIndicator.Baseline_Year__c}"/>
+                    </td>
+                    <td>
+                        <apex:inputField style="width:40%;" value="{!ind.objGrantIndicator.Baseline_Sources__c}" />
+                    </td>
+                     <td>
+                     <Center>
+                        <apex:commandLink style="text-decoration: underline;color:blue;font-size:15px;" rendered="{!if(ind.objGrantIndicator.Is_Disaggregated1__c == true,true,false)}" onclick="switchView1('{!ind.objGrantIndicator.id}','{!ind.objGrantIndicator.Performance_Framework__r.Grant_Status__c}','{!ind.objGrantIndicator.Data_Type__c}','{!ind.objGrantIndicator.Decimal_Places__c}','{!ind.objGrantIndicator.Indicator_Full_Name__c}')"  value="Disaggregation" reRender="disaggregation" status="running"/>
+                     </Center>
+                     </td>
+                    <apex:repeat value="{!ind.lstResults}" var="data">
+                      <td  colspan="2" >
+                            <table >
+                            <tr>
+                            <td>
+                            <apex:inputField id="num" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:left;width:50%;" value="{!data.Target_Numerator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}">              
+                            <script> setdecimal('{!$Component.num}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                            </apex:inputField><br/>  
+                            <apex:inputField id="den" onKeyUp="return charLimit(this)" onchange="valueAlert(this,'{!ind.objGrantIndicator.Decimal_Places__c}');" style="float:left;width:50%;" value="{!data.Target_Denominator__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}" >
+                            <script> setdecimal('{!$Component.den}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                            </apex:inputField>    
+                            
+                        </td>                       
+                        <td>
+                            <apex:inputField style="float:left;width:70%;" id="basev" onKeyPress="return charLimit(this)" onchange="setdecimal('{!$Component.basev}', '{!ind.objGrantIndicator.Decimal_Places__c}');clears('{!$Component.num}','{!$Component.den}');"  value="{!data.Target__c}" >
+                            <script> setdecimal('{!$Component.basev1}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                            </apex:inputField>
+                        
+                        </td>
+                        <td> 
+                           
+                            <!-- apex:outputtext styleclass="valueClass" id="val" value="{!data.Target__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}">
+                                <script> setdecimalForOp('{!$Component.val}', '{!ind.objGrantIndicator.Decimal_Places__c}');  </script>
+                            </apex:outputtext -->
+                            <apex:outputText style="padding-right:1px;float:right;font-style:italic;" value="%" rendered="{!if((ind.objGrantIndicator.Data_Type__c=='Number and Percent' || ind.objGrantIndicator.Data_Type__c=='Percent'),true,false)}" />
+                            <apex:outputText style="padding-right:1px;float:right;font-style:italic;" value=" per 100K" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Ratio',true,false)}"/>
+                            <!-- apex:inputHidden id="hdnval" value="{!data.Target__c}" rendered="{!if(ind.objGrantIndicator.Data_Type__c=='Number and Percent',true,false)}"/ -->
+                        </td>
+                      </tr>
+                    </table>
+                    </td>
+                    </apex:repeat>
+                    
+                    <td style="display:none;">                        
+                        <apex:inputField value="{!ind.objGrantIndicator.Component__c}"/>
+                    </td>  
+                </tr>
+            </apex:repeat> 
+          </table>
+          </apex:outputPanel>  
+          <apex:actionFunction action="{!EditDissagregation}" name="switchView1" reRender="outer" status="running1">
+                    <apex:param value="" id="param1" name="name1" assignTo="{!targetRecord}"/>
+                    <apex:param value="" id="param2" name="name2" assignTo="{!pfStatus}"/>
+                    <apex:param value="" id="param3" name="name3" assignTo="{!dataType}"/>
+                    <apex:param value="" id="param4" name="name4" assignTo="{!decimalPlaces}"/>
+                    <apex:param value="" id="param5" name="name5" assignTo="{!indName}"/>
+                </apex:actionFunction>
+          </apex:outputpanel>  
+        <!-- /apex:PageBlock -->
+        </apex:outputpanel>  
+     <apex:outputPanel rendered="{!!indEdit}">
+        <apex:outputPanel id="disaggregation" >
+            <apex:PageBlock > 
+                <apex:PageBlockButtons >
+                {!targetRecord}
+                        <apex:commandButton action="{!ReturnToInd}" value="Cancel" reRender="outer"/>
+                </apex:PageBlockButtons>                     
+                <apex:PageBlockSection columns="1">
+                    <c:disaggregationTable TargetRecordId="{!targetRecord}" PerformanceFrameworkStatus="{!pfStatus}" selectedDataType="{!dataType}" decimalPlaces="{!decimalPlaces}"  loadingmode="edit" />                
+                </apex:PageBlockSection>    
+            </apex:PageBlock>
+        </apex:outputPanel>
+       </apex:outputPanel>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,298 @@
+<apex:page id="page" sidebar="false" standardController="Implementation_Period__c" extensions="UploadDocumentext">
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <script src="/soap/ajax/33.0/connection.js" type="text/javascript"></script>
+    <style>
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }
+         .bPageHeader td.left div
+        {
+          width:260px;
+        }
+        .errfld
+        {
+            border-color: rgba(168, 0, 0, 0.8);
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(168, 0, 0, 0.6);
+            outline: 0 none;
+        }
+    </style>
+    <script type="text/javascript">
+          function showpleasespecify(type,specify,lbl)
+          {
+            if(document.getElementById(type).value == 'Detailed Budget') 
+            {
+                if(document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinaldb}'))
+                {
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinaldb}').disabled=false;
+                }
+                if(document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinalhpc}'))
+                {
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinalhpc}').checked=false;
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinalhpc}').disabled=true;                
+                }
+            }
+            else if(document.getElementById(type).value == 'List of Health Products, Quantities and Costs') 
+            {
+                if(document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinalhpc}'))
+                {
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinalhpc}').disabled=false;
+                }
+                if(document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinaldb}'))
+                {
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinaldb}').checked=false;
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinaldb}').disabled=true;
+                }
+            }
+            else
+            {
+                if(document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinaldb}'))
+                {
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinaldb}').checked=false;
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinaldb}').disabled=true;
+                }
+                if(document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinalhpc}'))
+                {
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinalhpc}').checked=false;                
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinalhpc}').disabled=true;
+                }
+            } 
+            if(document.getElementById(type).value == 'Other') 
+            {
+                document.getElementById(specify).style.display = '';
+                document.getElementById(lbl).style.display = '';
+            }
+            else 
+            {
+                document.getElementById(specify).value = '';              
+                document.getElementById(specify).style.display = 'none';
+                document.getElementById(lbl).style.display = 'none';
+            }                                
+            return false;
+          }      
+/*        
+  Commented working for Feedback #230
+        function closePopup(ipfile,type,language,Section,Description,Name,Internal)
+        {                
+            //document.getElementById(cmdLink).style.display = '';
+            document.getElementById(Name).value= '';
+            document.getElementById(Internal).value= false;
+            document.getElementById(type).value= '';
+            document.getElementById(language).value= '';
+            document.getElementById(Section).value= '';
+            document.getElementById(Description).value= '';                                
+            document.getElementById(ipfile).value = '';                                   
+            return false;
+        }
+*/        
+        function ValidateUploadFile(nameVal,fileid,Type,Description,specify)
+        {
+            if(document.getElementById(fileid).value == '')
+            {
+                document.getElementById(fileid).className='errfld';
+                alert('{!$Label.Select_File}.');
+                return false;
+            }
+            else
+            {
+                if(document.getElementById(nameVal).value == '')
+                {
+                    document.getElementById(fileid).className='';
+                    document.getElementById(nameVal).style.border='1px solid red';
+                    alert('Please enter a value in Name field.');
+                    return false;
+                }else
+                {                                                                                                                                                                                                                              
+                    if(document.getElementById(Type).value == '')
+                    {
+                        document.getElementById(fileid).className='';
+                        document.getElementById(nameVal).style.border='1px solid #cccccc';
+                        document.getElementById(Type).className='errfld';
+                        alert('{!$Label.Specify_File_Type}.');
+                        return false;
+                    }
+                    else
+                    {
+                       if(document.getElementById(Type).value == 'Other' && document.getElementById(specify).value.length < 5)
+                       {
+                        document.getElementById(fileid).className='';
+                        document.getElementById(nameVal).style.border='1px solid #cccccc';
+                        document.getElementById(Type).className='';
+                        document.getElementById(specify).style.border='1px solid red';                                
+                        alert('Please enter atleast 5 characters in Please Specify text box');
+                        return false;                            
+                       }
+                        else
+                        {
+                           if(document.getElementById(Description).value == '')
+                           {
+                            document.getElementById(fileid).className='';
+                            document.getElementById(nameVal).style.border='1px solid #cccccc';
+                            document.getElementById(Type).className='';
+                            document.getElementById(specify).style.border='1px solid #cccccc';
+                            document.getElementById(Description).className='errfld';
+                            alert('{!$Label.Specify_Description}.');
+                            return false;
+                            
+                           }
+                           else
+                            {
+                                document.getElementById('divProcessing').style.display = '';
+                                actuploadFile();
+                                return false;
+                            }
+                         }      
+                     }
+                 } 
+             }                                  
+        }
+/*        function disableOnCheck(val,chkbx)
+        {
+          if(duplicatedbCheck(val,chkbx))
+          {
+            if(document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinalhpc}'))
+            {          
+                if(val.checked && chkbx=='db')
+                {                    
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinalhpc}').disabled=true;
+                }
+                else
+                {                
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinalhpc}').disabled=false;
+                }
+            }
+            if(document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinaldb}'))
+            {
+                if(val.checked && chkbx=='hpc')
+                {
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinaldb}').disabled=true;
+                }
+                else
+                {                
+                    document.getElementById('{!$Component.page.form.UploadDoc.pbsec.ipfinaldb}').disabled=false;
+                }
+            }
+         }
+       }
+*/
+        function duplicatedbCheck(elm,box)
+        {
+            if(elm.checked)
+            {
+                sforce.connection.sessionId = '{!$Api.Session_ID}';
+                var querystrng='Select id from DocumentUpload_GM__c where Implementation_Period__c='+'\'';
+                    querystrng+='{!strImplementationPeriodId}'+'\'';
+                    querystrng+= ' and isdeleted =false ';
+                if(box =='db')
+                {
+                    querystrng+= 'and Final_detailed_budget__c=true';
+                }
+                if(box =='hpc')
+                {
+                    querystrng+= 'and Final_list_of_health_products_and_costs__c=true';
+                }
+                var result = sforce.connection.query(querystrng);
+                var records = result.getArray("records");
+                if( records.length > 0 && records[0].Id != null ){
+                     if(box =='db')
+                    {
+                        alert("{!$Label.Dup_Final_Db}");
+                    }
+                    if(box =='hpc')
+                    {
+                        alert("{!$Label.Dup_Final_HPC}");
+                    }
+                    document.getElementById(elm.id).checked=false;
+                    document.getElementById(elm.id).disabled=true;
+                    return false;
+                }else{
+                       return true;
+                     }
+             }
+             else
+             {
+                 return true;
+             }
+        }
+    </script>
+        
+    <apex:form id="form">       
+        <apex:pageBlock id="UploadDoc" title="Upload Document">            
+            <apex:pageBlockButtons >
+                <apex:commandButton value="{!$Label.Upload}" style="margin-left:25%" onclick="return ValidateUploadFile('{!$Component.page.form.UploadDoc.pbsec.ipName}','{!$Component.page.form.UploadDoc.pbsec.secitem2.ipFile}','{!$Component.page.form.UploadDoc.pbsec.ifType}','{!$Component.page.form.UploadDoc.pbsec.ifDescription}','{!$Component.page.form.UploadDoc.pbsec.secitem1.ispecify}');" reRender="HiddenPanel1">                                                                    
+                </apex:commandButton>&nbsp;&nbsp;
+                <apex:commandButton value="{!$Label.Cancel}" action="{!returntoIP}">                                                                    
+                </apex:commandButton>
+            </apex:pageBlockButtons>
+                    <apex:outputPanel id="custPopup2">                        
+                        <apex:PageblockSection id="pbsec" columns="2">                                                           
+                                <apex:inputField id="ipName" label="{!$Label.Name}:" value="{!objDocumentUpload.Name}"/>
+                                <apex:inputField id="ifType" label="{!$Label.Select_Type}:" value="{!objDocumentUpload.GMType__c}" onchange="showpleasespecify('{!$Component.page.form.UploadDoc.pbsec.ifType}','{!$Component.page.form.UploadDoc.pbsec.secitem1.ispecify}','{!$Component.page.form.UploadDoc.pbsec.secitem1.ospecify}');"/>                           
+                                <apex:inputField label="{!$Label.Select_Language}: " id="ifLanguage" value="{!objDocumentUpload.Language__c}" />                            
+                                                           
+                                <apex:PageblockSectionItem id="secitem1" >
+                                    <apex:outputLabel id="ospecify" for="ispecify" escape="false" style="display:none;">Please Specify:</apex:outputLabel>
+                                    <apex:inputField id="ispecify" value="{!objDocumentUpload.Please_Specify__c}" style="display:none;"/>                            
+                                </apex:PageblockSectionItem>
+                                <apex:inputfield id="iSection" value="{!objDocumentUpload.Section__c}"/>
+                                <apex:inputTextArea label="{!$Label.Description}" id="ifDescription" value="{!objFeedItem.body}" styleclass="countable1" style="resize:none;width:250px;height:80px;length:250px"/>                                                                                                                               
+                                <apex:PageblockSectionItem id="secitem2">                                 
+                                    <apex:inputFile id="ipFile" value="{!objFeedItem.ContentData}" filename="{!objFeedItem.ContentFileName}" filesize="{!linkedfilesize}" style="margin-left:106%;width:170%;"/>                            
+                                    <apex:outputText value="<Center><br/><br/>{!$Label.Max_File_Size}</Center>" escape="false" style="color:#D00000;font-weight:bold;margin-left:36%;"/>                                                                                                                                                                                                                         
+                                </apex:PageblockSectionItem>                                
+                                <!--<apex:inputField label="{!$Label.TGF_Internal_Label}:" id="ipinternal" value="{!objDocumentUpload.TGF_Internal__c}" style="display:{!if(blnIsExtUser == true,'none','')}" />    -->
+                                
+                                <apex:selectList id="securityid" value="{!objDocumentUpload.Security__c}" size="1" style="width:220px;" >  
+                                     <apex:selectOptions value="{!securityoptions}"></apex:selectOptions>
+                               </apex:selectList>
+                               <apex:inputField id="ipfinaldb" style="disabled:disabled;" label="{!$Label.final_db_doc_lbl}:" onchange="duplicatedbCheck(this,'db');" value="{!objDocumentUpload.Final_detailed_budget__c}" />                                                                
+                               <apex:inputField id="ipfinalhpc" style="disabled:disabled;" label="{!$Label.final_hpc_doc_lbl}:" onchange="duplicatedbCheck(this,'hpc');" value="{!objDocumentUpload.Final_list_of_health_products_and_costs__c}" />
+                               <script>showpleasespecify('{!$Component.page.form.UploadDoc.pbsec.ifType}','{!$Component.page.form.UploadDoc.pbsec.secitem1.ispecify}','{!$Component.page.form.UploadDoc.pbsec.secitem1.ospecify}');</script>
+                                                                                                                        
+                         <!--       <apex:inputField id="ipfinaldb" label="{!$Label.final_db_doc_lbl}:" onchange="disableOnCheck(this,'db');" value="{!objDocumentUpload.Final_detailed_budget__c}" />                                                                
+                                <apex:inputField id="ipfinalhpc" label="{!$Label.final_hpc_doc_lbl}:" onchange="disableOnCheck(this,'hpc');" value="{!objDocumentUpload.Final_list_of_health_products_and_costs__c}" />                                                                                           
+                             Commented working on feedback #230 placed both buttons in pageblockbutton section                                                                 
+                            <apex:commandButton value="{!$Label.Cancel}" onclick="return closePopup('{!$Component.ipfile}','{!$Component.ifType}','{!$Component.ifLanguage}','{!$Component.iSection}','{!$Component.ifDescription}','{!$Component.ipName}','{!$Component.ipinternal}');">                                                                    
+                            </apex:commandButton>
+                            -->
+                    </apex:PageblockSection>
+                    <apex:actionRegion >
+                        <apex:outputPanel id="HiddenPanel1">
+                            <Script>
+                                if("{!strWarning}")
+                                {
+                                    alert("{!strWarning}");
+                                }
+                            </Script>
+                            <apex:actionFunction action="{!uploadFile}" name="actuploadFile"/>
+                        </apex:outputPanel>
+                    </apex:actionRegion>                                      
+                </apex:outputPanel>
+                <div id="divProcessing" style="display:none;">
+                <div class="ProcessingBackground"></div>
+                <div class="Processing">
+                    <apex:image alt="Processing" url="{!$Resource.LoadingCircle}"/>
+                </div>
+            </div>  
+            <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+            </apex:actionStatus>                                               
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

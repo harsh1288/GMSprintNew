@@ -1,0 +1,399 @@
+<apex:page standardController="HPC_Framework__c" extensions="hpcflow_controller" sidebar="false" showHeader="true">
+<apex:pageMessages />
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $("#parentCheck").click(function() {
+                $(".childCheck").prop('checked', this.checked);
+                
+            });
+            $(".childCheck").click(function(){
+                if ($('input.childCheck[type=checkbox]:not(:checked)').length){
+                    $("#parentCheck").removeAttr('checked');    
+                }else{
+                    $("#parentCheck").prop('checked',true);
+                }
+            });
+        })
+    </script>
+
+<style>
+    .Processing
+    {
+        z-index: 9999;
+        left: 50%;
+        top: 50%;
+        text-align: center;
+        position: fixed;
+    } 
+    .ProcessingBackground
+    {
+        background-color: black;
+        opacity: 0.50;
+        filter: alpha(opacity = 50);
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        z-index: 9999;
+        top:0;
+        left:0;
+        }
+        
+    .myBlock {
+    margin-left: 25%;
+    }
+</style>    
+
+<apex:form id="frm">
+    <div id="divProcessing" style="display:none;">
+        <div class="ProcessingBackground"></div>
+        <div class="Processing">
+            <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+        </div>
+    </div>
+    <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';"/>                               
+    <apex:pageBlock id="pb1">
+        <!--*************START*********Page Block Section to select Interventions******************1***********************-->
+        <apex:pageBlockSection columns="1" id="pbsec1" rendered="{!blnmoduleIntervention}">
+            <apex:outputPanel >
+                <apex:OutputText value="Interventions" style="color:#2E2E2E;"/>
+            </apex:outputPanel>
+            <apex:pageBlockSectionItem />
+            <apex:pageBlockSectionItem id="pbsecitem4">
+                <apex:outputtext value="Select Intervention : "/>               
+                <apex:selectlist size="1" value="{!strIntervention}" style="width:200px">
+                    <apex:selectOptions value="{!InterventionOptions}"></apex:selectOptions>
+                </apex:selectlist>
+            </apex:pageBlockSectionItem>                
+            <!--<apex:pageBlockTable value="{!lstwrapintv}" var="pr" styleClass="table table-bordered tableEdit" id="pbtable1"> 
+                <apex:column headerValue="">
+                    <apex:facet name="header">
+                         <input type="checkbox" id="parentCheck"/>
+                      </apex:facet>
+                    <apex:inputCheckbox value="{!pr.selectedintv}" styleClass="childCheck">                                    
+                    </apex:inputCheckbox>                                  
+                </apex:column>
+                <apex:column headerValue="Interventions">
+                    <apex:outputText value="{!pr.objIntvWrap.Module__r.Name} - {!pr.objIntvWrap.Name}" />  
+                </apex:column>  
+            </apex:pageBlockTable>-->
+            <apex:outputPanel id="pbsecitem5">
+                <!--<apex:commandLink value="Previous" action="{!ProductNameSection}" styleClass="btn" style="text-decoration:none;padding:4px;"/>-->
+                <apex:commandlink value="Next" action="{!fillCatagory}" styleClass="btn" style="text-decoration:none;padding:4px;" status="Processing"/>
+                <apex:commandLink value="Cancel" action="{!CancelPage}" styleClass="btn" style="text-decoration:none;padding:4px;" />
+            </apex:outputPanel>
+        </apex:pageBlockSection>        
+        <!--*************FINISH*********Page Block Section to select Interventions******************1************************-->
+        
+        <!--*************START*********Page Block Section to select Initial Category*********************2*********************-->
+        <apex:pageBlockSection columns="1" id="pbsec2" rendered="{!blnselectcategory}">
+            <apex:outputPanel >
+                <apex:commandLink value="Interventions" action="{!InterventionSection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+                <apex:OutputText value="Select Category" style="color:#2E2E2E;"/>
+            </apex:outputPanel>
+            <apex:pageBlockSectionItem />
+            <apex:pageBlockSectionItem id="pbsecitem1">
+                <apex:outputtext value="Intervention : "/>
+                <apex:outputtext value="{!strSelectedInterventions}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockTable value="{!lstwrapSelectCategory}" var="pr" styleClass="table table-bordered tableEdit" id="pbtable1"> 
+                <apex:column headerValue="">
+                    <apex:facet name="header">
+                         <input type="checkbox" id="parentCheck"/>
+                      </apex:facet>
+                    <apex:inputCheckbox value="{!pr.selectedsc}" styleClass="childCheck">                                    
+                    </apex:inputCheckbox>                                  
+                </apex:column>
+                <apex:column headerValue="Select Category">
+                    <apex:outputText value="{!pr.strSelCatWrap}" />  
+                </apex:column>  
+            </apex:pageBlockTable>
+            <!--<apex:pageBlockSectionItem id="pbsecitem2">
+                <apex:outputtext value="Select Category : "/>               
+                <apex:selectlist size="1" value="{!strSelectedCatagory}">
+                    <apex:selectOptions value="{!CatagoryOptions}"></apex:selectOptions>
+                </apex:selectlist>
+            </apex:pageBlockSectionItem>-->
+            <apex:outputPanel id="pbsecitem3">
+                <apex:commandLink value="Next" action="{!selectedCatagory}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                <apex:commandLink value="Cancel" action="{!CancelPage}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+            </apex:outputPanel>
+        </apex:pageBlockSection>
+        <!--*************FINISH*********Page Block Section to select Initial Category********************2**********************-->
+        
+        <!--*************START*********Page Block Section to select Product Category*********************3*********************-->
+        <apex:pageBlockSection columns="1" id="pbsec3" rendered="{!blnproductcategory}">
+             <apex:outputPanel >
+                <apex:commandLink value="Interventions" action="{!InterventionSection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+                <apex:commandLink value="Select Category" action="{!SelectCategorySection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+                <apex:OutputText value="Product Category" style="color:#2E2E2E;"/>
+            </apex:outputPanel>
+            <apex:pageBlockSectionItem />
+             <apex:pageBlockSectionItem id="pbsecitem1">
+                <apex:outputtext value="Intervention : "/>
+                <apex:outputtext value="{!strSelectedInterventions}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem id="pbsecitem2">
+                <apex:outputtext value="Select Category : "/>
+                <apex:outputtext value="{!strSelectedCategory}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockTable value="{!lstwrapCatCost}" var="pr" styleClass="table table-bordered tableEdit" id="pbtable1"> 
+                <apex:column headerValue="">
+                     <apex:facet name="header">
+                         <input type="checkbox" id="parentCheck"/>
+                      </apex:facet>
+                    <apex:inputCheckbox value="{!pr.selectedcci}"  styleClass="childCheck">                                    
+                    </apex:inputCheckbox>                                  
+                </apex:column>
+                <apex:column headerValue="Product Category">
+                    <apex:outputtext value="{!pr.objCatCostWrap.Name}" />  
+                </apex:column>
+                <apex:column headerValue="Category">
+                    <apex:outputtext value="{!pr.objCatCostWrap.Product_Category__c}" />
+                </apex:column>   
+            </apex:pageBlockTable>
+            <apex:outputPanel id="pbsecitem3">
+                <!--<apex:commandLink value="Previous" action="{!SelectCategorySection}" styleClass="btn" style="text-decoration:none;padding:4px;"/>-->
+                <apex:commandlink value="Next" action="{!SelectProductName}" styleClass="btn" style="text-decoration:none;padding:4px;" rendered="{!IF(strSelectedCategory!='PSM Costs', true, false)}"/>
+                <apex:commandLink value="Generate" action="{!ShowAllSelectionPSM}" rendered="{!IF(strSelectedCategory=='PSM Costs', true, false)}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                <apex:commandLink value="Cancel" action="{!CancelPage}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                
+            </apex:outputPanel> 
+        </apex:pageBlockSection>
+        <!--*************FINISH*********Page Block Section to select Product Category**********************3********************-->
+        
+        <!--*************START*********Page Block Section to select Product Name***************************4***************-->
+        <apex:pageBlockSection columns="1" id="pbsec4" rendered="{!blnproductname}">
+            <apex:outputPanel >
+                <apex:commandLink value="Interventions" action="{!InterventionSection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+                <apex:commandLink value="Select Category" action="{!SelectCategorySection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+                <apex:commandLink value="Product Category" action="{!ProductCategorySection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+                <apex:OutputText value="Product Name" style="color:#2E2E2E;"/>
+            </apex:outputPanel>
+            <apex:pageBlockSectionItem />
+             <apex:pageBlockSectionItem id="pbsecitem1">
+                <apex:outputtext value="Intervention : "/>
+                <apex:outputtext value="{!strSelectedInterventions}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem id="pbsecitem2">
+                <apex:outputtext value="Select Category : "/>
+                <apex:outputtext value="{!strSelectedCategory}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem id="pbsecitem3">
+                <apex:outputtext value="Product Category : "/>
+                <apex:outputtext value="{!strSelectedProductCategory}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockTable value="{!lstwrapProd}" var="pr" styleClass="table table-bordered tableEdit" id="pbtable1"> 
+                <apex:column headerValue="">
+                     <apex:facet name="header">
+                         <input type="checkbox" id="parentCheck"/>
+                      </apex:facet>
+                    <apex:inputCheckbox value="{!pr.selectedcgp}"  styleClass="childCheck">                                    
+                    </apex:inputCheckbox>                                  
+                </apex:column>
+                <apex:column headerValue="Product Name">
+                    <apex:outputtext value="{!pr.objProdWrap.Name}" />  
+                </apex:column>
+                <apex:column headerValue="Product Category">
+                    <apex:outputtext value="{!pr.objProdWrap.Catalog_Cost_Input__r.Name}" />  
+                </apex:column>
+                <apex:column headerValue="Category">
+                    <apex:outputtext value="{!pr.objProdWrap.Product_Category__c}" />  
+                </apex:column>  
+            </apex:pageBlockTable>
+            <apex:outputPanel id="pbsecitem4">
+                <!--<apex:commandLink value="Previous" action="{!ProductCategorySection}" styleClass="btn" style="text-decoration:none;padding:4px;"/>-->
+                <apex:commandlink value="Generate" action="{!ShowAllSelection}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                <apex:commandLink value="Cancel" action="{!CancelPage}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+            </apex:outputPanel>
+        </apex:pageBlockSection>        
+        <!--*************FINISH*********Page Block Section to select Product Name***************************4***************-->
+        
+        <!--*************START*****************Page Block Section to select Recipients**********************5***********************-->
+        <!--<apex:pageBlockSection columns="1" id="pbsec5" rendered="{!blnSelectRecipients}">
+            <apex:outputPanel >
+                <apex:commandLink value="Select Category" action="{!SelectCategorySection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+                <apex:commandLink value="Product Category" action="{!ProductCategorySection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+                <apex:commandLink value="Product Name" action="{!ProductNameSection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+                <apex:commandLink value="Interventions" action="{!InterventionSection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+                <apex:OutputText value="Recipients" style="color:#2E2E2E;"/>
+            </apex:outputPanel>
+            <apex:pageBlockSectionItem />
+            <apex:pageBlockSectionItem id="pbsecitem1">
+                <apex:outputtext value="Select Category : "/>
+                <apex:outputtext value="{!strSelectedCatagory}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem id="pbsecitem2">
+                <apex:outputtext value="Product Category : "/>
+                <apex:outputtext value="{!strSelectedCategory}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem id="pbsecitem3">
+                <apex:outputtext value="Products : "/>
+                <apex:outputtext value="{!strSelectedProducts}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem id="pbsecitem4">
+                <apex:outputtext value="Interventions : "/>
+                <apex:outputtext value="{!strSelectedInterventions}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockTable value="{!lstwrapRecpnt}" var="pr" styleClass="table table-bordered tableEdit" id="pbtable1"> 
+                <apex:column headerValue="">
+                    <apex:facet name="header">
+                         <input type="checkbox" id="parentCheck"/>
+                      </apex:facet>
+                    <apex:inputCheckbox value="{!pr.selectedRecpnt}"  styleClass="childCheck">                                    
+                    </apex:inputCheckbox>                                  
+                </apex:column>
+                <apex:column headerValue="Recipient Name">
+                    <apex:outputText value="{!pr.objRecpWrap.Implementer_Name__c}" />  
+                </apex:column>
+            </apex:pageBlockTable>
+            <apex:outputPanel id="pbsecitem5">
+
+                <apex:commandlink value="Generate" action="{!ShowAllSelection}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                <apex:commandLink value="Cancel" action="{!CancelPage}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+            </apex:outputPanel>
+        </apex:pageBlockSection>    -->    
+        <!--*************FINISH********************Page Block Section to select Recipients******************5************************-->
+        
+        <!--*************START*****************Page Block Section to show all data in read-only mode**********************5***********************-->
+        <apex:outputPanel id="opPanel1" rendered="{!blnshowAllReadOnly}"><!--rendered="{!blnshowAllReadOnly}"-->
+            <apex:commandLink value="Interventions" action="{!InterventionSection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+            <apex:commandLink value="Select Category" action="{!SelectCategorySection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+            <apex:commandLink value="Product Category" action="{!ProductCategorySection}" style="color:#0489B1;"/>&nbsp;->&nbsp;
+            <apex:commandLink value="Product Name" action="{!ProductNameSection}" style="color:#0489B1;" rendered="{!IF(strSelectedCategory!='PSM Costs', true, false)}"/>&nbsp;->&nbsp;            
+            <apex:OutputText value="Generated Table" style="color:#2E2E2E;"/>
+        </apex:outputPanel><br/><br/>
+        <apex:outputPanel id="opPanel2" rendered="{!blnshowAllReadOnly}"><!--rendered="{!blnshowAllReadOnly}"-->
+                <apex:commandlink value="Save All" action="{!SaveAll}" styleClass="btn" style="text-decoration:none;padding:4px;" rendered="{!IF(strSelectedCategory!='PSM Costs', true, false)}"/>
+                <apex:commandlink value="Save All" action="{!SaveAllPSM}" styleClass="btn" style="text-decoration:none;padding:4px;" rendered="{!IF(strSelectedCategory=='PSM Costs', true, false)}"/>
+                <!--<apex:commandLink value="Previous" action="{!RecipientSection}" styleClass="btn" style="text-decoration:none;padding:4px;"/>-->
+                <!--<apex:commandLink value="Edit" action="{!EditPage}" styleClass="btn" style="text-decoration:none;padding:4px;" reRender="opPanel3" status="Processing"/>
+                <apex:commandLink value="Delete" action="{!DeleteRows}" styleClass="btn" style="text-decoration:none;padding:4px;" reRender="opPanel3" status="Processing"/>
+                <apex:commandLink value="Copy" action="{!CopyRows}" styleClass="btn" style="text-decoration:none;padding:4px;" reRender="opPanel3" status="Processing"/>-->
+                <apex:commandLink value="Cancel" action="{!CancelPage}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+        </apex:outputPanel>
+        <apex:outputPanel id="opPanel3">
+        <apex:pageBlockSection columns="1" id="pbsec5" rendered="{!blnshowAllReadOnly}"><!--rendered="{!blnshowAllReadOnly}"-->
+            <apex:pageBlockSectionItem />
+            <apex:pageBlockTable value="{!lstwrapAll}" var="pr" border="3" styleClass="table table-bordered tableEdit" id="pbtable1">
+                <!--<apex:column headerValue="">
+                    <apex:facet name="header">
+                         <input type="checkbox" id="parentCheck"/>
+                      </apex:facet>
+                    <apex:inputCheckbox value="{!pr.selectedValues}"  styleClass="childCheck">                                    
+                    </apex:inputCheckbox>                                  
+                </apex:column>-->
+                <apex:column headerValue="Module">
+                    <apex:outputtext value="{!pr.objGrantInterventionvWrap.Module__r.Name}" style="width:100px"  rendered="{!!pr.editableValues}"/>                                                                     
+                    <apex:selectlist size="1" value="{!strIntervention}" rendered="{!pr.editableValues}">
+                        <apex:selectOptions value="{!InterventionOptions}"></apex:selectOptions>
+                    </apex:selectlist>
+                </apex:column>
+                <apex:column headerValue="Intervention">
+                    <apex:outputtext value="{!pr.objGrantInterventionvWrap.Name}" style="width:100px"  rendered="{!!pr.editableValues}"/>                                                                     
+                    <apex:selectlist size="1" value="{!strIntervention}" rendered="{!pr.editableValues}">
+                        <apex:selectOptions value="{!InterventionOptions}"></apex:selectOptions>
+                    </apex:selectlist>
+                </apex:column>
+                <apex:column headerValue="Category">
+                    <apex:outputtext value="{!pr.strMainCategoryWrap}" rendered="{!!pr.editableValues}"/>  
+                    <apex:selectlist size="1" value="{!pr.strMainCategoryWrap}" rendered="{!pr.editableValues}">
+                        <apex:selectOptions value="{!CatagoryOptions}"></apex:selectOptions>
+                        <apex:actionSupport event="onchange" action="{!SelectProductCategory}" reRender="opPanel3" status="Processing"/>
+                    </apex:selectlist>                                                                   
+                </apex:column>
+                <apex:column headerValue="Product Category">
+                    <apex:outputtext value="{!pr.objProductCategoryWrap.Name}" rendered="{!!pr.editableValues}"/>
+                    <apex:selectlist size="1" value="{!pr.strCatalogCostInputWrap}" rendered="{!pr.editableValues}">
+                        <apex:selectOptions value="{!CostInputOptions}"></apex:selectOptions>
+                        <!--<apex:actionSupport event="onchange" action="{!SelectProductName}" reRender="opPanel3" status="Processing"/>-->
+                    </apex:selectlist>                                                                     
+                </apex:column>
+                <apex:column headerValue="Product Name" rendered="{!IF(strSelectedCategory!='PSM Costs', true, false)}">
+                    <apex:outputtext value="{!pr.objCatalogGenericProductWrap.Name}" rendered="{!IF(!pr.editableValues && pr.strMainCategoryWrap !='Other Products',true,false)}"/>
+                    <apex:inputtext value="{!pr.objProductWrap.Product_Name__c}" rendered="{!IF(!pr.editableValues && pr.strMainCategoryWrap =='Other Products',true,false)}"/>
+                    <apex:selectlist size="1" value="{!strProductName}" rendered="{!pr.editableValues}">
+                        <apex:selectOptions value="{!ProductNameOptions}"></apex:selectOptions>
+                    </apex:selectlist>                                                                     
+                </apex:column>                
+                <apex:column headerValue="Specification" rendered="{!IF(strSelectedCategory!='PSM Costs', true, false)}">
+                    <apex:selectlist size="1" value="{!pr.SpecificationWrap}" rendered="{!IF(!pr.editableValues && pr.strMainCategoryWrap !='Other Products',true,false)}" tabindex="{!IF(pr.intTabIndexwrap == 1, pr.intTabIndexwrap, null)}">
+                        <apex:selectOptions value="{!pr.StrengthAndUnitOptionsWrap}"></apex:selectOptions>
+                    </apex:selectlist> 
+                <apex:inputtext value="{!pr.objProductWrap.Strength_Shape__c}" rendered="{!IF(!pr.editableValues && pr.strMainCategoryWrap =='Other Products',true,false)}" tabindex="{!IF(pr.intTabIndexwrap == 1, pr.intTabIndexwrap, null)}"/>                                                                    
+                </apex:column>
+                <apex:column headerValue="Procurement Channel" rendered="{!IF(strSelectedCategory!='PSM Costs', true, false)}">
+                    <apex:selectList id="SelImp" value="{!pr.strProcurementWrap}" size="1" tabindex="{!IF(pr.intTabIndexwrap == 1, pr.intTabIndexwrap, null)}">
+                        <apex:selectOptions value="{!ProcurementOptions}"></apex:selectOptions>
+                    </apex:selectList>
+                </apex:column>
+                <apex:column headerValue="Unit Cost Y1" rendered="{!IF(strSelectedCategory!='PSM Costs', true, false)}">
+                    <apex:inputText value="{!pr.objProductWrap.Unit_Cost_Y1__c}" style="width:60px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>  
+                <apex:column headerValue="Q1">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q1__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q2">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q2__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q3">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q3__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q4">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q4__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Unit Cost Y2" rendered="{!IF(strSelectedCategory!='PSM Costs', true, false)}">
+                    <apex:inputText value="{!pr.objProductWrap.Unit_Cost_Y2__c}" style="width:60px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>  
+                <apex:column headerValue="Q5">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q5__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q6">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q6__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q7">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q7__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q8">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q8__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Unit Cost Y3" rendered="{!IF(strSelectedCategory!='PSM Costs', true, false)}">
+                    <apex:inputText value="{!pr.objProductWrap.Unit_Cost_Y3__c}" style="width:60px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>  
+                <apex:column headerValue="Q9">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q9__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q10">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q10__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q11">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q11__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q12">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q12__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Unit Cost Y4" rendered="{!IF(strSelectedCategory!='PSM Costs' && !displayFiscal && (YEAR(startDate)+3 >= YEAR(endDate)), true, false)}">
+                    <apex:inputText value="{!pr.objProductWrap.Unit_Cost_Y4__c}" style="width:60px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>  
+                <apex:column headerValue="Q13" rendered="{!IF(!displayFiscal && (YEAR(startDate)+3 >= YEAR(endDate)), true, false)}">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q13__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q14" rendered="{!IF(!displayFiscal && (YEAR(startDate)+3 >= YEAR(endDate)), true, false)}">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q14__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q15" rendered="{!IF(!displayFiscal && (YEAR(startDate)+3 >= YEAR(endDate)), true, false)}">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q15__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+                <apex:column headerValue="Q16" rendered="{!IF(!displayFiscal && (YEAR(startDate)+3 >= YEAR(endDate)), true, false)}">
+                    <apex:inputText value="{!pr.objProductWrap.Quantity_Q16__c}" style="width:20px" tabindex="{!pr.intTabIndexwrap}"/>                                                                     
+                </apex:column>
+            </apex:pageBlockTable> 
+        </apex:pageBlockSection>
+        </apex:outputPanel>
+        <!--*************START*****************Page Block Section to show all data in read-only mode**********************5***********************-->
+    </apex:pageBlock>    
+</apex:form>
+</apex:page>

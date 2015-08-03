@@ -1,0 +1,38 @@
+<apex:page standardController="Grant_Intervention__c" >
+      <apex:form >
+            <apex:pageBlock mode="edit">
+            <apex:pageBlockButtons >
+                  <apex:commandButton value="Save" action="{!save}"/>
+                  <apex:commandButton value="Cancel" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+                  <apex:pageblockSection columns="2" title="Grant Intervention">
+                        <apex:pageBlockSectionItem >
+                              <apex:outputLabel value="Grant Implementation Period"></apex:outputLabel>
+                              <apex:outputfield value="{!Grant_Intervention__c.Implementation_Period__c}"/>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                              <apex:outputLabel value="Performance framework"></apex:outputLabel>
+                              <apex:outputfield value="{!Grant_Intervention__c.Performance_Framework__c}"/>
+                        </apex:pageBlockSectionItem>
+                  </apex:pageblockSection>
+                  <apex:pageBlockSection columns="2" title="Information">
+                        <apex:pageBlockSectionItem >
+                              <apex:outputLabel value="Grant Intervention Name" rendered="{!if(Grant_Intervention__c.Catalog_Intervention__r.Is_Other_Intervrntion__c == true,false,true)}"></apex:outputLabel>
+                              <apex:inputField value="{!Grant_Intervention__c.Name}" rendered="{!if(Grant_Intervention__c.Catalog_Intervention__r.Is_Other_Intervrntion__c == true,false,true)}"/>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                              <apex:outputLabel value="Grant Intervention Name" rendered="{!if(Grant_Intervention__c.Catalog_Intervention__r.Is_Other_Intervrntion__c == true,true,false)}"></apex:outputLabel>
+                              <apex:outputField value="{!Grant_Intervention__c.Name}" rendered="{!if(Grant_Intervention__c.Catalog_Intervention__r.Is_Other_Intervrntion__c == true,true,false)}"/>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                              <apex:outputLabel value="Custom Intervention Name" rendered="{!if(Grant_Intervention__c.Catalog_Intervention__r.Is_Other_Intervrntion__c == true,true,false)}"></apex:outputLabel>
+                              <apex:inputField value="{!Grant_Intervention__c.Custom_Intervention_Name__c}" rendered="{!if(Grant_Intervention__c.Catalog_Intervention__r.Is_Other_Intervrntion__c == true,true,false)}"/>
+                        </apex:pageBlockSectionItem>
+                        <apex:pageBlockSectionItem >
+                              <apex:outputLabel value="Module"></apex:outputLabel>
+                              <apex:outputField value="{!Grant_Intervention__c.Module__c}"/>
+                        </apex:pageBlockSectionItem>
+                  </apex:pageBlockSection>
+            </apex:pageBlock>
+      </apex:form>
+</apex:page>

@@ -1,0 +1,360 @@
+<apex:page id="page" standardController="Grant_Indicator__c" sidebar="false" tabstyle="Grant_Indicator__c" showHeader="false" extensions="IndicatorsInlineEditController" recordSetVar="indicators">
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+    <style>
+     #spinner{
+            z-index:9999;
+            top:50%;
+       }
+       #popupBackground{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 9998;
+        }
+        span.dateInput span.dateFormat{
+           display:none;
+        }                  
+   </style>
+       <!-- spinner -->
+       <div id="popupBackground" style="display:none;"/>
+       <div id="contentLoading" style="display:none;position:fixed;top:50%;left:50%;">
+        <div style="text-align: center;">
+          <img id="spinner" src="/img/loading.gif" alt="Loading graphic" />
+        </div>
+      </div>
+    <script>
+        function valueAlert(row,decimal)
+        {
+            var rowid = row.id;
+            var numid = rowid.substr(0,rowid.length-3)+'num';
+            var denid = rowid.substr(0,rowid.length-3)+'den';
+            var valid = rowid.substr(0,rowid.length-3)+'val';
+            var hdnvalid = rowid.substr(0,rowid.length-3)+'hdnval';
+            if(document.getElementById(numid).value != 0 && document.getElementById(denid).value != 0)
+            {
+                var calval = (parseFloat(document.getElementById(numid).value)/parseFloat(document.getElementById(denid).value))*100;
+                calval = calval.toFixed(decimal);
+                document.getElementById(valid).innerHTML =  calval;
+                document.getElementById(hdnvalid).value=  calval;
+            }
+            /*else if(document.getElementById(numid).value != 0 && document.getElementById(denid).value == 0)
+            {
+                alert('Please fill a non zero value in denominator.');
+                row.value=row.defaultValue;
+            }*/
+            else
+            {
+                document.getElementById(valid).innerHTML =  '';
+                document.getElementById(hdnvalid).value=  '';
+            }
+            setdecimal(numid, decimal);
+            setdecimal(denid, decimal);
+            
+        } 
+        function valueAlertTarget(row,year,decimal)
+        {
+            var rowid = row.id;
+            var numid = rowid.substr(0,rowid.length-5)+'numy'+year;
+            var denid = rowid.substr(0,rowid.length-5)+'deny'+year;
+            var valid = rowid.substr(0,rowid.length-5)+'valy'+year;
+            var hdnvalid = rowid.substr(0,rowid.length-5)+'hdnvaly'+year;
+            if(document.getElementById(numid).value != 0 && document.getElementById(denid).value != 0)
+            {
+                var calval = (parseFloat(document.getElementById(numid).value)/parseFloat(document.getElementById(denid).value))*100;
+                calval = calval.toFixed(decimal);
+                document.getElementById(valid).innerHTML =  calval;
+                document.getElementById(hdnvalid).value=  calval;
+            }
+            /*else if(document.getElementById(numid).value != 0 && document.getElementById(denid).value == 0)
+            {
+                alert('Please fill a non zero value in denominator.');
+                row.value=row.defaultValue;
+            }*/
+            else
+            {
+                document.getElementById(valid).innerHTML =  '';
+                document.getElementById(hdnvalid).value=  '';
+            }
+            setdecimal(numid, decimal);
+            setdecimal(denid, decimal);
+        }
+        function loading(val) 
+            {
+                if (val) 
+                {
+                  document.getElementById('contentLoading').style.display = 'block'; 
+                  document.getElementById('popupBackground').style.display = 'block';  
+                }
+                else 
+                {
+                  document.getElementById('contentLoading').style.display = 'none';
+                  document.getElementById('popupBackground').style.display = 'none';
+                }
+            }
+            
+            function setdecimal(target,decimal) {          
+                var targetvalue = document.getElementById(target).value;         
+                if(targetvalue == '' || isNaN(parseFloat(targetvalue)) == true) 
+                    document.getElementById(target).value = '';
+                else         
+                    {                    
+                    document.getElementById(target).value = parseFloat(targetvalue.replace(/\,/g, '')).toFixed(decimal);   
+                    }                
+            }
+            
+            function setdecimalForOp(target,decimal) {
+                var targetvalue = document.getElementById(target).innerHTML;          
+                if(isNaN(parseFloat(targetvalue))) 
+                    document.getElementById(target).innerHTML = '';
+                else
+                    document.getElementById(target).innerHTML = parseFloat(targetvalue.replace(/\,/g, '')).toFixed(decimal);   
+            }
+            function charLimit(el) {
+                var QuantityValue = el.value;
+                
+                var strValidChars = "0123456789.0000";
+                var strChar;
+                if(QuantityValue.indexOf(",") != -1){
+                    QuantityValue = QuantityValue.replace(/\,/g, '');
+                }
+                
+                 for (i = 0; i < QuantityValue.length ; i++){
+                     strChar = QuantityValue.charAt(i);
+                      if (strValidChars.indexOf(strChar) == -1 ){
+                          alert('Enter a Valid Number');
+                          el.value = '';
+                          return false;
+                      }
+                 }
+                
+                if (el.value.length > 14)
+                {   
+                    alert('Value should not be more than 14 digits');
+                    el.value = '';
+                    //document.getElementById(el).value = '';
+                    return false;
+                }else{
+                return true;
+                }
+            }
+
+                  
+    </script>
+    <span id="countdown" class="timer"></span>
+    <apex:form id="frm">
+<apex:outputPanel id="outer">
+    <apex:outputPanel id="indicators" rendered="{!indEdit}">
+            <apex:outputPanel rendered="{!saved}">
+                <script>
+                         
+                      var browsername=navigator.appName;                                
+                      if (browsername.indexOf("Microsoft")!=-1)
+                      {
+                          alert('Records successfully saved.\n Please refresh tab to view update.');
+                      }
+                      else
+                      {
+                       alert('Records successfully saved');   
+                       if('{!$User.ContactId}'== '')
+                       {
+                        //alert('Records successfully saved');
+                        window.top.opener.location.href="/{!$CurrentPage.parameters.id}";
+                       }
+                       else
+                       {
+                       //alert('Records successfully saved');
+                       window.top.opener.location.href="/GM/{!$CurrentPage.parameters.id}";
+                       }
+                      }
+                       top.window.close();                                                                                           
+                                
+                </script>
+           </apex:outputPanel>
+        <apex:PageBlock id="blk" mode="maindetail">        
+                <apex:pageBlockButtons location="top" rendered="{!if(shwIndicatorsList.size > 0,true,false)}" >
+                    <apex:commandButton id="dummy" value="" onclick="" style="display:none;"/>                
+                    <apex:commandButton value="Save" action="{!saveList}" reRender="frm" status="running"/>
+                    <apex:actionStatus id="running" onstart="loading(true)" onstop="loading(false)" />
+                    <apex:commandButton value="Cancel" onclick="window.close();" action="{!cancel}"/>                
+                </apex:pageBlockButtons>      
+            <apex:pagemessages escape="false" rendered="{!shwmsg}"></apex:pagemessages>         
+            <apex:PageBlockTable id="tbl" cellpadding="1px" value="{!shwIndicatorsList}" var="ind" rendered="{!if(shwIndicatorsList.size > 0,true,false)}">
+                <apex:column style="vertical-align:top; text-align:center;" value="{!ind.Name}"/>
+                <apex:column style="vertical-align:top;" value="{!ind.Indicator_Full_Name__c}"/>
+                <apex:column style="vertical-align:top; text-align:center;" value="{!ind.Standard_or_Custom__c}"/>
+                <apex:column style="vertical-align:top; text-align:center;" value="{!ind.Indicator_Type__c}"/>              
+                <apex:column style="vertical-align:top; text-align:center;" value="{!ind.Data_Type__c}"/>
+            <!--    <apex:column >
+                    <apex:facet name="header">Baseline<br/>Numerator/ <br/>Denominator</apex:facet>
+                    <apex:inputField id="num" onKeyPress="return charLimit(this)" onchange="valueAlert(this,'{!ind.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.Baseline_numerator__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent',true,false)}">              
+                    <script> setdecimal('{!$Component.num}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField><br/>  
+                    <apex:inputField id="den" onKeyPress="return charLimit(this)" onchange="valueAlert(this,'{!ind.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.Baseline_Denominator__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent',true,false)}" >
+                    <script> setdecimal('{!$Component.den}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField>
+                </apex:column> -->
+                <apex:column >
+                    <apex:facet name="header">Baseline&nbsp;&nbsp;Value</apex:facet>
+                    <apex:inputField style="float:left;width:70%;" id="basev" onKeyUp="return charLimit(this)" onchange="setdecimal('{!$Component.basev}', '{!ind.Decimal_Places__c}');"  value="{!ind.Baseline_Value1__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent',false,true)}">
+                        <script> setdecimal('{!$Component.basev}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField>
+                    <apex:outputField style="padding-right:0px;" id="val" value="{!ind.Baseline_Value1__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent',true,false)}">
+                        <script> setdecimalForOp('{!$Component.val}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:outputField>
+                    <apex:outputText style="padding-left:0px;font-style:italic" value="%" rendered="{!if((ind.Data_Type__c=='Number and Percent' || ind.Data_Type__c=='Percent'),true,false)}" />
+                    <apex:outputText style="padding-right:1px;float:right;font-style:italic" value=" per 100K" rendered="{!if(ind.Data_Type__c=='Ratio',true,false)}"/>
+                    <apex:inputHidden id="hdnval" value="{!ind.Baseline_Value1__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent',true,false)}"/>
+                    
+                </apex:column>                                                              
+                <apex:column >
+                    <apex:facet name="header">Baseline Year</apex:facet>
+                    <apex:inputField style="width:97%;" value="{!ind.Baseline_Year__c}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">Baseline Source</apex:facet>
+                    <apex:inputField style="width:40%;" value="{!ind.Baseline_Sources__c}" />
+                </apex:column>
+                 <apex:column >
+                    <apex:facet name="header">Disaggregation</apex:facet>
+                    <center>                        
+                        <apex:commandLink style="display:{!if((ind.Grant_Indicator__r.size>0),'','none')};text-decoration: underline;color:blue;" onclick="switchView1('{!ind.id}','{!ind.Performance_Framework__r.Grant_Status__c}','{!ind.Data_Type__c}','{!ind.Decimal_Places__c}','{!ind.Indicator_Full_Name__c}')" value="Disaggregation" reRender="disaggregation" status="running"/>
+                    </center>
+                </apex:column> 
+                
+                
+                 <!--apex:column >
+                    <apex:facet name="header">Target Y1<br/>Num / Den</apex:facet>
+                    <apex:inputField id="numy1" onchange="valueAlertTarget(this,'1','{!ind.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.Target_Numerator_Y1__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}" >
+                        <script> setdecimal('{!$Component.numy1}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField> <br/>                
+                    <apex:inputField id="deny1" onchange="valueAlertTarget(this,'1','{!ind.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.Target_Denominator_Y1__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}" >
+                        <script> setdecimal('{!$Component.deny1}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField>
+                </apex:column-->
+                
+                <apex:column >
+                    <apex:facet name="header">Target Value Y1</apex:facet>
+                    <apex:inputField style="float:left;width:70%;" id="targetY1" onKeyUp="return charLimit(this)" onchange="setdecimal('{!$Component.targetY1}', '{!ind.Decimal_Places__c}');" value="{!ind.Target_Value_Y12__c}"  rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c == 'Coverage/Output',false,true)}" >
+                        <script> setdecimal('{!$Component.targetY1}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField>
+                    <apex:outputField style="width:70%;" id="valy1" value="{!ind.Target_Value_Y12__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}">
+                        <script> setdecimalForOp('{!$Component.valy1}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:outputField>
+                    <apex:inputHidden id="hdnvaly1" value="{!ind.Target_Value_Y12__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}"/>
+                    <apex:outputText style="padding-right:1px;float:right;font-style:italic" value="%" rendered="{!if((ind.Data_Type__c=='Number and Percent' || ind.Data_Type__c=='Percent') && ind.Indicator_Type__c != 'Coverage/Output',true,false)}" />
+                    <apex:outputText style="padding-right:1px;float:right;font-style:italic" value=" per 100K" rendered="{!if(ind.Data_Type__c=='Ratio' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}"/>
+                </apex:column>
+                 <!--apex:column >
+                    <apex:facet name="header">Target Y2<br/>Num / Den</apex:facet>
+                    <apex:inputField id="numy2" onchange="valueAlertTarget(this,'2','{!ind.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.Target_Numerator_Y2__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}" >               
+                    <script> setdecimal('{!$Component.numy2}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField><br/>  
+                    <apex:inputField id="deny2" onchange="valueAlertTarget(this,'2','{!ind.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.Target_Denominator_Y2__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}">
+                    <script> setdecimal('{!$Component.deny2}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField>
+                </apex:column-->
+                <apex:column >
+                    <apex:facet name="header">Target Value Y2</apex:facet>
+                    <apex:inputField style="float:left;width:70%;" id="targetY2" onKeyUp="return charLimit(this)" onchange="setdecimal('{!$Component.targetY2}', '{!ind.Decimal_Places__c}');" value="{!ind.Target_Value_Y22__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c == 'Coverage/Output',false,true)}" >
+                    <script> setdecimal('{!$Component.targetY2}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField>
+                    <apex:outputField style="width:70%;" id="valy2" value="{!ind.Target_Value_Y22__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}">
+                        <script> setdecimalForOp('{!$Component.valy2}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:outputField>
+                    <apex:inputHidden id="hdnvaly2" value="{!ind.Target_Value_Y22__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}"/>
+                    <apex:outputText style="padding-right:1px;float:right;font-style:italic" value="%" rendered="{!if((ind.Data_Type__c=='Number and Percent' || ind.Data_Type__c=='Percent') && ind.Indicator_Type__c != 'Coverage/Output',true,false)}" />
+                    <apex:outputText style="padding-right:1px;float:right;font-style:italic" value=" per 100K" rendered="{!if(ind.Data_Type__c=='Ratio' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}"/>
+                </apex:column>
+                <!--apex:column >
+                    <apex:facet name="header">Target Y3<br/>Num / Den</apex:facet>
+                    <apex:inputField id="numy3" onchange="valueAlertTarget(this,'3','{!ind.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.Target_Numerator_Y3__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}" >              
+                    <script> setdecimal('{!$Component.numy3}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField><br/>  
+                    <apex:inputField id="deny3" onchange="valueAlertTarget(this,'3','{!ind.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.Target_Denominator_Y3__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}">
+                    <script> setdecimal('{!$Component.deny3}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField>
+                </apex:column-->
+                <apex:column >
+                    <apex:facet name="header">Target Value Y3</apex:facet>
+                    <apex:inputField style="float:left;width:70%;" id="targetY3" onKeyUp="return charLimit(this)" onchange="setdecimal('{!$Component.targetY3}', '{!ind.Decimal_Places__c}');" value="{!ind.Target_Value_Y32__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c == 'Coverage/Output',false,true)}" >
+                    <script> setdecimal('{!$Component.targetY3}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField>
+                    <apex:outputField style="width:70%;" id="valy3" value="{!ind.Target_Value_Y32__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}">
+                        <script> setdecimalForOp('{!$Component.valy3}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:outputField>
+                    <apex:inputHidden id="hdnvaly3" value="{!ind.Target_Value_Y32__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}"/>
+                    <apex:outputText style="padding-right:1px;float:right;font-style:italic" value="%" rendered="{!if((ind.Data_Type__c=='Number and Percent' || ind.Data_Type__c=='Percent') && ind.Indicator_Type__c != 'Coverage/Output',true,false)}" />
+                    <apex:outputText style="padding-right:1px;float:right;font-style:italic" value=" per 100K" rendered="{!if(ind.Data_Type__c=='Ratio' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}"/>
+                </apex:column>
+                 <!--apex:column rendered="{!If((YEAR(startDate)+3 >= YEAR(endDate)) && displayFiscal, true, false)}">
+                    <apex:facet name="header">Target Y4<br/>Num / Den</apex:facet>
+                    <apex:inputField id="numy4" onchange="valueAlertTarget(this,'4','{!ind.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.Target_Numerator_Y4__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}">            
+                    <script> setdecimal('{!$Component.numy4}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField><br/>  
+                    <apex:inputField id="deny4" onchange="valueAlertTarget(this,'4','{!ind.Decimal_Places__c}');" style="float:left;width:80%;" value="{!ind.Target_Denominator_Y4__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}">
+                    <script> setdecimal('{!$Component.deny4}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField>
+                </apex:column-->
+                <apex:column rendered="{!If((YEAR(startDate)+3 <= YEAR(endDate)) && displayFiscal, true, false)}" >
+                    <apex:facet name="header">Target Y4 Value</apex:facet>
+                    <apex:inputField style="float:left;width:70%;" id="targetY4" onKeyUp="return charLimit(this)" onchange="setdecimal('{!$Component.targetY4}', '{!ind.Decimal_Places__c}');" value="{!ind.Target_Value_Y42__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c == 'Coverage/Output',false,true)}">
+                    <script> setdecimal('{!$Component.targetY4}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:inputField>
+                    <apex:outputField style="width:70%;" id="valy4" value="{!ind.Target_Value_Y42__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}">                    
+                        <script> setdecimalForOp('{!$Component.valy4}', '{!ind.Decimal_Places__c}');  </script>
+                    </apex:outputField>
+                    <apex:inputHidden id="hdnvaly4" value="{!ind.Target_Value_Y42__c}" rendered="{!if(ind.Data_Type__c=='Number and Percent' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}"/>
+                    <apex:outputText style="padding-right:1px;float:right;font-style:italic" value="%" rendered="{!if((ind.Data_Type__c=='Number and Percent' || ind.Data_Type__c=='Percent') && ind.Indicator_Type__c != 'Coverage/Output',true,false)}" />
+                    <apex:outputText style="padding-right:1px;float:right;font-style:italic" value=" per 100K" rendered="{!if(ind.Data_Type__c=='Ratio' && ind.Indicator_Type__c != 'Coverage/Output',true,false)}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">Report Due Date Y1</apex:facet>
+                    <apex:inputField style="vertical-align:top;"  value="{!ind.Y1_Report_Due__c}" rendered="{!If(ind.Indicator_Type__c != 'Coverage/Output', true, false)}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">Report Due Date Y2</apex:facet>
+                    <apex:inputField style="vertical-align:top;"  value="{!ind.Y2_Report_Due__c}" rendered="{!If(ind.Indicator_Type__c != 'Coverage/Output', true, false)}"/>
+                </apex:column>
+                <apex:column >
+                    <apex:facet name="header">Report Due Date Y3</apex:facet>
+                    <apex:inputField style="vertical-align:top;"  value="{!ind.Y3_Report_Due__c}" rendered="{!If(ind.Indicator_Type__c != 'Coverage/Output', true, false)}"/>
+                </apex:column>
+                <apex:column rendered="{!If((YEAR(startDate)+3 <= YEAR(endDate)) && displayFiscal, true, false)}">
+                    <apex:facet name="header">Report Due Date Y4</apex:facet>
+                    <apex:inputField style="vertical-align:top;"  value="{!ind.Y4_Report_Due__c}" rendered="{!If(ind.Indicator_Type__c != 'Coverage/Output', true, false)}"/>                     
+                </apex:column>
+               
+                <apex:column style="display:none;">                        
+                    <apex:inputField value="{!ind.Component__c}"/>
+                </apex:column>                              
+            </apex:PageBlockTable>
+                <apex:actionFunction action="{!EditDissagregation}" name="switchView1" reRender="outer" status="running1">
+                    <apex:param value="" id="param1" name="name1" assignTo="{!targetRecord}"/>
+                    <apex:param value="" id="param2" name="name2" assignTo="{!pfStatus}"/>
+                    <apex:param value="" id="param3" name="name3" assignTo="{!dataType}"/>
+                    <apex:param value="" id="param4" name="name4" assignTo="{!decimalPlaces}"/>
+                    <apex:param value="" id="param5" name="name5" assignTo="{!indName}"/>
+                </apex:actionFunction>
+        </apex:PageBlock>
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!!indEdit}">
+        <apex:outputPanel id="disaggregation" >
+            <apex:PageBlock > 
+                <apex:PageBlockButtons >
+                        <apex:commandButton action="{!ReturnToInd}" value="Cancel" reRender="outer"/>
+                </apex:PageBlockButtons>                     
+                <apex:PageBlockSection columns="1">
+                    <c:disaggregationTable TargetRecordId="{!targetRecord}" PerformanceFrameworkStatus="{!pfStatus}" selectedDataType="{!dataType}" decimalPlaces="{!decimalPlaces}" loadingmode="edit" />                
+                </apex:PageBlockSection>    
+            </apex:PageBlock>
+        </apex:outputPanel>
+       </apex:outputPanel>
+</apex:outputPanel>
+    </apex:form>
+</apex:page>

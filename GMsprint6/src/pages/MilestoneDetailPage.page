@@ -1,0 +1,41 @@
+<apex:page standardController="Milestone_Target__c"  sidebar="false"> <!-- extensions="MilestoneDetailController" -->
+    <div class="bPageTitle">
+    <div class="ptBody">
+        <div class="content">
+            <h1 class="pageType">Milestone/Target</h1>
+            <h2 class="pageDescription"> {!Milestone_target__c.name} </h2>
+            <div class="blank">&nbsp;</div>
+        </div>
+    </div>
+    <chatter:feedWithFollowers entityId="{!Milestone_Target__c.id}" /><br/>
+    </div>
+    <!-- apex:form >
+        <apex:pageMessages ></apex:pageMessages>
+        <apex:pageBlock title="Milestone/Target Details">
+            <apex:pageBlockSection columns="2">
+               
+                <apex:outputField value="{!milestoneObj.Key_Activity__c}"/>
+                <apex:outputfield value="{!milestoneObj.MilestoneTitle__c}"/>
+                <apex:outputfield value="{!milestoneObj.Criteria__c}"/>
+               
+            </apex:pageBlockSection>
+            <br/><br/>
+        <apex:pageBlock title="Associated Reporting periods">
+            <apex:pageBlockTable value="{!wrapperList}" var="wrap" title="Associate Reporting periods">
+                <apex:column headerValue="Status">
+                   <apex:inputcheckbox value="{!wrap.status}" disabled="true"/>
+                   
+                </apex:column>
+                <apex:column headerValue="Period Name" value="{!wrap.PeriodObj.Name}"/>
+                <apex:column headerValue="Period Start Date" value="{!wrap.PeriodObj.Start_Date__c}"/>
+                <apex:column headerValue="Period End Date" value="{!wrap.PeriodObj.End_Date__c}"/>
+            </apex:pageBlockTable>
+        
+        </apex:pageBlock>
+            <apex:pageBlockButtons location="both">
+                <apex:commandButton value="Edit" action="{!edit}"/>
+                <apex:commandButton value="Cancel" action="/{!activityId}"/>
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+    </apex:form -->
+</apex:page>

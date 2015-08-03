@@ -1,0 +1,22 @@
+<apex:page standardController="Module__c" extensions="NewModuleExt_Mobile">
+      <apex:form >
+      <apex:pageMessages />
+      <apex:pageblock rendered="{!display}">
+            <apex:outputtext value="{message}" />
+      </apex:pageblock>
+       <apex:pageblock >
+            <apex:pageBlockButtons rendered="{!display1}">
+                  <apex:commandButton value="Save" action="{!save}"/>
+                  <apex:CommandButton value="Cancel" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+             <apex:pageblockSection >           
+                   <apex:pageBlockTable value="{!lstwrapcatmod}" var="pr">
+                         <apex:column headerValue="">
+                               <apex:inputCheckbox value="{!pr.selected}"/>
+                         </apex:column>
+                         <apex:column headerValue="Module" value="{!pr.wrapcatmod.Name}"/>
+                   </apex:pageBlockTable>
+             </apex:pageblockSection>
+       </apex:pageblock>
+ </apex:form>
+</apex:page>

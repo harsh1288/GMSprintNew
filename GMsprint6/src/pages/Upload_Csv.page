@@ -1,0 +1,15 @@
+<apex:page controller="InsertDynamicSobjectController">
+    <apex:form >
+        <apex:pageBlock >
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="Upload" action="{!UploadData}"/>
+            </apex:pageBlockButtons>
+            <apex:pageMessages />
+            <apex:pageBlockSection title="UploadCSV" columns="1">
+                <apex:pageBlockSectionItem >
+                    <apex:inputFile value="{!csvdata}" filename="{!fileName}"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>    
+    </apex:form>
+</apex:page>

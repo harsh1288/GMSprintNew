@@ -1,0 +1,224 @@
+<!----------------------------------------------------------------------------------------------------------->
+<!--    Purpose         :  This Page is meant for CLASS: WPTMMilestoneDetailsExtension         ----------->
+<!--    Date            :  12-Mar-2015                                                      ------------>
+<!--    Created By      :  TCS                                                                    ------------> 
+<!--    Author          :  Ayush Pradhan                                                       ------------> 
+<!--    Description     :  This Page  is used to Show milestones corresponding to the Key Activity  ----------->
+<!--    Revision        :                                                                        ----------->            
+<!------------------------------------------------------------------------------------------------------------>
+
+<apex:page standardController="Key_Activity__c" extensions="WPTMMilestoneDetailsExtension" showHeader="true" sidebar="false" >
+ <apex:includeScript value="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" />
+    
+    <script type="text/javascript">
+        j$ = jQuery.noConflict();
+        j$(document).ready(function(){ 
+        shaderow();
+        });
+    </script>
+    <style type="text/css">
+       tr.dataRow { 
+           background-color:white; 
+        }
+        tr.dataRow:hover { 
+                background-color: #e3f3ff;
+         };
+        .popupBackground{
+                background-color:black;
+                opacity: 0.20;
+                filter: alpha(opacity = 20);
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                z-index: 9998;
+            }
+            .custPopup{
+                background-color: white;
+                border-width: 2px;
+                border-style: solid;
+                z-index: 9997;
+                left: 50%;
+                padding:10px;
+                position: fixed;           
+                width: 500px;
+                margin-left: -250px;
+                margin-top: 0px; 
+                top: 50px;
+            }
+            
+            .mySelect {
+                font-size: 12px;
+                width:100%;
+                color: #000;
+                background: transparent;
+                appearance: none;
+                -webkit-appearance: none;
+                border: none;
+            }
+            /* Focused (clicked) state of the picklist, a normal combobox style displayed */
+            .mySelect:focus {
+                -webkit-appearance: menulist ;
+                appearance: menulist ;
+                border: 1px solid #000;
+                background: white;
+                margin: 0;
+                width:initial;
+            }
+           
+            .mySelect:hover {
+                background: url(/img/func_icons/util/pencil12.gif) no-repeat center right 2px  #e3f3ff;
+            }
+            
+             #tblMileStoneTarget{
+                overflow: scroll;
+                height: 390px;
+               
+            }
+            
+            .ProcessingBackground
+            {
+                background-color: black;
+                opacity: 0.50;
+                filter: alpha(opacity = 50);
+                width: 100%;
+                height: 100%;
+                position: fixed;
+                z-index: 9999;
+                top:0;
+                left:0;
+            }
+            .Processing
+            {
+                z-index: 9999;
+                left: 50%;
+                top: 50%;
+                text-align: center;
+                position: fixed;
+            }  
+            
+    </style>
+    
+    <script type="text/javascript"> 
+        function confirmDeleteMilestone(oppId){
+            document.getElementById('divProcessing').style.display = '';
+            var chk = window.confirm('Are you sure you want to delete this Milestone?')
+              
+            if(chk){
+               delMilestones(oppId);                   
+            }
+            else{
+              document.getElementById('divProcessing').style.display = 'None'; 
+            }
+        }
+        
+        function assignTaskId() {          
+            document.getElementById('divProcessing').style.display = '';
+            return false;            
+        }
+        function shaderow(){
+            jQuery(".inlineEditWrite").css("background-color", "#BDBDBD");
+        }
+     </script>   
+        
+    <apex:form id="frm" >
+    
+    <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}"  title="Please wait..."/>
+            </div>
+        </div>  
+    
+    <apex:pagemessages ></apex:pagemessages> 
+    
+     
+      
+    <apex:actionFunction name="delMilestones" action="{!confirmDeleteMilestone}" reRender="membAdd1">
+                  <apex:param name="contextItem" value="" assignTo="{!contextItem}"/>
+      </apex:actionFunction>
+     
+    
+    <!--popup for the selection of Reporting Period-->
+        <apex:outputPanel id="milestonefilepopup">                                
+                <apex:outputPanel styleClass="popupBackground" layout="block" rendered="{!displaymilepopup}"/>
+                
+                <apex:outputPanel styleClass="custPopup" layout="block" style="overflow:auto; height:400px;" rendered="{!displaymilepopup}">                       
+                    <apex:outputText value="{!LEFT(milelist.MilestoneTitle__c,50)}" style="font-family:arial;font-size:15px;font-weight:bold;text-align:center;"/>  
+                    <apex:pageBlock >
+                        <apex:pageBlockButtons >
+                        <apex:commandButton value="Save" onclick="assignTaskId();" action="{!saveReportingPeriod}" style="text-align:center;" styleClass="btnstyle;"/>                                                                                                                                     
+                        <apex:commandButton value="Close" action="{!cancelPopUp}" style="text-align:center;" styleClass="btnstyle;"/> 
+                        </apex:pageBlockButtons>
+                        <apex:pageBlockTable value="{!wrapperList}" var="r">
+                            <apex:column >
+                                <apex:inputCheckbox id="checkedone" value="{!r.checked}"/>
+                            </apex:column>
+                            <apex:column headerValue="Period Number" value="{!r.pobj.Period_Number__c}"/>
+                            <apex:column headerValue="Start Date" value="{!r.pobj.Start_Date__c}"/>
+                            <apex:column headerValue="End Date" value="{!r.pobj.End_Date__c}"/>
+                        </apex:pageBlockTable>  
+                                                                    
+                    </apex:pageBlock>                                           
+           </apex:outputPanel>
+        </apex:outputPanel>      
+    <!--End of Popup-->
+        <apex:pageBlock >
+        
+            <apex:pageBlockButtons >
+                <apex:commandButton title="Save" onclick="assignTaskId();" rendered="{!securityMatrixObj.editActivityMilestone}"  value="Save" action="{!savingCustomRecord}"/>
+                <apex:commandButton title="Add Milestone" rendered="{!securityMatrixObj.addActivityMilestone}" value="Add Milestone" action="{!AddRow}" reRender="milestonePanel" oncomplete="shaderow();"/>
+            </apex:pageBlockButtons>
+            
+            <apex:outputPanel id="milestonePanel" >
+            <div id="tblMileStoneTarget"><table  class="list " border="0" style="table-layout: fixed;word-break: break-all;">
+               <tr class="headerRow" >
+                         <th class="headerRow" style="width:3%;">Action</th>  
+                         <th class="headerRow" style="width:20%;">Milestone</th>
+                         <th class="headerRow" style="width:20%;">Criterion for Completion</th>
+                         <th class="headerRow" style="width:15%; display:{!if(!linktoBoolean,'none',true)};">Linked To</th>
+                         <th class="headerRow" style="width:2%;"></th>
+                         <th class="headerRow" style="width:15%;">Reporting Periods</th>                    
+               </tr>
+               <apex:repeat value="{!wrapperMileList}" var="m">
+                   <tr class="dataRow" >
+                       <td style="width:2%;">
+                            <apex:commandButton image="{!$Resource.DeleteImage}" rendered="{!securityMatrixObj.editActivityMilestone}"  title="Delete" value="Delete"   onclick="confirmDeleteMilestone('{!m.mobj.Id}')"  reRender="milestonePanel"/> 
+                       </td>
+                                                                    
+                       <td class="dataCell" style="width:20%;">
+                           <apex:outputField value="{!m.mobj.MilestoneTitle__c}"/>
+                           <apex:inlineEditSupport showOnEdit="saveButton, cancelButton"
+                                    hideOnEdit="editButton" event="onclick"
+                                    changedStyleClass="" resetFunction="resetInlineEdit" rendered="{!securityMatrixObj.editActivityMilestone}"/>
+                       </td>
+                       
+                       <td class="dataCell" style="width:20%;">
+                           <apex:outputField style="background-color: #BDBDBD;"  value="{!m.mobj.Criteria__c}">
+                                <apex:inlineEditSupport showOnEdit="saveButton, cancelButton"
+                                    hideOnEdit="editButton" event="onclick"
+                                    changedStyleClass="" resetFunction="resetInlineEdit" rendered="{!securityMatrixObj.editActivityMilestone}"/>
+                            </apex:outputField>   
+                       </td>
+                       
+                       <td class="dataCell" style="display:{!if(!linktoBoolean,'none',true)};width:15%;">
+                             <apex:outputField value="{!m.mobj.Linked_To__c}" rendered="{!If(securityMatrixObj.editActivityMilestone=='false' ,true,false) }"/>
+                             <apex:selectList rendered="{!securityMatrixObj.editActivityMilestone}"  id="countrylst" styleClass="myselect"  value="{!m.mobj.Linked_To__c}" size="1" required="true">
+                                   <apex:selectOptions value="{!Countries}"/>
+                             </apex:selectList>                            
+                       </td >
+                       
+                       <td class="dataCell" >                           
+                           <apex:commandbutton image="{!$Resource.LinkReportingPeriod}" rendered="{!if((m.mobj.Id!=null),(!IF(contains(securityMatrixObj.editActivityMilestone,"true"),FALSE,TRUE)),false)}" action="{!fetchReportingPeriod}"  id="filesattach" title="Add Reporting Period" rerender="frm">
+                               <apex:param value="{!m.mobj.id}" name="selectedMilestone" assignTo="{!mid}"/>                     
+                          </apex:commandbutton>
+                       </td>
+                       <td class="dataCell">{!m.periodNumber}</td>
+                   </tr>
+               </apex:repeat>
+             </table></div>
+             </apex:outputPanel>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

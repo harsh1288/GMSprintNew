@@ -1,0 +1,13 @@
+<apex:page standardController="Implementation_Period__c">
+<apex:includeScript value="/soap/ajax/29.0/connection.js"/>
+ <apex:includeScript value="/soap/ajax/29.0/apex.js"/>
+
+    <script>
+        
+    window.onload= loadValues();
+    function loadValues(){
+        var url ='/apex/GrantMakingHome'; 
+        sforce.one.navigateToURL(url);
+    }
+    </script>
+</apex:page>

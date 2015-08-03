@@ -1,0 +1,294 @@
+<apex:page StandardController="Grant_Indicator__c" extensions="overrideindicatordetailextClone_Rahul" action="{!reDirect}">
+<apex:includeScript value="{URLFOR(!$Resource.GoalsJs, 'assets/js/bootstrap.js')}" />    
+    <style>
+        .bPageBlock .pbHeader{
+            display:none;
+       }
+
+        .titles{
+            vertical-align:middle;
+            font-size:100%;
+            width:25%;
+            font-weight:bold;
+        }
+        .title{
+            vertical-align:middle;
+            font-size:125%;
+            width:25%;
+            font-weight:bold;
+        }
+        .Processing
+            {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        } 
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }  
+        .custPopupHistory{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 12%;
+            padding:10px;
+            position: absolute;
+            top:8%;
+        }
+        .popupBackgroundHistory{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        } 
+        .Image{
+            cursor:pointer;
+            height:13px;
+            width:13px;
+            vertical-align:middle;
+        }        
+    </style>
+    <script type="text/javascript">
+        function setdecimal(targets, decimal) {
+            var targetVal = document.getElementById(targets).innerHTML;
+            if(isNaN(parseFloat(targetVal))) {
+                targetVal = 0;               
+                document.getElementById(targets).innerHTML = '';
+             }
+             else 
+                document.getElementById(targets).innerHTML = parseFloat(targetVal).toFixed(decimal);
+        }
+        
+        function deleteConfirmation() {
+           return confirm('Are you sure you want to delete?');
+            
+        }
+    </script>
+    <div class="bPageTitle">
+    <div class="ptBody">
+        <div class="content">
+            <h1 class="pageType">Indicator</h1>
+            <h2 class="pageDescription"> {!Grant_Indicator__c.name} </h2>
+            <div class="blank">&nbsp;</div>
+        </div>
+    </div>
+    <chatter:feedWithFollowers entityId="{!Grant_Indicator__c.id}" /><br/>
+    </div>
+    <apex:form id="frm">
+        <apex:actionFunction name="deltconf" action="{!deleteind}"/>
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div> 
+        <!--    <apex:commandLink reRender="HistoryPopup" status="Processing" action="{!ShowHistoryPopup}"  rendered="{!if(Grant_Indicator__c.Indicator_Type__c != 'Impact' && Grant_Indicator__c.Indicator_Type__c != 'Outcome',true,false )}">
+                       <apex:image styleClass="Image" url="{!$Resource.History}" title="{!$Label.View_History}" style="height: 25px;width: 20px;float:right;" rendered="{!if(Grant_Indicator__c.Indicator_Type__c != 'Impact' && Grant_Indicator__c.Indicator_Type__c != 'Outcome',true,false )}" />  
+                </apex:commandLink> action="{!deleteind}" -->
+                
+        <apex:panelGrid columns="5" style="margin-left:450px;">
+            <apex:commandLink value="{!$Label.Edit}"  action="{!edit}" rendered="{!editBasedOnStatus}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+            <apex:commandLink value="{!$Label.Delete}" action="{!deleteind}" rendered="{!editBasedOnStatus}" styleClass="btn" style="text-decoration:none;padding:4px;"
+                onclick="if (!deleteConfirmation()) return false;" />
+                
+            <apex:commandLink value="{!$Label.Back_to_PF}" action="{!openPF}" target="_self" styleClass="btn" style="text-decoration:none;padding:4px;"/> 
+            <apex:commandLink value="{!$Label.See_Help}" action="{!openGuidance}" target="_blank" styleClass="btn" style="text-decoration:none;padding:4px;"/>                               
+        </apex:panelGrid>
+      
+        <!--  History popup of target table  -->
+        
+        <apex:outputPanel id="HistoryPopup" >
+            <apex:outputPanel id="popupBackgroundH" styleClass="popupBackgroundHistory" rendered="{! if(blnHistory == true,true,false)}" />
+            <apex:outputPanel id="custPopupH" styleClass="custPopupHistory" rendered="{! if(blnHistory == true,true,false)}">                 
+                <table>
+                    <tr>
+                        <td>
+                            <c:GrantCoverageHistory TargetRecordId="{!Grant_Indicator__c.id}" TagetObjectAPIname="Grant_Indicator__c" RecordTitle="{!if(strLanguage == 'FRENCH',Grant_Indicator__c.French_Name__c,if(strLanguage == 'RUSSIAN',Grant_Indicator__c.Russian_Name__c,if(strLanguage == 'SPANISH',Grant_Indicator__c.Spanish_Name__c,Grant_Indicator__c.Indicator_Full_Name__c)))}"  /> 
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center" style="">
+                            <apex:commandButton value="{!$Label.OK}"  action="{!HidePopupHistory}" style="width:50px" reRender="frm" status="Processing"> 
+                            </apex:commandButton>
+                        </td>
+                    </tr>
+                </table>                                                                                                                                                     
+            </apex:outputPanel>
+        </apex:outputPanel>
+        
+        <!--  End of History popup of target table  -->
+        
+        </apex:form> 
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus>
+
+      <br/>
+        <apex:outputLabel value="{!if(Grant_Indicator__c.Indicator_Type__c== $Label.coverage_CN_rec_name,$Label.Coverage_Output_Indicator,if(Grant_Indicator__c.Indicator_Type__c== $Label.Outcome_type,$Label.Outcome_Indicator,$Label.Impact_Indicator))}" styleClass="title"></apex:outputLabel> <br/><br/>   
+            <apex:pageBlock mode="maindetail" title="Indicator Detail" >
+                <apex:pageBlockSection title="{!$Label.grantinfo }">
+                    <apex:outputField value="{!Grant_Indicator__c.Grant_Implementation_Period__c}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Performance_Framework__c}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Parent_Module__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== $Label.coverage_CN_rec_name,true,false)}"/>
+                </apex:pageBlockSection>
+                <apex:pageBlockSection title="{!$Label.Indicator_detail}">
+                    <apex:outputField value="{!Grant_Indicator__c.Indicator_Full_Name__c}" rendered="{!if(Grant_Indicator__c.Is_Disaggregated__c == false,true,false)}"/> 
+                     <!-- apex:outputField value="{!Grant_Indicator__c.Name_Disaggregated__c}" rendered="{!if(Grant_Indicator__c.Is_Disaggregated__c == true,true,false)}"/ -->
+                    <apex:outputField value="{!Grant_Indicator__c.Standard_or_Custom__c}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Indicator__c}" rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type,true,false)}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Indicator_Type__c}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Data_Type__c}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Reporting_Frequency__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== $Label.coverage_CN_rec_name,true,false)}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Target_Accumulation__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== $Label.coverage_CN_rec_name,true,false)}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Target_Area__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== $Label.coverage_CN_rec_name,true,false)}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Reason__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== $Label.coverage_CN_rec_name && Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type,true,false)}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Sub_National_Area__c}" rendered="{!if((Grant_Indicator__c.Indicator_Type__c== $Label.coverage_CN_rec_name && Grant_Indicator__c.Target_Area__c = $Label.Sub_National) ,true,false)}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Subset_Of__c}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c== $Label.coverage_CN_rec_name,true,false)}"/>
+                    <apex:outputField value="{!Grant_Indicator__c.Decimal_Places__c}"/>
+                </apex:pageBlockSection>
+                <apex:pageblocksection showHeader="true" title="{!$Label.Baseline}" columns="2" id="pbs3" >
+                    <apex:pageBlockSectionItem rendered="{!if(Grant_Indicator__c.Indicator_Type__c== $Label.coverage_CN_rec_name && Grant_Indicator__c.Data_Type__c=='Number and Percent',true,false)}">
+                        <apex:outputText value="Baseline Numerator" />
+                        <apex:outputText id="num" value="{!if(decimalPlaces == '0','{0,number,####}',if(decimalPlaces == '1','{0,number,###0.0}',if(decimalPlaces == '2','{0,number,###0.00}',if(decimalPlaces == '3','{0,number,###0.000}',if(decimalPlaces == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" rendered="{!if(Grant_Indicator__c.Data_Type__c=='Number and Percent',true,false)}">
+                            <apex:param value="{!(Grant_Indicator__c.Baseline_numerator__c)}"/>
+                        </apex:outputText>
+                    </apex:pageBlockSectionItem> 
+    
+                    <apex:pageBlockSectionItem rendered="{!if(Grant_Indicator__c.Indicator_Type__c== 'Coverage/Output' && Grant_Indicator__c.Data_Type__c=='Number and Percent',true,false)}">
+                    <apex:outputText value="Baseline Denominator" />
+                    <apex:outputText id="den" value="{!if(decimalPlaces == '0','{0,number,####}',if(decimalPlaces == '1','{0,number,###0.0}',if(decimalPlaces == '2','{0,number,###0.00}',if(decimalPlaces == '3','{0,number,###0.000}',if(decimalPlaces == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}" rendered="{!if(Grant_Indicator__c.Data_Type__c=='Number and Percent',true,false)}">
+                         <apex:param value="{!(Grant_Indicator__c.Baseline_Denominator__c)}"/>
+                     </apex:outputText>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlocksectionItem id="baseline" >
+                    <apex:outputText value="Baseline Value" />
+                    <apex:panelgrid columns="2">
+                    <apex:outputlabel id="basev" value="{!Grant_Indicator__c.Baseline_Value1__c}" >
+                        <script> setdecimal('{!$Component.basev}', '{!Grant_Indicator__c.Decimal_Places__c}') </script>
+                    </apex:outputlabel>
+                    <apex:outputlabel id="sign" value="{!sign}" rendered="{!if(Grant_Indicator__c.Baseline_Value1__c != null && Grant_Indicator__c.Baseline_Value1__c != '' , true, false)}"/> 
+                    </apex:panelgrid>
+                    </apex:pageBlocksectionItem>
+                    <apex:outputfield value="{!Grant_Indicator__c.Baseline_Year__c}"/>
+                    <apex:outputfield value="{!Grant_Indicator__c.Baseline_Sources__c}" />
+                    <apex:outputField value="{!Grant_Indicator__c.Please_Specify_BaseLine_Sources__c}" rendered="{!if(Grant_Indicator__c.Baseline_Sources__c == 'Other (specify)' || Grant_Indicator__c.Baseline_Sources__c == 'Other survey, specify' || Grant_Indicator__c.Baseline_Sources__c == 'Other survey (specify)' || Grant_Indicator__c.Baseline_Sources__c == 'Reports, Surveys, Questionnaires, etc. (specify)' || Grant_Indicator__c.Baseline_Sources__c == 'Reports (specify)' || Grant_Indicator__c.Baseline_Sources__c == 'Specific surveys and research (specify)',true, false)}" /> 
+                </apex:pageblocksection>
+                
+                
+                <apex:pageBlocksection showHeader="true" title="{!year1}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c != $Label.coverage_CN_rec_name, true, false)}" Columns="2" id="pbs4">
+                    <apex:pageBlocksectionItem id="targetY1">
+                        <apex:outputText value="{!$Label.Target_Value}" />
+                        <apex:panelgrid columns="2">
+                        <apex:outputlabel value="{!Grant_Indicator__c.Target_Value_Y12__c}" id="target1">
+                            <script> setdecimal('{!$Component.target1}', '{!Grant_Indicator__c.Decimal_Places__c}') </script>
+                        </apex:outputlabel>
+                        <apex:outputlabel id="sign" value="{!sign}" rendered="{!if(Grant_Indicator__c.Target_Value_Y12__c != null && Grant_Indicator__c.Target_Value_Y12__c != '' , true, false)}"/>                       
+                        </apex:panelgrid>
+                    </apex:pageBlocksectionItem>
+                    <apex:outputfield value="{!Grant_Indicator__c.Y1_Report_Due__c}" />
+                </apex:pageBlocksection>
+                
+                <apex:pageBlocksection showHeader="true" title="{!year2}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c != $Label.coverage_CN_rec_name, true, false)}" Columns="2" id="pbs5">
+                    <apex:pageBlocksectionItem id="targetY2">
+                    <apex:outputText value="{!$Label.Target_Value}" />
+                    <apex:panelgrid columns="2">          
+                    <apex:outputlabel value="{!Grant_Indicator__c.Target_Value_Y22__c}" id="target2">
+                     <script> setdecimal('{!$Component.target2}', '{!Grant_Indicator__c.Decimal_Places__c}') </script>
+                    </apex:outputlabel>  
+                    <apex:outputlabel id="sign" value="{!sign}" rendered="{!if(Grant_Indicator__c.Target_Value_Y22__c != null && Grant_Indicator__c.Target_Value_Y22__c != '' , true, false)}"/> 
+                    </apex:panelgrid>
+                    </apex:pageBlocksectionItem>
+                    <apex:outputfield value="{!Grant_Indicator__c.Y2_Report_Due__c}" />
+                </apex:pageBlocksection>
+                
+                <apex:pageBlocksection showHeader="true" title="{!year3}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c != $Label.coverage_CN_rec_name, true, false)}" Columns="2" id="pbs6">
+                    <apex:pageBlocksectionItem id="targetY3">
+                    <apex:outputText value="{!$Label.Target_Value}" />
+                    <apex:panelgrid columns="2">           
+                    <apex:outputlabel value="{!Grant_Indicator__c.Target_Value_Y32__c}" id="target3">
+                     <script> setdecimal('{!$Component.target3}', '{!Grant_Indicator__c.Decimal_Places__c}') </script>
+                    </apex:outputlabel>    
+                    <apex:outputlabel id="sign" value="{!sign}" rendered="{!if(Grant_Indicator__c.Target_Value_Y32__c != null && Grant_Indicator__c.Target_Value_Y32__c != '' , true, false)}"/> 
+                    </apex:panelgrid>
+                    </apex:pageBlocksectionItem>
+                    <apex:outputfield value="{!Grant_Indicator__c.Y3_Report_Due__c}" />
+                </apex:pageBlocksection>
+                <apex:pageBlocksection showHeader="true" title="{!year4}" rendered="{!if(Grant_Indicator__c.Indicator_Type__c != $Label.coverage_CN_rec_name && !displayFiscal && (YEAR(startDate)+3 >= YEAR(endDate)), true, false)}" Columns="2" id="pbs7">
+                    <apex:pageBlocksectionItem id="targetY4">
+                    <apex:outputText value="{!$Label.Target_Value}" />
+                    <apex:panelgrid columns="2">              
+                    <apex:outputlabel value="{!Grant_Indicator__c.Target_Value_Y42__c}" id="target4">
+                     <script> setdecimal('{!$Component.target4}', '{!Grant_Indicator__c.Decimal_Places__c}') </script>
+                    </apex:outputlabel>     
+                    <apex:outputlabel id="sign" value="{!sign}" rendered="{!if(Grant_Indicator__c.Target_Value_Y42__c != null && Grant_Indicator__c.Target_Value_Y42__c != '' , true, false)}"/> 
+                    </apex:panelgrid>
+                    </apex:pageBlocksectionItem>
+                    <apex:outputfield value="{!Grant_Indicator__c.Y4_Report_Due__c}" />
+                </apex:pageBlocksection>
+                
+                <apex:pageBlockSection title="Concept Note Target Table" rendered="{!if(Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name, true, false)}">
+                    <c:cntargetcomponent GrantImplementationID="{!Indid}">
+                    </c:cntargetcomponent>
+                </apex:pageBlockSection>
+                
+                <apex:pageBlockSection title="Target Table" rendered="{!if(Grant_Indicator__c.Indicator_Type__c == $Label.coverage_CN_rec_name, true, false)}">
+                    <apex:include pageName="TargetForIndicator" />
+                </apex:pageBlockSection>
+                
+                <apex:pageBlocksection showheader="true" title="{!$Label.Comments}">
+                    <apex:outputfield value="{!Grant_Indicator__c.Comments__c}"/>
+                    <apex:outputfield value="{!Grant_Indicator__c.PR_Comments__c}" />
+                    <apex:outputfield value="{!Grant_Indicator__c.Global_Fund_Comments_to_PR__c}" rendered="{!readGlobalFundToPRComment}" />
+                </apex:pageBlocksection>
+            </apex:pageBlock>
+            
+            <!--apex:detail relatedList="false" >
+            </apex:detail><br/-->
+            <apex:form id="frm1">
+            <apex:panelGrid columns="5" style="margin-left:500px;">
+                <apex:commandLink value="{!$Label.Edit}"  action="{!edit}" rendered="{!editBasedOnStatus}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                <apex:commandLink value="{!$Label.Delete}" action="{!deleteind}" rendered="{!editBasedOnStatus}" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                <apex:commandLink value="{!$Label.Back_to_PF}" action="{!openPF}" target="_self" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+                <apex:commandLink value="{!$Label.See_Help}" action="{!openGuidance}" target="_blank" styleClass="btn" style="text-decoration:none;padding:4px;"/>
+            </apex:panelGrid>
+            </apex:form>
+        <!-- Field History -->
+                           
+        
+           <br/>
+    <apex:pageBlock rendered="{!if(Grant_Indicator__c.Standard_or_Custom__c == $Label.Standard_type && Grant_Indicator__c.Is_Disaggregated__c == true,true,false)}"> 
+        <apex:form >
+            <apex:pageBlockSection columns="1"> 
+                <c:disaggregationTable TargetRecordId="{!Grant_Indicator__c.id}" PerformanceFrameworkStatus="{!pf.Grant_Status__c}" selectedDataType="{!Grant_Indicator__c.Data_Type__c}" decimalPlaces="{!decimalPlaces}" /> 
+            </apex:pageblockSection>
+        </apex:form>
+    </apex:pageBlock>
+    
+    
+<apex:pageBlock rendered="{!if(Grant_Indicator__c.Indicator_Type__c == $Label.Impact_type || Grant_Indicator__c.Indicator_Type__c == $Label.Outcome_type,true,false)}"> 
+ <apex:pAgeBlockSection >
+<apex:outputText value="{!$Label.Related_Goals_Objectives}" styleClass="titles"></apex:outputText>
+ </apex:pAgeBlockSection>
+<apex:relatedList list="Indicator_Goal_Junctions__r" /> 
+</apex:pageBlock>
+</apex:page>

@@ -1,0 +1,83 @@
+<!----------------------------------------------------------------------------------------------------------->
+<!--    Purpose         :  This Page is meant for CLASS: WPTMKeyActivityReportExtension          ----------->
+<!--    Created Date    :  12 March 2015                                                         ------------>
+<!--    Created By      :  TCS                                                                    ------------> 
+<!--    Description     :  This Page shows Workplan Tracking measure report embeded in Performance Framework
+<!--                       Standard Page.Displays Interventions with respective Activities/Milestone Targets/Reporting Periods                                                           ----------->
+<!---   Author          :  Gaurav Guleria
+<!--    Revision        :                                                                        ----------->            
+<!------------------------------------------------------------------------------------------------------------>
+
+<apex:page standardController="Performance_Framework__c" extensions="WPTMKeyActivityReportExtensionA">
+  <html>
+    <head>
+     <style type="text/css">
+    
+        div.header {
+        
+        position:fixed;
+        
+        }        
+        .tableheader{
+            font-size: 11px;
+            background-color: #F2F2F2;
+            font-family:arial;
+        }
+    </style>
+    </head>
+    </html>
+    <apex:form >    
+        <apex:pageBlock rendered="{!securityMatrixObj.accessViewWPTM}">
+           <b> <apex:outputText value="Workplan Tracking Measures"></apex:outputText></b><br/><br/>
+           <apex:pageBlockSection >
+           <apex:pageBlockSectionItem >
+            <apex:outputpanel layout="block" style="text-align: center;font-weight:bold; float:left;">                
+                <apex:commandLink id="addKeyActvt" rendered="{!securityMatrixObj.addActivityMilestone}" value="Add Key Activity" action="{!addKeyActivity}" target="_blank" styleClass="btn" style="color:black;text-decoration:none;font-weight:bold;" rerender=""/>
+                <apex:commandLink id="backToPF"  value="Back To Performance Framework" action="{!backToPerformanceFramework}" styleClass="btn" style="color:black;text-decoration:none;font-weight:bold;" rerender=""/>
+                <apex:commandLink id="seeHelp"  value="See Help" action="{!openHelp}" styleClass="btn" style="color:black;text-decoration:none;font-weight:bold;" target="_blank" rerender=""/>
+               <br/><br/><br/>
+            </apex:outputpanel>  
+            </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+
+                
+                    <apex:repeat value="{!RecordsToDisplay}" var="rec" id="dispList">                  
+                       <table width="100%" height="100%">
+                       <tr>
+                            <td style="font-size: 11px;font-weight: bold;"> Module : {!rec.moduleName}</td>
+                            <!--<td style="font-size: 15px;width: 90%;">{!rec.moduleName}</td>-->
+                        </tr>
+                        
+                        <tr>
+                             <td style="font-size: 11px;font-weight: bold;"> Intervention : {!rec.interventionName}</td>
+                            <!-- <td style="font-size: 15px;width: 90%;">{!rec.interventionName} </td>-->
+                        </tr>
+                        
+                        <tr>
+                            <td style="font-size: 11px;font-weight: bold;"> Activity : {!rec.activityName}</td>
+                           <!-- <td style="font-size: 15px;width: 90%;">{!rec.activityName}</td>-->
+                        </tr>
+                        <tr>
+                        <tr class="tableheader" style="background-color: darkgrey;"> 
+                                <th  width="30%">Milestone Title</th>                        
+                                <th  width="30%">Criteria for completion </th> 
+                                <th  style="display:{!if(showLinkedTo,TRUE,'none')};width=20%;text-align: center;">Linked To</th>                          
+                                <th  style="width:20%;text-align: center;">Reporting Periods</th> 
+                            </tr>
+                        
+                        <apex:repeat value="{!rec.MilestoneTargetWrapperLst}" var="rec2" id="dispList2">                      
+                           
+                                <tr>
+                                    <td style="width:30%;background-color: #D8D8D8;"><apex:outputText value="{!rec2.MileStoneName}"/></td> 
+                                    <td style="width:30%;background-color: #D8D8D8;"><apex:outputText value="{!rec2.CriteriaForCompletion}"/></td> 
+                                    <td style="display:{!if(showLinkedTo,TRUE,'none')};text-align: center;background-color: #D8D8D8;"><apex:outputText value="{!rec2.linkedTo}" /></td>                            
+                                    <td style="text-align: center;background-color: #D8D8D8;"><apex:outputText value="{!rec2.reportingPeriods}" /></td>                           
+                                </tr>
+                                
+                           </apex:repeat>
+                          </tr> 
+                        </table>                           
+                     </apex:repeat>                      
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

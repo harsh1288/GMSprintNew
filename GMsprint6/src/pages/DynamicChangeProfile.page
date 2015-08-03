@@ -1,0 +1,46 @@
+<apex:page controller="DynamicChangeProfile"  showHeader="false" action="{!initialize}" >
+<script type="text/javascript">
+</script>
+<apex:form id="frm">
+
+
+<apex:pageBlock >
+<!--<apex:pageBlockSection>
+<apex:commandLink value="Login" action=""> with current profile:{!currentuser.profile.name} </apex:commandLink>
+</apex:pageBlockSection>-->
+
+<apex:pageBlockSection title="Please click on a Module">
+
+<apex:commandLink value="Concept Note" id="CN" action="{!initializeView}"> 
+<apex:param name="valueCN" value="ConceptNote" assignTo="{!selModule}"/>
+</apex:commandLink>
+
+<apex:commandLink value="Grant-Making" id="GM" action="{!initializeView}">
+<apex:param name="valueGM" value="Grant-Making" assignTo="{!selModule}" />
+</apex:commandLink>
+
+
+
+</apex:pageBlockSection>
+        <apex:pageBlockSection rendered="{!If(lstAccounts.size >0,true,false)}" title = "Accounts related to {!selModule}">
+        <apex:pageBlockTable value="{!lstAccounts}" var="affiliation" >            
+                   <apex:Column styleClass="actionColumn">
+                        <apex:CommandLink action="{!selectProfile}" value="Select">
+                            <apex:param name="affId" value="{!affiliation.Id}"/>
+                        </apex:CommandLink>
+                    </apex:Column>
+                    <apex:Column headerValue="Account Name">
+                        <apex:outputText value="{!affiliation.npe5__Organization__r.Name}"/>
+                    </apex:Column>
+            </apex:pageBlockTable>
+           </apex:pageBlockSection>
+           <apex:pageBlockSection rendered="{!If((lstAccounts.size ==0 && selModule !=null),true,false)}" >
+         <apex:outputText value="No account available " >
+         
+         </apex:outputText>
+        
+           </apex:pageBlockSection>
+        
+</apex:pageBlock>
+</apex:form>
+</apex:page>

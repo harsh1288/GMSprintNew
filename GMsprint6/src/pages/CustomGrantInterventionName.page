@@ -1,0 +1,12 @@
+<apex:page standardController="Grant_Intervention__c" >
+  <style>
+     .hasMotif{
+          margin: 0 80px !important;     
+          }
+          </style>
+      <apex:form >
+            <apex:outputLabel value="Custom Intervention Name" rendered="{!if(Grant_Intervention__c.Catalog_Intervention__r.Is_Other_Intervrntion__c == true,true,false)}" style="font-weight: bold;color:#4a4a56;width: 18%;vertical-align: top;padding-top: 2px;padding-right: 10px;padding-bottom: 2px;padding-left: 60px;text-align: right;font-family: Arial,Helvetica,sans-serif;font-size:91%;"></apex:outputLabel>
+            &nbsp;&nbsp;
+            <apex:outputField id="Custom" value="{!Grant_Intervention__c.Custom_Intervention_Name__c}" rendered="{!if(Grant_Intervention__c.Catalog_Intervention__r.Is_Other_Intervrntion__c == true,true,false)}"/>
+      </apex:form>
+</apex:page>

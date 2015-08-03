@@ -1,0 +1,202 @@
+<apex:page id="page" standardController="Grant_Multi_Country__c" extensions="grantMultiCountriesExt" sidebar="false" cache="false">
+
+   <style>
+        .custPopup{
+            background-color: white;
+            border-width: 2px;
+            border-style: solid;
+            z-index: 9999;
+            left: 50%;
+            padding:10px;
+            position: absolute;
+            /* These are the 3 css properties you will need to change so the popup 
+            displays in the center of the screen. First set the width. Then set 
+            margin-left to negative half of what the width is. You can add 
+            the height property for a fixed size pop up if you want.*/
+            width: 700px;
+            margin-left: -350px;
+            top:100px;
+            overflow:auto;
+            height:450px;
+        } 
+        
+         .Processing
+        {
+            z-index: 9997;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        }  
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9997;
+            top:0;
+            left:0;
+        }  
+        .popupBackgroundHistory{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 50);
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 9998;
+            top: 0;
+            left: 0;
+           
+        }
+        .custPopupHistory{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            z-index: 9999;           
+            left: 20%;
+            padding:10px;
+            position: absolute;
+            top:20%;
+            right: 20%;
+        }
+        .Image{
+        cursor:pointer;
+        height:13px;
+        width:13px;
+        vertical-align:middle;
+        }
+        .labelCol {
+            font-size : 14px !important; 
+            font-weight : normal !important;
+        }
+        .pbSubheader {
+            padding-top: 0px !important;
+            padding-right: 0px !important;
+        }
+        .input {
+            width:50 px !important;
+            }
+        .requiredIp {
+            position:relative;
+        }
+        .requiredBlocks {
+            background-color:#c00;
+            position:absolute;
+            left:-4px;
+            width: 25px;
+            top:1px;
+            bottom:1px
+        }
+         .bPageHeader td.left div
+    {
+      width:260px;
+    }
+    
+  </style> 
+  <script>
+  function modindname(modinds, popupId, countryId){
+             document.getElementById(popupId).style.display = 'none';
+             var mod = document.getElementById(modinds).value;  
+             var id =  document.getElementById(countryId).value;  
+             document.getElementById("{!$Component.page.frm.pb1.grantCountry.pbc.countrytext}").value = mod;
+             document.getElementById("{!$Component.page.frm.pb1.grantCountry.countryId}").value = id;
+             
+       }
+  </script>
+  <apex:form id="frm" >
+        <apex:outputPanel id="errorMsg" >
+        <apex:pageMessages />
+        <a href="{!getBackUrl}"> Back</a>
+        </apex:outputPanel>
+        
+        <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus>
+        
+   <apex:pageBlock id="pb1" rendered="{!blnForOnlyMC}">      
+       <apex:pageBlockButtons id="buttons">
+            <apex:CommandButton id="Save" action="{!Save}" value="{!$Label.Save}"></apex:CommandButton>
+            <apex:CommandButton id="Cancel" action="{!Cancel}" value="{!$Label.Cancel}"></apex:CommandButton>
+         </apex:pageBlockButtons>
+         
+         <apex:pageBlockSection title="Grant Multi Country" columns="2" id="grantCountry">
+                 <apex:pageBlockSectionItem id="pbc">
+                 <apex:outputText value="Country"></apex:outputText>
+                       <apex:panelGrid columns="3">
+                            <apex:outputPanel >
+                            <div class="requiredInput">
+                            <div class="requiredBlock" style = "height:20px;"></div>            
+                             <apex:inputText id="countrytext" value="{!country}" html-autocomplete="off" >
+                                 <!--  <apex:actionSupport event="onchange" action="{!clearModuleRelVal}" reRender="pbs1,errorMsg"/> -->
+                             </apex:inputtext>
+                              </div> </apex:outputPanel>
+                              <apex:commandLink action="{!openlookupwindow}" status="Processing" rerender="pbs1,lookupoptpnlmod,errorMsg">
+                                   <apex:image styleClass="Image" url="{!$Resource.Lookup}" title="Country Lookup(New Window)" style="height: 18px;width: 18px;" />
+                               </apex:commandLink> 
+                       </apex:panelGrid>
+                      </apex:pageBlockSectionItem> 
+                       <apex:inputhidden id="countryId" value="{!Grant_Multi_Country__c.Country__c}"/>
+                    <apex:outputfield value="{!Grant_Multi_Country__c.Grant_Implementation_Period__c}"/>
+                 </apex:pageBlockSection>
+       
+                <!-- Custom Lookup popup for Country --> 
+                   <apex:outputPanel id="lookupoptpnlmod" >
+                          <apex:outputPanel id="custPopupm" styleClass="popupBackgroundHistory" rendered="{!displaypopupmod}"/>
+                               <apex:outputPanel styleClass="custPopupHistory" rendered="{!displaypopupmod}">
+                                     <apex:commandButton value="{!$Label.Close}" action="{!closepopup}" rerender="lookupoptpnlmod,lookupoptpnl,pbs1,errorMsg"/>
+                                      <apex:outputLabel ></apex:outputLabel>
+                                     
+                                     <apex:pageBlockTable value="{!genericList}" var="mod" rendered="{!if(genericList.size>0,true,false)}">
+                                           <apex:column headerValue="Country Name">
+                                                <apex:commandLink id="Country" value="{!mod.name}" onclick="modindname('{!$Component.countryName}','{!$Component.lookupoptpnlmod}','{!$Component.countryId}');" style="text-decoration:underline;" status="Processing" rerender="pbs1"/>
+                                                <apex:inputhidden id="countryName" value="{!mod.name}"/>
+                                                <apex:inputhidden id="countryId" value="{!mod.id}"/>
+                                           </apex:column>
+                                  </apex:pageBlockTable>
+                                  <apex:pageBlock rendered="{!if(genericList.size>0,false,true)}">
+                                           <apex:OutputText Value="Country entered is either already added or does not exists. Please select new Country. Please select new Country." />
+                                           
+                                  </apex:pageBlock>  
+                                  <br/>
+                                  <!--Pagination-->
+                                   <apex:outputPanel style="float:right" rendered="{!AND(IF(paginater.isAll, false, true), IF(paginater.totalPage == 1, false, true))}">
+                                       <!--  <apex:outputText rendered="{!paginater.showPrevious}">
+                                            <apex:commandLink action="{!firstPage}" value="First | " rerender="frm" />
+                                        </apex:outputText> -->
+                                        <apex:outputText rendered="{!paginater.showPrevious}" >
+                                            <apex:commandLink action="{!previousPage}" value="Prev | " rerender="frm"/>
+                                        </apex:outputText>
+                                       <!--  <apex:repeat value="{!paginater.pageList}" var="pl">
+                                            <apex:outputText rendered="{!!pl.isActive}">
+                                                <apex:commandLink action="{!updatePage}" rerender="frm">
+                                                    {!pl.pageNum} |                           
+                                                    <apex:param name="selectedPage" value="{!pl.pageNum}" assignTo="{!paginater.pageNum}" />                        
+                                                </apex:commandLink>
+                                            </apex:outputText>
+                                            <apex:outputText rendered="{!pl.isActive}" value=" {!pl.pageNum} |" />                      
+                                        </apex:repeat> -->
+                                        <apex:outputText rendered="{!paginater.showNext}">
+                                            <apex:commandLink action="{!nextPage}" value=" Next" rerender="frm" />
+                                        </apex:outputText>  
+                                       <!-- <apex:outputText rendered="{!paginater.showNext}"> 
+                                            <apex:commandLink action="{!lastPage}" value=" | Last" rerender="frm" rendered="{!paginater.showNext}" />
+                                       <!-- </apex:outputText> -->
+                                    </apex:outputPanel>
+                                <!--Pagination-->  
+                       </apex:outputPanel>                       
+                    </apex:outputPanel>
+                    
+                    
+    </apex:pageBlock>
+    </apex:form>
+</apex:page>

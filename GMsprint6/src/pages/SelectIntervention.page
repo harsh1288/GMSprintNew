@@ -1,0 +1,120 @@
+<apex:page standardController="Module__c" extensions="extmodule" id="page">
+   <style>
+   .link{
+    color: #00FF00;
+    text-decoration:underline;
+     text-align:right;
+     float: right;
+     font-weight:bold;
+    }
+    .text{
+      color: red;
+      font-weight:bold;
+      text-align: center;
+    }
+    .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        } 
+        .hasMotif {
+          margin: 0 80px !important;     
+          }
+    </style>
+    <script >
+        function otherintervention(inpcheck,intrname,isother){
+           var chck = document.getElementById(inpcheck).checked;
+           var intr = document.getElementById(intrname).innerText;
+           var other = document.getElementById(isother).innerText;
+           if(chck == true && other == 'true'){
+            document.getElementById("{!$Component.page.frm.pb.pbs2.oplabl}").style.display = '';
+            document.getElementById("{!$Component.page.frm.pb.pbs2.namesec.namelbl}").style.display = '';
+            document.getElementById("{!$Component.page.frm.pb.pbs2.namesec.nameinpt}").style.display = '';
+           }
+           else if(chck == false && other == 'true'){
+             document.getElementById("{!$Component.page.frm.pb.pbs2.oplabl}").style.display = 'none';
+             document.getElementById("{!$Component.page.frm.pb.pbs2.namesec.namelbl}").style.display = 'none';
+             document.getElementById("{!$Component.page.frm.pb.pbs2.namesec.nameinpt}").style.display = 'none';
+           }
+        }
+        function savingjs(){
+              savingaction();
+        }
+    </script>
+ <apex:form id="frm">
+       <apex:pagemessages id="pmesg"/>
+       
+       <div id="divProcessing" style="display:none;">
+            <div class="ProcessingBackground"></div>
+            <div class="Processing">
+                <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+            </div>
+        </div>  
+        <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+        </apex:actionStatus>
+        <apex:actionfunction name="savingaction" action="{!save}" status="Processing" rerender="pbs,pmesg"/>
+       <apex:pageblock rendered="{!display}">
+             <apex:outputtext value="{!message}"  styleclass="text"/>
+             <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/{!moduleid}" class="link">
+             Back to Module
+            </a>
+       </apex:pageblock>
+        <apex:pageblock rendered="{!display1}">
+             <apex:outputtext value="{!message}"  styleclass="text"/>
+             <a href="{!if(CONTAINS($Profile.Name,'PR')||CONTAINS($Profile.Name,'LFA')||CONTAINS($Profile.Name,'CM')||CONTAINS($Profile.Name,'CCM'),'/GM','')}/{!moduleid}" class="link">
+             Back to Module
+            </a>
+       </apex:pageblock>
+       <apex:pageblock id="pb">
+            <apex:pageBlockButtons >
+                  <apex:commandButton value="Save"  onclick="savingjs();"  rendered="{!IF(wlstintrvntn != NULL,true,false)}"  rerender="pbs"/>
+                  <apex:CommandButton value="Cancel" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+             <apex:pageblockSection id="pbs" columns="1">
+                   <apex:pageBlockTable value="{!wlstintrvntn}" var="r" rendered="{!displayintrvntn}"> 
+                         <apex:column id="chckcl" headerValue="Action" >
+                         <apex:inputCheckbox id="chckb" value="{!r.selected}" onchange="otherintervention('{!$Component.chckb}','{!$Component.intrname}','{!$Component.isother}');"/>
+                         </apex:column>
+                         <apex:column id="intrname" headerValue="Intervention" value="{!r.catintrvntn.Name}"/>
+                         <apex:column style="display:none;">
+                               <apex:outputText id="isother" value="{!r.catintrvntn.Is_Other_Intervrntion__c}" />
+                         </apex:column>
+                   </apex:pageBlockTable>
+                    <apex:pageblocksectionItem rendered="{!!display && !displayintrvntn}">
+                    <apex:Outputtext value="Intervention Name"/>
+                    <apex:selectlist value="{!strnintrnvntnname}" size="1">
+                             <apex:selectoptions value="{!intrname}" />
+                    </apex:selectlist>
+                  </apex:pageblocksectionItem>
+                   <apex:pageblocksectionItem rendered="{!!display1 && !displayintrvntn}">
+                    <apex:Outputtext value="Principal Recipient"/>
+                    <apex:selectlist value="{!selectpr}" size="1" multiselect="true">
+                             <apex:selectoptions value="{!lstprs}" />
+                    </apex:selectlist>
+                  </apex:pageblocksectionItem>
+             </apex:pageBlockSection>
+             <apex:pageblocksection id="pbs2">
+                   <apex:outputLabel id="oplabl" value="Please specify name for Other Intervention" style="display:none;"> </apex:outputLabel><br/>
+                   <apex:pageblockSectionItem id="namesec">
+                         <apex:outputLabel id="namelbl" value="Custom Intervention Name" style="display:none;"></apex:outputLabel>
+                         <apex:inputText id="nameinpt" value="{!intrvntnname}"  style="display:none;"/>
+                   </apex:pageblockSectionItem>
+             </apex:pageblocksection>
+       </apex:pageblock>
+ </apex:form>
+</apex:page>

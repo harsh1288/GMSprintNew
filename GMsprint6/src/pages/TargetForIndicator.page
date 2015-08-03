@@ -1,0 +1,163 @@
+<apex:page standardController="Grant_Indicator__c" extensions="TargetForIndicatorExt" id="page">
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.GoalsJs, 'assets/css/bootstrap-responsive.css')}"/>
+      
+      <style>
+        .Processing
+        {
+            z-index: 9999;
+            left: 50%;
+            top: 50%;
+            text-align: center;
+            position: fixed;
+        } 
+        .ProcessingBackground
+        {
+            background-color: black;
+            opacity: 0.50;
+            filter: alpha(opacity = 50);
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            top:0;
+            left:0;
+        }  
+        .custPopupHistory{
+            background-color: white;
+            border-width: 0px;
+            border-radius:10px;
+            border-style: solid;
+            /*z-index: 9999;*/
+            z-index: 51;
+            left: 12%;
+            padding:10px;
+            position: absolute;
+            top:8%;
+        }
+        .popupBackgroundHistory{
+            background-color:black;
+            opacity: 0.20;
+            filter: alpha(opacity = 20);
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            /*z-index: 9998;*/
+            z-index: 50;
+            top: 0;
+            left: 0;
+           
+        }    
+                 
+    </style>
+    <apex:form id="frm">            
+        <apex:commandLink reRender="HistoryPopup" status="Processing" action="{!ShowHistoryPopup}"  rendered="{!if(Grant_Indicator__c.Indicator_Type__c != 'Impact' && Grant_Indicator__c.Indicator_Type__c != 'Outcome',true,false )}">
+          Click to View History
+         <!-- apex:image styleClass="Image" url="{!$Resource.History}" title="{!$Label.View_History}" style="height: 25px;width: 20px;float:right;" rendered="{!if(Grant_Indicator__c.Indicator_Type__c != 'Impact' && Grant_Indicator__c.Indicator_Type__c != 'Outcome',true,false )}" /-->  
+        </apex:commandLink>
+        <apex:outputPanel id="HistoryPopup" >
+            <apex:outputPanel id="popupBackgroundH" styleClass="popupBackgroundHistory" rendered="{! if(blnHistory == true,true,false)}" />
+                <apex:outputPanel id="custPopupH" styleClass="custPopupHistory" rendered="{! if(blnHistory == true,true,false)}">                    
+                    <table>
+                        <tr>
+                        <td>
+                          <c:GrantCoverageHistory TargetRecordId="{!Grant_Indicator__c.id}" TagetObjectAPIname="Grant_Indicator__c" RecordTitle="{!if(strLanguage == 'FRENCH',Grant_Indicator__c.French_Name__c,if(strLanguage == 'RUSSIAN',Grant_Indicator__c.Russian_Name__c,if(strLanguage == 'SPANISH',Grant_Indicator__c.Spanish_Name__c,Grant_Indicator__c.Indicator_Full_Name__c)))}"  /> 
+                        </td>
+                        </tr>
+                        <tr>
+                        <td align="center" style="">
+                            <apex:commandButton value="{!$Label.OK}"  action="{!HidePopupHistory}" style="width:50px" reRender="frm" status="Processing"> 
+                            </apex:commandButton>
+                        </td>
+                        </tr>
+                    </table>                                                                                                                                                     
+                </apex:outputPanel>
+            </apex:outputPanel>
+            <div id="divProcessing" style="display:none;">
+                <div class="ProcessingBackground"></div>
+                <div class="Processing">
+                    <apex:image alt="Processing" url="{!$Resource.LoadingCircle}" />
+                </div>
+            </div>  
+            <apex:actionStatus id="Processing" onstart="document.getElementById('divProcessing').style.display = '';" onstop="document.getElementById('divProcessing').style.display = 'none';">                            
+            </apex:actionStatus>
+        </apex:form>
+        
+        <apex:outputPanel rendered="{!if(grantIndicatorRec.Data_Type__c == $Label.NaP_DT,true,false)}">
+            <table width="100%" class="table table-bordered tableEdit">
+               <thead>
+                   <tr>
+                       <apex:repeat value="{!lstPeriods}" var="P"> 
+                           <th colspan="2" style="background-color:{!If(P.isChanged__c && !resultPeriodMap[P.Start_Date_Short__c].is_Updated__c,'Orange','none')};">
+                               <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                           </th>
+                       </apex:repeat>
+                   </tr>
+               </thead>
+               <tbody>
+                   <tr>
+                       <apex:variable value="{!0}" var="FirstResult"/>
+                       <apex:repeat id="rptrGIRNume" value="{!lstPeriods}" var="GIR"> 
+                           <td style="{!if(FirstResult==0,'','border-left:1px solid #AEAEA9;')}">
+                               <apex:variable value="{!1}" var="FirstResult"/>
+                               <apex:outputText id="num" value="{!if(decimalPlaces == '0','{0,number,####}',if(decimalPlaces == '1','{0,number,###0.0}',if(decimalPlaces == '2','{0,number,###0.00}',if(decimalPlaces == '3','{0,number,###0.000}',if(decimalPlaces == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}">
+                                    <apex:param value="{!resultPeriodMap[GIR.Start_Date_Short__c].Target_Numerator__c}"/>
+                               </apex:outputText>                   
+                           </td>  
+                           <td rowspan="2" class="calValueCell">
+                               <table>
+                                  <tr>
+                                      <td style="border:0px;">
+                                            <apex:outputText id="target" value="{!if(decimalPlaces == '0','{0,number,####}',if(decimalPlaces == '1','{0,number,###0.0}',if(decimalPlaces == '2','{0,number,###0.00}',if(decimalPlaces == '3','{0,number,###0.000}',if(decimalPlaces == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}">
+                                                <apex:param value="{!resultPeriodMap[GIR.Start_Date_Short__c].Target__c}"/>
+                                            </apex:outputText>   
+                                      </td>
+                                      <td style="border:0px;padding:0px;vertical-align:middle;">
+                                          <apex:outputlabel id="labelTy2" style=" display: inline !important; " value="{!if(grantIndicatorRec.Data_Type__c == $Label.Number,'',if(grantIndicatorRec.Data_Type__c == $Label.Percent_DT ||grantIndicatorRec.Data_Type__c == $Label.NaP_DT,$Label.Percent_symb,if(grantIndicatorRec.Data_Type__c == $Label.Ratio,$Label.Ratio_label,'')))}"/>
+                                      </td>
+                                  </tr>
+                              </table>
+                           </td>                                              
+                       </apex:repeat>                                
+                   </tr>
+                   <tr>
+                       <apex:variable value="{!0}" var="FirstResult"/>
+                       <apex:repeat id="rptrGIRDnomi" value="{!lstPeriods}" var="GIR"> 
+                           <td style="{!if(FirstResult==0,'','border-left:1px solid #AEAEA9;')}">
+                               <apex:variable value="{!1}" var="FirstResult"/>                           
+                               <apex:outputText id="den" value="{!if(decimalPlaces == '0','{0,number,####}',if(decimalPlaces == '1','{0,number,###0.0}',if(decimalPlaces == '2','{0,number,###0.00}',if(decimalPlaces == '3','{0,number,###0.000}',if(decimalPlaces == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}">
+                                    <apex:param value="{!resultPeriodMap[GIR.Start_Date_Short__c].Target_Denominator__c}"/>
+                               </apex:outputText>   
+                           </td>                                            
+                       </apex:repeat>
+                   </tr>
+               </tbody>
+           </table>
+       </apex:outputpanel>
+       <apex:outputPanel rendered="{!if(grantIndicatorRec.Data_Type__c != $Label.NaP_DT,true,false)}">
+           <table width="100%" class="table table-bordered tableEdit">
+               <thead>
+                   <tr>
+                       <apex:repeat value="{!lstPeriods}" var="P"> 
+                           <th style="background-color:{!If(P.isChanged__c && !resultPeriodMap[P.Start_Date_Short__c].is_Updated__c,'Orange','none')};"> 
+                               <h5 class="h5Class">{!P.Start_Date_Short__c}</h5>
+                           </th>
+                       </apex:repeat>
+                   </tr>
+               </thead>
+               <tbody>
+                   <tr>
+                       <apex:repeat id="repeatnumber" value="{!lstPeriods}" var="GIR"> 
+                           <td>
+                               <apex:outputText id="num" value="{!if(decimalPlaces == '0','{0,number,####}',if(decimalPlaces == '1','{0,number,###0.0}',if(decimalPlaces == '2','{0,number,###0.00}',if(decimalPlaces == '3','{0,number,###0.000}',if(decimalPlaces == '4','{0,number,###0.0000}','{0,number,###0.0000}')))))}">
+                                    <apex:param value="{!resultPeriodMap[GIR.Start_Date_Short__c].Target__c}"/>
+                               </apex:outputText>
+                               <apex:outputlabel style=" display: inline !important; " value="{!if(grantIndicatorRec.Data_Type__c == $Label.Number,'',if(grantIndicatorRec.Data_Type__c == $Label.Percent_DT ||grantIndicatorRec.Data_Type__c == $Label.NaP_DT,$Label.Percent_symb,if(grantIndicatorRec.Data_Type__c == $Label.Ratio,$Label.Ratio_label,'')))}"/>
+                           </td>  
+                       </apex:repeat>
+                   </tr>
+               </tbody>
+           </table>
+       </apex:outputpanel>                         
+      
+</apex:page>

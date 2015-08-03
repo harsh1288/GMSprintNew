@@ -1,0 +1,665 @@
+<apex:page id="PRBankForm"  standardcontroller="Implementation_Period__c" extensions="BankAccountInformationExt" sidebar="false" showHeader="true">
+  
+ <apex:includeScript value="{!URLFOR($Resource.jquery_Js, 'jquery/js/jquery-1.7.2.min.js')}" />
+ <apex:includeScript value="{!URLFOR($Resource.jquery_Js, 'jquery/js/jquery-ui-1.8.20.custom.min.js')}" />
+ <apex:stylesheet value="{!URLFOR($Resource.jquery_Js, 'jquery/css/smoothness/jquery-ui-1.8.20.custom.css')}" />
+ <style>
+.ui-widget.success-dialog {
+        font-family: Verdana,Arial,sans-serif;
+        font-size: 1.0em;
+}
+
+.ui-widget-content.success-dialog {
+    background: #FFF;
+    border: 1px solid #FFF;
+    color: #222222;
+}
+
+.ui-dialog.success-dialog {
+    left: 0;
+    outline: 0 none;
+    padding: 0 !important;
+    position: absolute;
+    top: 0;
+}
+
+.ui-dialog.success-dialog .ui-dialog-content {
+    background: none repeat scroll 0 0 transparent;
+    border: 0 none;
+    overflow: auto;
+    position: relative;
+    padding: 5 !important;
+    margin: 0;
+}
+
+.ui-dialog.success-dialog .ui-widget-header {
+    background: #FFF;
+    border: 0;
+    color: #fff;
+    font-weight: normal;
+}
+
+.ui-dialog.success-dialog .ui-dialog-titlebar {
+    padding: 0.1em .5em;
+    position: relative;
+    font-size: 1em;
+}
+.ui-widget-content.ui-dialog
+{
+   border: 4px solid #007fcc;
+}
+input{text-transform:uppercase};
+</style>
+
+ <script type="text/javascript">
+   var clearAcc;  
+   function updateBankAccount1(){
+       if( clearAcc == true ){
+           document.getElementById("PRBankForm:frm:pb:pgblkSec:pgblkSecItem:bankAccountId").value = null; 
+           clearSelBankAccount();   
+       }else{
+           updateBankAccount();
+       }
+   }
+   function confirmPRUpdate() {
+   
+   //alert("confirmPRUpdate");
+            var errorMessage = document.getElementById("{!$Component.frm.pageMessages}").textContent;
+            var accountStatus = "{!account.Approval_Status__c}".trim();
+            accountStatus = accountStatus.trim();
+              errorMessage = errorMessage.trim();
+              if(errorMessage == null || errorMessage == '' || errorMessage == 'You must submit this information for approval or you will not receive a grant from The Global Fund.') {
+
+                if(accountStatus == "Approved") {   
+                   // var result = confirm("All forms submitted without uploading the mandatory documents listed will not be processed by the Global Fund.");
+                   // if(result) {
+                        // action function 
+                   // updateAccountApprovalStatus();
+                     //   }
+                        var dialog = $('<p>All forms submitted without uploading the mandatory documents listed will not be processed by the Global Fund.</p>').dialog({
+                                 dialogClass: 'no-close success-dialog',
+                                 modal: true,
+                                 position: [500,200],
+                                 buttons: {
+                                     "Ok": function() {
+                                           updateAccountApprovalStatus();
+                                           dialog.dialog('close');
+                                     },
+                                     "Cancel":  function() {
+                                      dialog.dialog('close');
+                                     }
+                                 }
+                             });
+                } 
+                else if(accountStatus != "Approved"){
+                    //alert("You must submit the PR Information for approval before submitting the bank account information");
+                    var dialog = $('<p>PR information must be approved before you submit bank account information.</p>').dialog({
+                                 dialogClass: 'no-close success-dialog',     
+                                 modal: true,
+                                 position: [500,200],
+                                 buttons: {
+                                     "Ok": function() {
+                                       dialog.dialog('close');
+                                     }
+                                 }
+                             });
+                }
+                else {
+                    $("html, body").animate({ scrollTop: 0 }, "slow");
+                }
+            }
+   }
+        
+   function deleteRow(attachmentId) {
+         var errMsg = "Are you sure?";
+         var r=confirm(errMsg);
+         if (r==true) {
+           removeRow(attachmentId);
+         }
+         else {
+            return false;
+         }
+    }
+    
+    function updateNewFields(){
+       
+      var branchType;
+     var e = document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo:bankName}');
+     //alert(e);
+     var strUser = e.options[e.selectedIndex].value;
+     // alert('In Function==='+strUser );
+     if(strUser == 'New') {
+        document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo:newBankName}').disabled = false;
+        //alert('In If--');
+        
+     } else {
+        document.getElementById('{!$Component.PRBankForm.frm.pb.pbAccInfo.newBankName}').disabled = true;
+        //alert('In elseS--');
+     }
+     
+     var e2 = document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo:bankName}');
+     //alert('e2=='+e2);
+     var strUser2 = e2.options[e2.selectedIndex].value;
+     if(strUser2 == 'New') {
+        //document.getElementById('{!$Component.PRBankForm.frm.pb.pbAccInfo.newBranchName}').disabled = false;
+     } else {
+        //document.getElementById('{!$Component.PRBankForm.frm.pb.pbAccInfo.newBranchName}').disabled = true;
+     }
+     branchType  = document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo:branchType}');
+     var selectedBranchType = branchType.options[branchType.selectedIndex].value
+     
+    
+   
+        if( selectedBranchType == 'SWIFT'){
+            
+            document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo:newABA}').disabled = true;
+            document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo:newSWIFT}').disabled = false;
+          
+        }else  if(selectedBranchType == 'ABA'){
+            document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo:newABA}').disabled = false;
+            document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo:newSWIFT}').disabled = true;
+          
+        }else{
+        
+        }
+    }
+</script>
+<script type="text/javascript">
+    function openGrantPopup() {
+     if('{!readOnly}' == 'false' && '{!view}' == 'false'){
+            var dialog = $('<p>Do you want to save your changes before returning to the grant page?</p>').dialog({
+             dialogClass: 'no-close success-dialog',
+             modal: true,      
+             buttons: {
+                 "Yes": function() {
+                    saveChangesAndRedirect();
+                    //window.location.href = "../{!implementationPeriod.Id}";
+                 },
+                 "No":  function() {
+                    window.location.href = "../{!implementationPeriod.Id}";
+                 },
+                 "Cancel":  function() {
+                  //alert('you chose cancel');
+                  dialog.dialog('close');
+                 }
+             }
+         });
+         }else{
+              window.location.href = "../{!implementationPeriod.Id}";
+         }
+        
+    }
+    function CheckEditableorNot(){
+        if('{!disableSubmit}' == 'true'){
+            alert('This Bank Account is already in Approval process with other PR so it won’t be available for modification.');
+            return false;
+        }else{
+            editRecord();
+            return false;
+        }
+    }
+</script>
+
+<script type="text/javascript">
+    function confirmClearBankAccount() {
+            var dialog = $('<p>Are you sure you want to remove this bank account?</p>').dialog({
+             dialogClass: 'no-close success-dialog',
+             modal: true,      
+             buttons: {
+                 "Yes": function() { 
+                    clearBankAccount();
+                   },
+                 "No":  function() {
+                    dialog.dialog('close');
+                 },
+
+             }
+         });
+        
+    }
+</script>              
+
+<script type="text/javascript">
+    function refresh() {
+         window.top.location.Reload();
+    }
+   
+</script>
+
+<Script>
+     $('input').keyup(function() {
+    $(this).val($(this).val().toUpperCase());
+});
+</script>       
+<apex:sectionHeader title="Update PR Bank Account  Information"/>
+<center>
+<b><font size="4">PRINCIPAL RECIPIENT (PR) BANK ACCOUNT INFORMATION FORM</font><br/>
+
+<font size="3">To be filled by the Principal Recipient Authorized Personnel</font></b>
+</center>
+<br> </br>
+The Principal Recipient (PR) is responsible for the accuracy and completeness of the data entered in this form. The PR is also responsible in maintaining the accuracy of this record with the Global fund at all times and MUST inform the Global Fund of all changes/modification of this record by submitting a new form.
+
+ The Global Fund is not responsible for any delay in disbursement resulting from incorrectly supplied PR and banking information. Bank charges resulting from incorrectly supplied information will be deducted from the grant funds.
+
+Processing this form after   receipt by the Global Fund will take some time due to the verification and due-diligence requirements.  Please allow sufficient time (at least 10 days) for this form to be processed to ensure timely grant signing and disbursement processing.
+
+<br> </br><center><br/><b><font size="3">IT IS HIGHLY RECOMMENDED FOR THE BANK ACCOUNT TO BE HELD IN THE GRANT CURRENCY IF PERMISSIBLE BY LAW. </font></b>
+<br> </br>
+<b>This form is a mandatory requirement for the signing of the Grant Agreement and activation of the signed Grant Agreement for any Disbursement of funds by the Global Fund </b></center>
+<br> </br>
+<center>Please complete electronically and upload all required supporting documentation. In exceptional circumstances and with prior approval by the Fund Portfolio Manager, the form can be printed and completed by hand using BLOCK CAPITALS. 
+</center>
+ <br>   </br>
+ <apex:outputLink onclick="openGrantPopup();" value="javascript:void(0);"  style="color:blue;float: left;">Return to Grant Page</apex:outputLink>
+ 
+    <br>   </br>
+<br/>    <apex:form id="frm"> 
+        <apex:pageMessages id="pageMessages" escape="false" />   
+<!--    <apex:sectionHeader subtitle="{!Implementation_Period__c.Name}" />-->
+       <apex:pageblock title="PR Bank Account Information" id="pb"> 
+     
+    <apex:actionFunction name="editRecord" action="{!edit}" status="status" reRender="frm" />
+    <!--<apex:actionFunction name="updateAccountApprovalStatus" action="{!updateAccountApprovalStatus}" status="status" rerender="frm"/>-->
+    
+    <apex:actionFunction name="updateAccountApprovalStatus"  status="status" rerender="pageMessages" action="{!submittForApproval}"/>
+    
+    <apex:actionFunction name="updateBankAccount" action="{!updateBankAccount}" rerender="frm" status="status" />
+    <apex:actionFunction action="{!removeRow}" name="removeRow" status="status"
+       rerender="attachList">
+       <apex:param name="firstParam" assignTo="{!attachmentIdToDelete}" value="" />
+   </apex:actionFunction>
+   <apex:actionFunction name="updateUI" rerender="frm" oncomplete="updateNewFields()" status="status"/>
+        <apex:actionFunction name="saveChangesAndRedirect"
+            action="{!saveChangesAndRedirect}" />
+        <apex:actionFunction name="clearBankAccount"
+            action="{!clearBankAccount}"  /> <!-- -->
+        <apex:actionFunction name="clearSelBankAccount"
+            action="{!clearSelectedBankAccount}" rerender="pgblkSec" />     
+        
+        
+       <apex:pageblockSection id="pgblkSec"  title="Select from an Existing Bank Account" rendered="{!edit}"  columns="1" collapsible="false">
+            <apex:pageBlockSectionItem id="pgblkSecItem">  
+              <apex:inputField id="bankAccountId" value="{!implementationPeriod.Bank_Account__c}" rendered="{!edit}" onChange="updateBankAccount1();" />  
+              <apex:outputLink onclick="confirmClearBankAccount();" value="javascript:void(0);"  style="color:blue;float: left;">Clear Bank Account</apex:outputLink></apex:pageBlockSectionItem>
+              <i>If you already have a bank account approved by The Global Fund that you want to use for this grant, please search and select it here, otherwise leave this field blank and create a new bank account below.  Note: You will need to resubmit the Bank Account for approval whether it is an existing account already approved or a new account.  </i>
+              <apex:pageblockSectionItem ></apex:pageblockSectionItem>    
+       </apex:pageblockSection>
+         <apex:pageblockSection id="StatusPgBlock" title="Form Status" columns="2" collapsible="false"> 
+<!--                <apex:inputField value="{!bankAccount.Approval_Status__c}" rendered="{!edit}" /><apex:outputField value="{!bankAccount.Approval_Status__c}" rendered="{!OR(readOnly,view)}" />-->
+                 <apex:outputField value="{!juncObj.Approval_Status__c}" rendered="{!AND(displayStatus,OR(readOnly,view))}" />
+                 <apex:outputText label="Approval Status" value="Update Information" rendered="{!AND(!displayStatus,OR(readOnly,view))}" />
+<!--            <apex:inputField value="{!bankAccount.Bank_Account_Validity_Period_Start_Date__c}" rendered="{!edit}" />-->
+            <apex:outputField value="{!bankAccount.Bank_Account_Validity_Period_Start_Date__c}"  />
+
+<!--                <apex:outputpanel />-->
+                <apex:outputField value="{!bankAccount.Approval_Status_Explanation__c}"/>
+<!--            <apex:inputField value="{!bankAccount.Bank_Account_Validity_Period_End_Date__c}" rendered="{!edit}" />-->
+            <apex:outputField value="{!bankAccount.Bank_Account_Validity_Period_End_Date__c}" />
+            <apex:outputpanel />                           
+        </apex:pageblockSection>
+                
+                
+                
+
+        <!-- there are multiple pageblockSections here to allow for header, 1-column instructional text, 2-column field layout -->
+        <apex:pageblockSection title="Bank Information" columns="1" collapsible="false"/>
+        <apex:pageblockSection columns="1" collapsible="false">
+            <apex:outputPanel rendered="{!AND(edit,lock=false)}"><font size="2"><b>Please use the fields below to search for your bank.
+               If your bank or branch code (SWIFT/BIC or ABA) is not in this list, please select &quot;Create New Bank&quot; or &quot;Create New Branch&quot;
+               and enter information in the right column.  </b></font></apex:outputPanel>                
+               <apex:outputPanel rendered="{!AND(edit,lock=false)}"/>
+        </apex:pageblockSection>
+         
+        
+        <!-- BANK INFORMATION EDIT MODE -->
+           <apex:pageblockSection columns="2" collapsible="false" id="pbBankInfo" rendered="{!AND(edit,lock=false)}">    
+                                
+               <apex:selectList style="width: 156px;" label="Country*" value="{!bankAccount.Selected_Country_Id__c}" multiselect="false" size="1" onchange="updateUI();" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}">
+                  <apex:selectOptions value="{!Countries}" />
+               </apex:selectList> 
+               <apex:inputField value="{!bankAccount.New_Bank_Name__c}" id="newBankName"  onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+<!--            <apex:inputField value="{!bankAccount.Bank_Name_txt__c}" rendered="{!edit}" id="bankName" onchange="updateNewFields();"/>-->
+               <apex:selectList style="width: 156px;" id="bankName" label="Bank Name*" value="{!bankAccount.Selected_Bank_Id__c}" multiselect="false" size="1" onchange="updateUI();" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}">
+                   <apex:selectOptions value="{!Banks}" />
+               </apex:selectList> 
+               <apex:inputField value="{!bankAccount.SWIFT_BIC_Code__c}" id="newSWIFT" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+               <apex:inputField label="Branch Type*" id="branchType" value="{!bankAccount.Branch_Type__c}" onchange="updateUI();" rendered="{!AND(edit,lock=false)}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+               <apex:inputField value="{!bankAccount.ABA_Code__c}" id="newABA" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+               <apex:selectList style="width: 156px;" id="branchName" label="SWIFT/ABA Code*" value="{!bankAccount.Selected_Branch_Id__c}" multiselect="false" size="1" onchange="updateUI();" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}">
+                  <apex:selectOptions value="{!Branches}" />
+               </apex:selectList>
+               
+             <apex:outputPanel />
+               <apex:outputPanel ><br/><br/></apex:outputPanel>
+               <apex:outputPanel />  
+               
+             </apex:pageBlockSection>
+             
+             <apex:pageBlockSection columns="1" collapsible="false" id="pbBankInfoRO" rendered="{!OR(readOnly,view,AND(edit,lock))}">
+               
+               <!-- BANK INFORMATION READ-ONLY, VIEW Bank_Name_GFS__c, Country_GFS__c, SWIFT_BIC_Code_GFS__c, ABA_Code_GFS__c, -->
+               <apex:outputField label="Country" value="{!bankAccount.Country_GFS__c}"/>
+               <apex:outputField label="Bank Name" value="{!bankAccount.Bank_Name_GFS__c}"/>
+               <apex:outputField label="SWIFT/BIC Code" value="{!bankAccount.SWIFT_BIC_Code_GFS__c}"/>
+               <apex:outputField label="ABA Code" value="{!bankAccount.ABA_Code_GFS__c}"/>               
+    
+              
+               <apex:outputPanel ><br/></apex:outputPanel>
+               <apex:outputPanel />
+               
+               </apex:pageBlockSection>
+               
+               <apex:pageBlockSection columns="2" collapsible="false" id="pbBankInfo3">
+               
+               <!-- Intermixed Edit and View/Read-Only versions: from here on out nothing is different -->   
+                  
+               <apex:inputField value="{!bankAccount.Branch_Number__c}" rendered="{!edit}" id="newBranchNumber" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+               <apex:outputField value="{!bankAccount.Branch_Number__c}" rendered="{!OR(readOnly,view)}" />
+               
+               <apex:inputField value="{!bankAccount.Bank_Code__c}" id="bankCode" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/> 
+               <apex:outputField value="{!bankAccount.Bank_Code__c}" rendered="{!OR(readOnly,view)}" />                       
+              
+              <!-- <apex:inputField label="Bank Account Type" value="{!bankAccount.Bank_Account_Type__c}" rendered="{!edit}" />
+                <apex:outputField value="{!bankAccount.Bank_Account_Type__c}" rendered="{!OR(readOnly,view)}" /> -->
+               <apex:inputField value="{!bankAccount.BSB_Routing_No_RTGS_IFSC_Code__c}" id="codeVal" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+               <apex:outputField value="{!bankAccount.BSB_Routing_No_RTGS_IFSC_Code__c}" rendered="{!OR(readOnly,view)}" /> 
+               
+               
+               <apex:inputField label="Branch Type*" id="bankInfoBrType" value="{!bankAccount.Branch_Type__c}" onchange="updateUI();"  rendered="{!AND(edit,lock)}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+               <apex:outputField value="{!bankAccount.Branch_Type__c}" rendered="{!OR(readOnly,view)}"/> 
+               <apex:outputPanel />
+               
+               
+          
+
+
+             <apex:outputPanel ><br/></apex:outputPanel>
+              
+            <apex:outputPanel rendered="{!edit}"/>
+         
+            <apex:inputField label="Bank Address line 1*" id="addrLine1" value="{!bankAccount.Bank_Address_line_1__c}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}" rendered="{!edit}" />
+            
+            <apex:outputField value="{!bankAccount.Bank_Address_line_1__c}" rendered="{!OR(readOnly,view)}" />
+            
+            <apex:inputField label="City*" value="{!bankAccount.City__c}" id="city1" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+            <apex:outputField value="{!bankAccount.City__c}" rendered="{!OR(readOnly,view)}" />
+            
+            <apex:inputField value="{!bankAccount.Bank_Address_line_2__c}" id="addLine2" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}" />
+            <apex:outputField value="{!bankAccount.Bank_Address_line_2__c}" rendered="{!OR(readOnly,view)}" />
+            
+            <apex:inputField value="{!bankAccount.State_Province__c}" id="stateP"  rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+            <apex:outputField value="{!bankAccount.State_Province__c}" rendered="{!OR(readOnly,view)}" />
+            
+            <apex:inputField value="{!bankAccount.Bank_Address_line_3__c}" id="addLine3" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+            <apex:outputField value="{!bankAccount.Bank_Address_line_3__c}" rendered="{!OR(readOnly,view)}" />
+            
+            <apex:inputField label="Postal Code/Zip*" value="{!bankAccount.Postal_Code_Zip__c}" id="zipCode" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+            <apex:outputField value="{!bankAccount.Postal_Code_Zip__c}" rendered="{!OR(readOnly,view)}" />
+         
+        </apex:pageblockSection>
+        
+        
+        <apex:pageblockSection title="Bank Account Information" columns="2" collapsible="false" id="pbAccInfo">                 
+                
+                <!-- ACCOUNT INFORMATION EDIT MODE -->               
+               <apex:outputField label="PR Organization" value="{!Account.Name}" rendered="{!edit}" />
+               <apex:outputField label="PR Organization" value="{!Account.Name}" rendered="{!OR(readOnly,view)}" />               
+               <apex:outputpanel />               
+               <apex:inputField label="Bank Account Name/Beneficiary*" value="{!bankAccount.Bank_Account_Name_Beneficiary__c}" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}" />
+               <apex:outputField value="{!bankAccount.Bank_Account_Name_Beneficiary__c}" rendered="{!OR(readOnly,view)}" />                             
+         <!--  <apex:inputField label="Bank Account Number*" value="{!bankAccount.Bank_Account_Number__c}" rendered="{!edit}" /> -->
+         
+               <apex:inputText label="Bank Account Number*" value="{!varBankAccountNumber}" rendered="{!AND(edit,lock=false)}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>              
+               <apex:outputField label="Bank Account Number" value="{!bankAccount.Bank_Account_Number_Protected__c}" rendered="{!OR(readOnly,view,AND(edit,lock))}" />    
+               <apex:inputField value="{!bankAccount.Bank_Account_Legal_Owner_Name__c}" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+               <apex:outputField value="{!bankAccount.Bank_Account_Legal_Owner_Name__c}" rendered="{!OR(readOnly,view)}" />
+          <!-- <apex:inputField value="{!bankAccount.IBAN_No__c}" rendered="{!edit}" /> -->
+               <apex:inputText label="IBAN No" value="{!varIBAN}" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>  
+               <apex:outputField value="{!bankAccount.IBAN_No_Protected__c}" rendered="{!OR(readOnly,view)}" /> 
+               <apex:inputField value="{!bankAccount.Additional_Account_Name__c}" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+               <apex:outputField value="{!bankAccount.Additional_Account_Name__c}" rendered="{!OR(readOnly,view)}" />   
+               <apex:outputpanel />        
+          
+        </apex:pageblockSection>
+        
+               <apex:pageblockSection title="Intermediary Bank Details" columns="2" collapsible="false" id="pbIntermedBank"> 
+            <apex:inputField label="Intermediary Bank?*" value="{!bankAccount.Intermediary_Bank__c}" rendered="{!edit}" id="ibYesNo" onchange="updateUI();" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/><apex:outputField value="{!bankAccount.Intermediary_Bank__c}" rendered="{!OR(readOnly,view)}" />
+                <apex:outputpanel />
+                 <apex:inputField label="Intermediary Bank Name*" value="{!bankAccount.Intermediary_Bank_Name__c}" rendered="{!edit}" id="ibName" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+                 <apex:outputField value="{!bankAccount.Intermediary_Bank_Name__c}" rendered="{!OR(readOnly,view)}" />
+                 
+               <!-- <apex:inputField value="{!bankAccount.Intermediary_Bank_Account_Number__c}" rendered="{!edit}" id="ibAccNo" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>  -->            
+                <apex:inputText label="Intermediary Bank Account Number" value="{!varIntermedBankAccountNumber}" rendered="{!edit}"   id="ibAccNo" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>   <!--rendered="{!AND(edit,lock=false)}"-->
+                 <apex:outputField value="{!bankAccount.Intermediary_Bank_Account_Number_Protect__c}" rendered="{!OR(readOnly,view)}" /><!-- rendered="{!OR(readOnly,view,AND(edit,lock))}" --> 
+                 
+                 <apex:inputField value="{!bankAccount.Intermediary_Bank_Branch_Number__c}" rendered="{!edit}" id="ibBranchNo" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+                 <apex:outputField value="{!bankAccount.Intermediary_Bank_Branch_Number__c}" rendered="{!OR(readOnly,view)}" />
+                 <apex:inputField value="{!bankAccount.Intermediary_Bank_Code__c}" rendered="{!edit}" id="ibBankCode" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+                 <apex:outputField value="{!bankAccount.Intermediary_Bank_Code__c}" rendered="{!OR(readOnly,view)}" />  
+                 <apex:inputField value="{!bankAccount.Intermediary_Bank_Address__c}" rendered="{!edit}" id="ibAddress" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+                 <apex:outputField value="{!bankAccount.Intermediary_Bank_Address__c}" rendered="{!OR(readOnly,view)}" />
+                 <apex:inputField label="Intermediary Bank SWIFT/BIC code*" value="{!bankAccount.Intermediary_Bank_Swift_BIC_code__c}" rendered="{!edit}" id="ibSWIFT" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+                 <apex:outputField value="{!bankAccount.Intermediary_Bank_Swift_BIC_code__c}" rendered="{!OR(readOnly,view)}" />
+                 <apex:inputField value="{!bankAccount.Intermediary_Bank_City__c}" rendered="{!edit}" id="ibCity" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+                 <apex:outputField value="{!bankAccount.Intermediary_Bank_City__c}" rendered="{!OR(readOnly,view)}" />
+                 <apex:inputField value="{!bankAccount.Intermediary_Bank_ABA_Routing_No__c}" rendered="{!edit}" id="ibABA" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+                 <apex:outputField value="{!bankAccount.Intermediary_Bank_ABA_Routing_No__c}" rendered="{!OR(readOnly,view)}" />
+                 <apex:inputField label="Intermediary Bank Country*" value="{!bankAccount.Intermediary_Bank_Country__c}" rendered="{!edit}" id="ibCountry" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/>
+                 <apex:outputField value="{!bankAccount.Intermediary_Bank_Country__c}" rendered="{!OR(readOnly,view)}" />      
+            <!-- <apex:inputField value="{!bankAccount.Intermediary_Bank_IBAN_No__c}" rendered="{!edit}" id="ibIBAN"/> -->
+                 <apex:inputText label="Intermediary Bank IBAN No" value="{!varIntermedIBAN}"  rendered="{!edit}"  id="ibIBAN" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/> <!--rendered="{!AND(edit,lock=false)}"-->
+                 <!-- changed for security field story -->
+                 <apex:outputField value="{!bankAccount.Intermediary_Bank_IBAN_No_Protected__c}" rendered="{!OR(readOnly,view)}"/><!--  rendered="{!OR(readOnly,view,AND(edit,lock))}" -->
+                 
+        
+           <script>
+              if( document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo3:bankInfoBrType}') != null ){
+                   document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo3:bankInfoBrType}').disabled = {!lock};
+               }
+             if(document.getElementById('{!$Component.frm.pb.pbIntermedBank.ibYesNo}') != null){
+             document.getElementById('{!$Component.frm.pb.pbIntermedBank.ibName}').disabled = {!AND(edit,bankAccount.Intermediary_Bank__c != 'Yes')};
+
+             document.getElementById('{!$Component.frm.pb.pbIntermedBank.ibBranchNo}').disabled = {!AND(edit,bankAccount.Intermediary_Bank__c != 'Yes')};
+             document.getElementById('{!$Component.frm.pb.pbIntermedBank.ibBankCode}').disabled = {!AND(edit,bankAccount.Intermediary_Bank__c != 'Yes')};
+             document.getElementById('{!$Component.frm.pb.pbIntermedBank.ibAddress}').disabled = {!AND(edit,bankAccount.Intermediary_Bank__c != 'Yes')};
+             document.getElementById('{!$Component.frm.pb.pbIntermedBank.ibSWIFT}').disabled = {!AND(edit,bankAccount.Intermediary_Bank__c != 'Yes')};
+             document.getElementById('{!$Component.frm.pb.pbIntermedBank.ibCity}').disabled = {!AND(edit,bankAccount.Intermediary_Bank__c != 'Yes')};
+             document.getElementById('{!$Component.frm.pb.pbIntermedBank.ibABA}').disabled = {!AND(edit,bankAccount.Intermediary_Bank__c != 'Yes')};
+             document.getElementById('{!$Component.frm.pb.pbIntermedBank.ibCountry}').disabled = {!AND(edit,bankAccount.Intermediary_Bank__c != 'Yes')};
+             document.getElementById('{!$Component.frm.pb.pbIntermedBank.ibIBAN }').disabled = {!AND(edit,bankAccount.Intermediary_Bank__c != 'Yes')};
+                          document.getElementById('{!$Component.frm.pb.pbIntermedBank.ibAccNo}').disabled = {!AND(edit,bankAccount.Intermediary_Bank__c != 'Yes')};
+           }            
+           </script>
+            <!-- SCRIPTS FOR CONDITIONAL DISABLING OF INPUT FIELDS -->        
+           <script>
+                    if( document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo3:bankCode}') != null ){
+                        if( {!lock} == true ){
+                            document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo3:bankCode}').disabled = true;    
+                        }
+                    }
+                    
+                    if( document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo3:codeVal}') != null ){
+                        if( {!lock} == true ){
+                            document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo3:codeVal}').disabled = true;    
+                        }
+                    }
+                
+                    if(document.getElementById('{!$Component.PRBankForm:frm.pb.pbBankInfo.newBankName}') != null){
+                        if( {!lock} == true ){
+                            document.getElementById('{!$Component.PRBankForm:frm.pb.pbBankInfo.newBankName}').disabled = true;
+                        }else {
+                            document.getElementById('{!$Component.PRBankForm:frm.pb.pbBankInfo.newBankName}').disabled = !({!AND(edit,bankAccount.Selected_Bank_Id__c == 'New')});
+                        }
+                    }
+                
+           </script>
+        
+                  <script>
+                    
+                    
+                       if(document.getElementById('{!$Component.PRBankForm:frm.pb.pbBankInfo.newSWIFT}') != null){  
+                           if( {!lock} == true ){
+                                document.getElementById('{!$Component.PRBankForm:frm.pb.pbBankInfo.newSWIFT}').disabled = true;              
+                           }else{
+                               document.getElementById('{!$Component.PRBankForm:frm.pb.pbBankInfo.newSWIFT}').disabled = !({!AND(edit,bankAccount.Selected_Branch_Id__c == 'New')}); 
+                           }
+                    }
+               </script>
+               <script>
+                  
+                       if(document.getElementById('{!$Component.PRBankForm:frm.pb.pbBankInfo.newABA}') != null){
+                           if( {!lock} == true ){
+                                document.getElementById('{!$Component.PRBankForm:frm.pb.pbBankInfo.newABA}').disabled = true;
+                            }else{
+                               document.getElementById('{!$Component.PRBankForm:frm.pb.pbBankInfo.newABA}').disabled = !({!AND(edit,bankAccount.Selected_Branch_Id__c == 'New')}); 
+                           }
+                       }
+               </script>
+                 <script>  
+                   if( document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo3:newBranchNumber}') != null ){
+                       if( {!lock} == true ){
+                          document.getElementById('{!$Component.PRBankForm:frm:pb:pbBankInfo3:newBranchNumber}').disabled = true; 
+                       }   
+                   }
+               </script>
+
+              
+        </apex:pageblockSection>
+        
+        <apex:pageblockSection title="Additional Banking Information" columns="2" collapsible="false"> 
+            <apex:inputField label="Bank Account in the Grant Currency?*" value="{!bankAccount.Bank_Account_in_the_Grant_Currency__c}" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/><apex:outputField value="{!bankAccount.Bank_Account_in_the_Grant_Currency__c}" rendered="{!OR(readOnly,view)}" />
+       <!-- <apex:inputField value="{!bankAccount.WB_Bank_Account_Instruction__c}" rendered="{!edit}" /><apex:outputField value="{!bankAccount.WB_Bank_Account_Instruction__c}" rendered="{!OR(readOnly,view)}" /> -->
+            <apex:inputField value="{!bankAccount.Bank_Account_Currency__c}" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/><apex:outputField value="{!bankAccount.Bank_Account_Currency__c}" rendered="{!OR(readOnly,view)}" /> 
+       <!-- <apex:inputField value="{!bankAccount.WB_Bank_Account_Additional_Instruction__c}" rendered="{!edit}" /><apex:outputField value="{!bankAccount.WB_Bank_Account_Additional_Instruction__c}" rendered="{!OR(readOnly,view)}" /> -->
+            <apex:inputField value="{!bankAccount.Please_Explain_Rationale__c}" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/><apex:outputField value="{!bankAccount.Please_Explain_Rationale__c}" rendered="{!OR(readOnly,view)}" />
+
+        
+        </apex:pageblockSection>
+        
+        <apex:pageblockSection title="Local Bank Account Information - Not for Grant Agreement Purposes" columns="2" collapsible="false">
+            <apex:inputField label="Separate bank account in local currency?*" value="{!bankAccount.Separate_bank_account_in_local_currency__c}" rendered="{!edit}" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/><apex:outputField value="{!bankAccount.Separate_bank_account_in_local_currency__c}" rendered="{!OR(readOnly,view)}"/>
+                <apex:inputField value="{!bankAccount.Local_Currency_Bank_Account_Details__c}" rendered="{!edit}" style="text-transform:uppercase" onkeyup="var u=this.value.toUpperCase();if(this.value!=u){this.value=u;}"/><apex:outputField value="{!bankAccount.Local_Currency_Bank_Account_Details__c}" rendered="{!OR(readOnly,view)}" />
+        </apex:pageblockSection>
+        
+        
+        
+   
+<apex:outputpanel rendered="{!!edit}">
+<center>
+<div style="width:80%;background-color:#D0D0D0; border-style: solid;border-width: 3px;">
+<br></br>
+<table>
+<tr>
+<td colspan="2">
+<h1 style="margin-bottom:0;">&nbsp;&nbsp;&nbsp;Mandatory Documents to Upload: </h1>
+<br></br>
+</td>
+<td width="15%">
+<!-- <apex:outputLink style="color:blue;" value="/servlet/servlet.FileDownload?file=015g0000000DiQS">Download Bank Letter Template old </apex:outputLink> -->
+<!-- changed source as per the request, now it points to globalfund site -->
+<apex:outputLink style="color:blue;" value="http://www.theglobalfund.org/documents/core/financial/Core_2014-PrincipalRecipientBankInformation_Template_en/">Download Bank Letter Template </apex:outputLink>
+</td>
+</tr>
+
+<tr>
+
+<td width="5%"></td>
+<td align="left">
+
+ You must upload an official letter with a stamp from the bank confirming the opening of a bank account and the account details as per the bank’s records.
+Please use the "Notes and Attachments" section below to upload the letter from the bank.
+
+<br> </br>  
+</td>
+</tr>
+</table>
+</div>
+</center>
+</apex:outputpanel>
+<br> </br>    
+    <apex:pageblock title="Notes & Attachments" id="attachList" rendered="{!!edit}">
+        <apex:pageblockButtons location="top">
+        <apex:commandButton value="Attach File" action="{!attachfile}" rendered="{!!disableSubmit }"/>
+      </apex:pageblockButtons>
+        <apex:pageblockTable value="{!lstAttachment}" var="a">
+                        <apex:column headerValue="">
+                    <apex:commandLink rerender="attachList" style="color:blue;"  rendered="{!!disableSubmit }"
+              status="status" onclick="deleteRow('{!a.Id}');return false;">
+              Del
+            </apex:commandLink>
+                </apex:column>
+            <apex:column headerValue="Title" >
+               <a style="cusror:pointer;text-decoration: underline;color: blue;" href="/servlet/servlet.FileDownload?file={!a.id}" download="{!a.name}">{!a.name}</a> 
+             </apex:column>
+            <apex:column headerValue="Related To" value="{!a.ParentId}" />
+            <apex:column headerValue="Last Modified" value="{!a.lastModifiedDate}" />
+            <apex:column headerValue="Created By" value="{!a.CreatedById}" />
+            
+        </apex:pageblockTable>
+    </apex:pageblock>  
+    
+     
+      <apex:pageblockButtons location="both" >
+         <apex:commandButton value="Edit Bank Account Information" action="{!changeToViewMode}" rendered="{!AND(readOnly,OR(bankAccount.Approval_Status__c == 'Reject' , bankAccount.Approval_Status__c == 'Correction required', bankAccount.Approval_Status__c == 'Approved', bankAccount.Approval_Status__c == 'Update Information'),blnEditBankInformation)}" />
+         
+          <apex:commandButton value="Edit" onclick="return CheckEditableorNot();" rendered="{!view}" />
+
+          <apex:commandButton value="Submit Information For Approval" rendered="{!view}" rerender="null" oncomplete="confirmPRUpdate()" disabled="{!disableSubmit}"/>
+          <apex:commandButton value="Save" action="{!saveRecord}" rendered="{!edit}"/>
+          <apex:commandButton value="Cancel" action="{!cancelRecord}" rendered="{!edit}"/>
+          
+      </apex:pageblockButtons>
+      </apex:pageblock>
+    </apex:form> 
+    <apex:outputpanel >
+            <apex:actionstatus id="status">
+                <apex:facet name="start">
+                    <div class="waitingSearchDiv" id="el_loading"
+                        style="background-color: #fbfbfb; height: 100%; opacity: 0.65; width: 100%; z-index: 9000;">
+                    <div class="waitingHolder" style="top: 1074.2px; width: 91px;">
+                    <img class="waitingImage" src="/img/loading.gif"
+                        title="Please Wait..." /> <span class="waitingDescription">Please
+                    Wait...</span></div>
+                    </div>
+                </apex:facet>
+            </apex:actionstatus>
+        </apex:outputpanel>
+    <apex:outputPanel rendered="false">{! Implementation_Period__c.Bank_Account__c }{! Implementation_Period__c.Principal_Recipient__c   } 
+</apex:outputPanel>
+
+
+<script>
+  // -----------------------------------------------------
+  // This javascript code used to open custom Account lookup
+  // -----------------------------------------------------
+ 
+  function openLookup(baseURL,width,modified,searchParam) {
+    var originalbaseURL = baseURL;    
+    var originalwidth = width;
+    var lookupType = baseURL.substr(baseURL.length-3,3);
+    if (modified == '1') baseURL = baseURL + searchParam;   
+        var urlArr = baseURL.split("&");
+        var txtId = '';
+        var accId = '';
+        if(urlArr.length > 2) {
+            urlArr = urlArr[1].split('=');
+            txtId = urlArr[1];             
+        }
+        baseURL = "/apex/BankAccountLookup?txt=" + txtId;     
+        baseURL =  baseURL + "&accId={!account.Id}" ;
+        baseURL = baseURL + "&frm=" + escapeUTF("{!$Component.frm}");  
+        if (modified == '1') {
+            baseURL = baseURL + searchParam;
+        } 
+   if(lookupType != "a00") {    
+       openPopup(originalbaseURL, "lookup", 350, 480, "width="+originalwidth+",height=480,toolbar=no,status=no,directories=no,menubar=no,resizable=yes,scrollable=no", true);
+   } else {
+        openPopup(baseURL, "lookup", 350, 480, "width="+width+",height=480,toolbar=no,status=no,directories=no,menubar=no,resizable=yes,scrollable=no", false);
+   }   
+    
+ }
+  // ---------------------------------------------------
+</script>
+
+</apex:page>

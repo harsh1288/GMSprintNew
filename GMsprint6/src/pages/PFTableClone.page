@@ -1,0 +1,126 @@
+<apex:page sidebar="false" showheader="false" standardController="Performance_Framework__c" standardstylesheets="false" extensions="PFTableExtClone">
+<apex:includeScript value="{!$Resource.jquery142}" />    
+    <html>
+        <Style>
+            .hdr{
+                text-align:center;
+                font-size:18px;
+                font-weight:bold;
+                background-color:darkturquoise;
+            }
+            td.actcol{
+                background-color:white;
+            }
+            td.actcol:hover{
+                background-color:darkturquoise;
+            }
+        </Style>
+        <body>
+        <apex:form >
+            <h style="font-size:20px;">Table for Performance Framework hierarchy view:</h><br/>
+            <table width="100%" border="1" style="border-collapse:collapse;">
+                <tr>
+                    <th class="hdr" rowspan="2">S.No.</th>
+                    <th class="hdr" rowspan="2">Interventions</th>
+                    <th class="hdr" rowspan="2">Activities</th>
+                    <th Class="hdr" rowspan="1" colspan="4">Comments</th>
+                </tr>
+                <tr>
+                    <th class="hdr">Global Fund Comments to LFA</th>
+                    <th class="hdr">Global Fund Comments to PR</th>
+                    <th class="hdr">LFA Comments</th>
+                    <th class="hdr">PR Comments</th>
+                </tr>
+                <apex:variable value="{!0}" var="Serial"/>               
+                <apex:repeat value="{!tbldata}" var="data" id="rpt">
+                <apex:variable value="{!Serial +1}" var="Serial"/> 
+                    <tr>
+                        <td Style="text-align:center;">{!Serial}</td>
+                        <td Style="text-align:left;">{!data.Intervention.Name}</td>
+                        <td style="padding:0px;">
+                            <table border="1" frame="void" width="100%" style="border-collapse:collapse;">       
+                                    <apex:repeat value="{!data.ActivitiesList}" var="act" id="rptint">
+                                        <tr>
+                                            <td onclick="return shwchld('{!act.Id}','{!act.Name}');" class="actcol" Style="height:23px;text-align:{!if(act.Name=='-','center','')};white-space: nowrap;" id="actTitle">{!act.Name}</td>                                            
+                                        </tr>
+                                    </apex:repeat>                              
+                            </table>
+                        </td>
+                        <td style="padding:0px;">
+                            <table border="1" frame="void" width="100%" style="border-collapse:collapse;" cellpadding="0px;">       
+                                    <apex:repeat value="{!data.ActivitiesList}" var="act">
+                                        <tr>
+                                            <td Style="height:23px;text-align:{!if(act.Global_Fund_Comments_to_LFA__c=='-','center','')};white-space: nowrap;">{!act.Global_Fund_Comments_to_LFA__c}</td>                                            
+                                        </tr>
+                                    </apex:repeat>                               
+                            </table>
+                        </td>
+                        <td style="padding:0px;">
+                            <table border="1" frame="void" width="100%" style="border-collapse:collapse;" cellpadding="0px;">       
+                                    <apex:repeat value="{!data.ActivitiesList}" var="act">
+                                        <tr>
+                                            <td Style="height:23px;text-align:{!if(act.Global_Fund_Comments_to_PR__c=='-','center','')};white-space: nowrap;">{!act.Global_Fund_Comments_to_PR__c}</td>                                            
+                                        </tr>
+                                    </apex:repeat>                               
+                            </table>
+                        </td>
+                        <td style="padding:0px;">
+                            <table border="1" frame="void" width="100%" style="border-collapse:collapse;">       
+                                    <apex:repeat value="{!data.ActivitiesList}" var="act">
+                                        <tr>
+                                            <td Style="height:23px;text-align:{!if(act.LFA_Comments__c=='-','center','')};white-space: nowrap;">{!act.LFA_Comments__c}</td>                                            
+                                        </tr>
+                                    </apex:repeat>                               
+                            </table>
+                        </td>
+                        <td style="padding:0px;">
+                            <table border="1" frame="void" width="100%" style="border-collapse:collapse;">       
+                                    <apex:repeat value="{!data.ActivitiesList}" var="act">
+                                        <tr>
+                                            <td Style="height:23px;text-align:{!if(act.PR_Comments__c=='-','center','')};white-space: nowrap;">{!act.PR_Comments__c}</td>                                            
+                                        </tr>
+                                    </apex:repeat>                               
+                            </table>
+                        </td>                                             
+                    </tr>
+                </apex:repeat>
+            </table>
+            <br/>
+            <apex:outputPanel id="childtbl">
+                <apex:pageMessages id="msg" /><br/>
+                <table width="100%" border="1" style="border-collapse:collapse;display:{!if(showChildtbl,'','none')};">
+                    <tr>
+                        <th class="hdr" rowspan="2">Key Activity</th>
+                        <th class="hdr" rowspan="2">Milestones</th>
+                        <th class="hdr" rowspan="2">Criteria</th>
+                        <th class="hdr" rowspan="1" colspan="{!allRP.size}">Milestones/Targets</th>
+                    </tr>
+                    <tr>
+                        <apex:variable value="{!0}" var="prd"/>
+                        <apex:repeat value="{!allRP}" var="rp">
+                        <apex:variable value="{!prd +1}" var="prd"/>
+                        <th class="hdr">P{!prd}</th>
+                        </apex:repeat>
+                    </tr> 
+                    <tr>                   
+                     <td rowspan="{!wrapdata.size +1}" Style="text-align:center;">{!actName}</td>
+                    </tr>
+                     <apex:repeat value="{!wrapdata}" var="wrap">
+                         <tr>                                
+                             <td Style="text-align:center;">{!wrap.mt.MilestoneTitle__c}</td>
+                             <td Style="text-align:center;">{!wrap.mt.Criteria__c}</td>
+                             <apex:repeat value="{!wrap.linkedRp}" var="lstbool">
+                                 <td Style="text-align:center;"><apex:image id="checkimg" value="{!$Resource.check_green}" rendered="{!lstbool}"/></td>
+                             </apex:repeat>
+                         </tr>
+                     </apex:repeat>                                                            
+                </table>
+            </apex:outputPanel>                    
+            <apex:actionFunction name="shwchld" action="{!createWrapperForAct}" rerender="childtbl" status="myStatus">
+                <apex:param id="param1" name="name1" value="" assignTo="{!actId}"/>
+                <apex:param id="param2" name="name2" value="" assignTo="{!actName}"/>
+            </apex:actionFunction>
+            </apex:form>         
+        </body>       
+    </html>
+</apex:page>

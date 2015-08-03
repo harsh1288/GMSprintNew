@@ -1,0 +1,14 @@
+eclipse.preferences.version=1
+endpointApiVersion=34.0
+endpointEnvironment=Sandbox
+endpointServer=test.salesforce.com
+httpsProtocol=true
+ideVersion=34.0
+keependpoint=false
+metadataFormatVersion=34.0
+namespacePrefix=
+packageName=unpackaged
+preferToolingDeployment=true
+projectIdentifier=IDE8370919174091655979
+readTimeout=400
+username=harsh.chaturvedi1@theglobalfund.org

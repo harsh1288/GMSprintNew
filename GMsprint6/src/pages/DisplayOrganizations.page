@@ -1,0 +1,17 @@
+<apex:page controller="DisplayOrganizationsExtn" >
+
+<!-- <apex:repeat value="{!lstAccountToDisplay}" var = "Accounts">-->
+
+<apex:pageBlock >
+<apex:pageBlockSection >
+<apex:pageBlockTable value="{!lstAccountToDisplay}" var="accounts">
+<!--<apex:column value="{!accounts.name}"/> -->
+<apex:column headerValue="Account Name">
+    <apex:outputText value="{!accounts.Name}"/>
+</apex:Column>
+</apex:pageBlockTable>
+</apex:pageBlockSection>
+</apex:pageBlock>
+<!--</apex:repeat>-->
+ 
+</apex:page>

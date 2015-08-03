@@ -1,0 +1,94 @@
+<!----------------------------------------------------------------------------------------------------------->
+<!--    Purpose         :  This Page is meant for CLASS: WPTMKeyActivityReportExtension          ----------->
+<!--    Created Date    :  12 March 2015                                                         ------------>
+<!--    Created By      :  TCS                                                                    ------------> 
+<!--    Description     :  This Page shows Workplan Tracking measure report embeded in Performance Framework
+<!--                       Standard Page.Displays Interventions with respective Activities/Milestone Targets/Reporting Periods                                                           ----------->
+<!---   Author          :  Gaurav Guleria
+<!--    Revision        :                                                                        ----------->            
+<!------------------------------------------------------------------------------------------------------------>
+
+<apex:page standardController="Performance_Framework__c" extensions="WPTMKeyActivityReportExtension" readOnly="TRUE">
+  <html>
+    <head>
+     <style type="text/css">
+    
+        div.header {
+        
+        position:fixed;
+        
+        }        
+        .tableheader{
+            font-size: 11px;
+            background-color: #F2F2F2;
+            font-family:arial;
+        }
+    </style>
+    </head>
+    </html>
+    <apex:form >    
+        <apex:pageBlock rendered="{!securityMatrixObj.accessViewWPTM}">
+           <b> <apex:outputText value="Workplan Tracking Measures"></apex:outputText></b><br/><br/>
+           <apex:pageBlockSection >
+           <apex:pageBlockSectionItem >
+            <apex:outputpanel layout="block" style="text-align: center;font-weight:bold; float:left;">                
+                <apex:commandLink id="addKeyActvt" rendered="{!securityMatrixObj.addActivityMilestone}" value="Add Key Activity" action="{!addKeyActivity}" target="_blank" styleClass="btn" style="color:black;text-decoration:none;font-weight:bold;" rerender=""/>
+                <apex:commandLink id="backToPF"  value="Performance Framework" action="{!backToPerformanceFramework}" styleClass="btn" style="color:black;text-decoration:none;font-weight:bold;" rerender=""/>
+                 <!-- <apex:commandLink value="{!$Label.See_Help}" action="{!openGuidance}"  target="_blank" styleClass="btn" style="text-decoration:none;padding:4px;"/>                               -->
+                <apex:commandLink id="seeHelp"  value="See Help" action="{!openGuidance}" styleClass="btn" style="color:black;text-decoration:none;font-weight:bold;" target="_blank" rerender=""/>
+               <br/><br/><br/>
+            </apex:outputpanel>  
+            </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            
+               <table height="100%" style="table-layout: fixed;word-break: break-all;width:100%">
+                   <apex:repeat value="{!RecordsToDisplay}" var="rec" id="dispList">                  
+                      
+                         <tr>
+                            <td style="font-size: 12px;font-weight: bold;width:30%;"> Module : </td>
+                            <td style="width:40%;font-size: 12px;font-weight: bold;">{!rec.moduleName}</td> 
+                            <td style="width:20%;"></td>
+                           <td style="width:10%;"></td>
+                         </tr>
+                         
+                         <tr>
+                             <td style="font-size: 12px;font-weight: bold;"> Intervention : </td>
+                             <td style="font-size: 12px;font-weight: bold;width:40%;">{!rec.interventionName} </td>
+                             <td style="width:20%;"></td>
+                             <td style="width:10%;"></td>
+                         </tr>
+                        
+                         <tr>
+                            <td style="font-size: 12px;font-weight: bold;height:20px"> Activity : </td>
+                            <td style="font-size: 12px;font-weight: bold;width:40%;">
+                                <apex:commandLink value="{!rec.activityName}" action="{!openKeyActivity}" target="_blank"> 
+                                    <apex:param assignTo="{!keyActivityId}" value="{!rec.keyActivityId}" name="tact"/>
+                                </apex:commandLink>
+                            </td>   
+                            <td style="width:20%;"></td>
+                             <td style="width:10%;"></td>                        
+                         </tr>
+                         
+                         <tr class="tableheader" style="background-color: darkgrey;font-size:10px;">
+                         
+                                <th  style="font-size: 12px;width:30%">Milestone</th>                        
+                                <th  style="font-size: 12px;width:40%">Criterion for Completion</th> 
+                                <th  style="display:{!if(showLinkedTo,TRUE,'none')};width:20%;text-align: center;font-size: 12px;">Linked To</th>                          
+                                <th  style="width:10%;text-align: center;font-size: 12px;">Reporting Periods</th> 
+                         </tr>
+                         <apex:repeat value="{!rec.MilestoneTargetWrapperLst}" var="rec2" id="dispList2">                                                
+                               <tr>
+                                    <td style="background-color: #D8D8D8;font-size: 12px;"><apex:outputText value="{!rec2.MileStoneName}"/></td> 
+                                    <td style="background-color: #D8D8D8;font-size: 12px;"><apex:outputText value="{!rec2.CriteriaForCompletion}"/></td> 
+                                    <td style="display:{!if(showLinkedTo,TRUE,'none')};font-size: 12px;text-align: center;background-color: #D8D8D8;"><apex:outputText value="{!rec2.linkedTo}" /></td>                            
+                                    <td style="text-align: center;background-color: #D8D8D8;font-size: 12px;"><apex:outputText value="{!rec2.reportingPeriods}" /></td>                           
+                               </tr>                                
+                         </apex:repeat>  
+                         
+                        
+                   </apex:repeat>  
+                   <br></br>
+                   </table>                      
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
