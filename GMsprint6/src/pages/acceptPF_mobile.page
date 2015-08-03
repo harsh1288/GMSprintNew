@@ -19,7 +19,7 @@ var results = records.getArray('records');
 //alert(results);
 var test1234;
 var testTest;
-var newTest128;
+var newTest12;
 if(results[0].Implementation_Period__r.Approval_Status__c!='Approved') 
 { 
 alert('PR Information Form and Grant Form must be approved to accept Performance Framework.'); 
