@@ -20,7 +20,7 @@ var results = records.getArray('records');
 var test1234;
 var testTest;
 
-var newTest123;
+var newTest12;
 
 if(results[0].Implementation_Period__r.Approval_Status__c!='Approved') 
 { 
