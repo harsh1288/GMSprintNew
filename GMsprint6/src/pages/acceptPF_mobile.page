@@ -18,6 +18,7 @@ var records = sforce.connection.query("SELECT Implementation_Period__r.Approval_
 var results = records.getArray('records'); 
 //alert(results);
 var test1234;
+var testTest;
 var newTest;
 if(results[0].Implementation_Period__r.Approval_Status__c!='Approved') 
 { 
