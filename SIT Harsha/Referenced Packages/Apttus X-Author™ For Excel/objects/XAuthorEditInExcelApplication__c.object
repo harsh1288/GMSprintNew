@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customSettingsType>List</customSettingsType>
+    <description>X-Author Edit in Excel application</description>
+    <enableFeeds>false</enableFeeds>
+    <fields>
+        <fullName>AppUniqueId__c</fullName>
+        <caseSensitive>false</caseSensitive>
+        <deprecated>false</deprecated>
+        <description>The Excel application Unique Id</description>
+        <externalId>true</externalId>
+        <inlineHelpText>The Excel application Unique Id</inlineHelpText>
+        <label>App Id</label>
+        <length>255</length>
+        <required>true</required>
+        <trackTrending>false</trackTrending>
+        <type>Text</type>
+        <unique>true</unique>
+    </fields>
+    <fields>
+        <fullName>Sequence__c</fullName>
+        <deprecated>false</deprecated>
+        <description>The application sequence</description>
+        <externalId>false</externalId>
+        <inlineHelpText>The application sequence</inlineHelpText>
+        <label>Sequence</label>
+        <precision>5</precision>
+        <required>true</required>
+        <scale>0</scale>
+        <trackTrending>false</trackTrending>
+        <type>Number</type>
+        <unique>true</unique>
+    </fields>
+    <label>X-Author Edit In Excel Application</label>
+    <visibility>Protected</visibility>
+</CustomObject>
